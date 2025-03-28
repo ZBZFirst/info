@@ -5,10 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Scrapes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        tr {
+            height: 15px; /* Adjust row height */
+        }
+    </style>
 </head>
 <body>
     <h1>Job Scrapes</h1>
-    <button onclick="loadExcelFiles()">Load Job Postings</button>
+
+    <label for="fileSelect">Select a job posting file:</label>
+    <select id="fileSelect">
+        <option value="">-- Select a file --</option>
+    </select>
+    <button onclick="loadSelectedFile()">Load Selected File</button>
+
     <div id="tables"></div>
 
     <script>
@@ -26,30 +46,44 @@
             "kpjobs_03272025_description_parsed.xlsx"
         ];
 
-        async function loadExcelFiles() {
+        // Populate dropdown menu
+        const fileSelect = document.getElementById("fileSelect");
+        files.forEach(file => {
+            let option = document.createElement("option");
+            option.value = file;
+            option.textContent = file;
+            fileSelect.appendChild(option);
+        });
+
+        async function loadSelectedFile() {
+            const selectedFile = fileSelect.value;
+            if (!selectedFile) {
+                alert("Please select a file to load.");
+                return;
+            }
+
             const container = document.getElementById("tables");
             container.innerHTML = ""; // Clear previous content
+            const url = `https://raw.githubusercontent.com/ZBZFirst/info/main/jobpostings/${selectedFile}`;
 
-            for (const file of files) {
-                const url = `https://raw.githubusercontent.com/ZBZFirst/info/main/jobpostings/${file}`;
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        console.error(`Failed to load ${file}`);
-                        continue;
-                    }
-                    const arrayBuffer = await response.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-                    workbook.SheetNames.forEach(sheetName => {
-                        const htmlTable = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
-                        const tableDiv = document.createElement("div");
-                        tableDiv.innerHTML = `<h3>${file} - ${sheetName}</h3>${htmlTable}`;
-                        container.appendChild(tableDiv);
-                    });
-                } catch (error) {
-                    console.error(`Error loading ${file}:`, error);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    alert(`Failed to load ${selectedFile}`);
+                    return;
                 }
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+                workbook.SheetNames.forEach(sheetName => {
+                    const htmlTable = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
+                    const tableDiv = document.createElement("div");
+                    tableDiv.innerHTML = `<h3>${selectedFile} - ${sheetName}</h3>${htmlTable}`;
+                    container.appendChild(tableDiv);
+                });
+            } catch (error) {
+                console.error(`Error loading ${selectedFile}:`, error);
+                alert(`Error loading ${selectedFile}`);
             }
         }
     </script>
