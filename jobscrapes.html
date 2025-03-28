@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Scrapes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Job Scrapes</h1>
+    <button onclick="loadExcelFiles()">Load Job Postings</button>
+    <div id="tables"></div>
+
+    <script>
+        const files = [
+            "ClaremontCollegesJobs_032525_description_parsed.xlsx",
+            "ClaremontCollegesJobs_032625_description_parsed.xlsx",
+            "ClaremontCollegesJobs_032725_description_parsed.xlsx",
+            "ClaremontCollegesJobs_032825_description_parsed.xlsx",
+            "DignityHospitals_03252025_description_parsed.xlsx",
+            "DignityHospitals_03262025_description_parsed.xlsx",
+            "DignityHospitals_03272025_description_parsed.xlsx",
+            "DignityHospitals_03282025_description_parsed.xlsx",
+            "kpjobs_03252025_description_parsed.xlsx",
+            "kpjobs_03262025_description_parsed.xlsx",
+            "kpjobs_03272025_description_parsed.xlsx"
+        ];
+
+        async function loadExcelFiles() {
+            const container = document.getElementById("tables");
+            container.innerHTML = ""; // Clear previous content
+
+            for (const file of files) {
+                const url = `https://raw.githubusercontent.com/ZBZFirst/info/main/jobpostings/${file}`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        console.error(`Failed to load ${file}`);
+                        continue;
+                    }
+                    const arrayBuffer = await response.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+                    workbook.SheetNames.forEach(sheetName => {
+                        const htmlTable = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
+                        const tableDiv = document.createElement("div");
+                        tableDiv.innerHTML = `<h3>${file} - ${sheetName}</h3>${htmlTable}`;
+                        container.appendChild(tableDiv);
+                    });
+                } catch (error) {
+                    console.error(`Error loading ${file}:`, error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
