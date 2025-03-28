@@ -12,7 +12,7 @@
         }
         th, td {
             border: 1px solid black;
-            padding: 8px;
+            padding: 5px;
             text-align: left;
         }
         th {
@@ -30,7 +30,7 @@
     </select>
     <button onclick="loadSelectedFile()">Load Selected File</button>
 
-    <h3>Adjust Row Height: <input type="number" id="rowHeight" value="15" min="5" max="50" onchange="updateRowHeight()"> px</h3>
+    <h3>Adjust Row Spacing: <input type="number" id="rowSpacing" value="15" min="5" max="50" onchange="updateRowSpacing()"> px</h3>
     <h3>Adjust Column Width: <input type="number" id="colWidth" value="150" min="50" max="500" onchange="updateColumnWidth()"> px</h3>
 
     <div id="tables"></div>
@@ -81,7 +81,7 @@
 
                 workbook.SheetNames.forEach(sheetName => {
                     const table = document.createElement("table");
-                    table.setAttribute("class", "dynamicTable");
+                    table.classList.add("dynamicTable");
 
                     const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
 
@@ -117,8 +117,8 @@
                     container.appendChild(tableDiv);
                 });
 
-                // Apply updated row height and column width
-                updateRowHeight();
+                // Apply updated row spacing and column width
+                updateRowSpacing();
                 updateColumnWidth();
 
             } catch (error) {
@@ -127,10 +127,12 @@
             }
         }
 
-        function updateRowHeight() {
-            let rowHeight = document.getElementById("rowHeight").value + "px";
+        function updateRowSpacing() {
+            let spacing = document.getElementById("rowSpacing").value + "px";
             document.querySelectorAll(".dynamicTable tr").forEach(row => {
-                row.style.height = rowHeight;
+                row.style.lineHeight = spacing;
+                row.style.paddingTop = spacing;
+                row.style.paddingBottom = spacing;
             });
         }
 
@@ -138,6 +140,7 @@
             let colWidth = document.getElementById("colWidth").value + "px";
             document.querySelectorAll(".dynamicTable td, .dynamicTable th").forEach(cell => {
                 cell.style.minWidth = colWidth;
+                cell.style.maxWidth = colWidth;
             });
         }
 
