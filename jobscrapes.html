@@ -15,8 +15,9 @@
             padding: 8px;
             text-align: left;
         }
-        tr {
-            height: 15px; /* Adjust row height */
+        th {
+            cursor: pointer;
+            background-color: #f2f2f2;
         }
     </style>
 </head>
@@ -28,6 +29,9 @@
         <option value="">-- Select a file --</option>
     </select>
     <button onclick="loadSelectedFile()">Load Selected File</button>
+
+    <h3>Adjust Row Height: <input type="number" id="rowHeight" value="15" min="5" max="50" onchange="updateRowHeight()"> px</h3>
+    <h3>Adjust Column Width: <input type="number" id="colWidth" value="150" min="50" max="500" onchange="updateColumnWidth()"> px</h3>
 
     <div id="tables"></div>
 
@@ -76,15 +80,82 @@
                 const workbook = XLSX.read(arrayBuffer, { type: "array" });
 
                 workbook.SheetNames.forEach(sheetName => {
-                    const htmlTable = XLSX.utils.sheet_to_html(workbook.Sheets[sheetName]);
+                    const table = document.createElement("table");
+                    table.setAttribute("class", "dynamicTable");
+
+                    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+
+                    // Create Table Headers
+                    let thead = document.createElement("thead");
+                    let headerRow = document.createElement("tr");
+                    sheet[0].forEach((header, index) => {
+                        let th = document.createElement("th");
+                        th.textContent = header;
+                        th.onclick = () => sortTable(table, index);
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+
+                    // Create Table Body
+                    let tbody = document.createElement("tbody");
+                    sheet.slice(1).forEach(row => {
+                        let tr = document.createElement("tr");
+                        row.forEach(cell => {
+                            let td = document.createElement("td");
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+
+                    // Append to container
                     const tableDiv = document.createElement("div");
-                    tableDiv.innerHTML = `<h3>${selectedFile} - ${sheetName}</h3>${htmlTable}`;
+                    tableDiv.innerHTML = `<h3>${selectedFile} - ${sheetName}</h3>`;
+                    tableDiv.appendChild(table);
                     container.appendChild(tableDiv);
                 });
+
+                // Apply updated row height and column width
+                updateRowHeight();
+                updateColumnWidth();
+
             } catch (error) {
                 console.error(`Error loading ${selectedFile}:`, error);
                 alert(`Error loading ${selectedFile}`);
             }
+        }
+
+        function updateRowHeight() {
+            let rowHeight = document.getElementById("rowHeight").value + "px";
+            document.querySelectorAll(".dynamicTable tr").forEach(row => {
+                row.style.height = rowHeight;
+            });
+        }
+
+        function updateColumnWidth() {
+            let colWidth = document.getElementById("colWidth").value + "px";
+            document.querySelectorAll(".dynamicTable td, .dynamicTable th").forEach(cell => {
+                cell.style.minWidth = colWidth;
+            });
+        }
+
+        function sortTable(table, columnIndex) {
+            let rows = Array.from(table.querySelector("tbody").rows);
+            let isAscending = table.dataset.sortOrder !== "asc";
+
+            rows.sort((rowA, rowB) => {
+                let cellA = rowA.cells[columnIndex].textContent.trim();
+                let cellB = rowB.cells[columnIndex].textContent.trim();
+
+                return isAscending 
+                    ? cellA.localeCompare(cellB, undefined, { numeric: true })
+                    : cellB.localeCompare(cellA, undefined, { numeric: true });
+            });
+
+            table.dataset.sortOrder = isAscending ? "asc" : "desc";
+            rows.forEach(row => table.querySelector("tbody").appendChild(row));
         }
     </script>
 </body>
