@@ -1,1 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABG pH Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .calculator {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            color: #d32f2f;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ABG pH Calculator</h1>
+    <p>Calculate blood pH using the Henderson-Hasselbalch equation</p>
+    
+    <div class="calculator">
+        <div class="input-group">
+            <label for="paco2">PaCO₂ (mmHg):</label>
+            <input type="number" id="paco2" step="0.1" placeholder="40">
+        </div>
+        
+        <div class="input-group">
+            <label for="hco3">HCO₃⁻ (mEq/L):</label>
+            <input type="number" id="hco3" step="0.1" placeholder="24">
+        </div>
+        
+        <button onclick="calculatePH()">Calculate pH</button>
+        
+        <div id="error" class="error"></div>
+        
+        <div id="result" class="result">
+            <h3>Result</h3>
+            <p>Calculated pH: <span id="ph-value">-</span></p>
+            <p>Interpretation: <span id="interpretation">-</span></p>
+        </div>
+    </div>
 
+    <script>
+        function calculatePH() {
+            // Get input values
+            const paco2 = parseFloat(document.getElementById('paco2').value);
+            const hco3 = parseFloat(document.getElementById('hco3').value);
+            
+            // Clear previous results and errors
+            document.getElementById('error').textContent = '';
+            document.getElementById('result').style.display = 'none';
+            
+            // Validate inputs
+            if (isNaN(paco2) || isNaN(hco3)) {
+                document.getElementById('error').textContent = 'Please enter valid numbers for both fields';
+                return;
+            }
+            
+            if (paco2 <= 0 || hco3 <= 0) {
+                document.getElementById('error').textContent = 'PaCO2 and HCO3 must be greater than zero';
+                return;
+            }
+            
+            // Calculate pH using Henderson-Hasselbalch equation
+            const ph = 6.1 + Math.log10(hco3 / (0.03 * paco2));
+            
+            // Display result
+            document.getElementById('ph-value').textContent = ph.toFixed(2);
+            document.getElementById('interpretation').textContent = interpretPH(ph);
+            document.getElementById('result').style.display = 'block';
+        }
+        
+        function interpretPH(ph) {
+            if (ph < 7.35) return 'Acidemia';
+            if (ph > 7.45) return 'Alkalemia';
+            return 'Normal pH range';
+        }
+    </script>
+</body>
+</html>
