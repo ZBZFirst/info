@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced ABG Interpreter - WIP - Need to Fix the logic</title>
+    <title>ABG Simulator</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,567 +13,336 @@
             padding: 20px;
             line-height: 1.6;
         }
-        .calculator {
-            background-color: #f5f5f5;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-        }
-        .input-group {
+        .controls {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 20px;
+        }
+        .slider-container {
+            width: 45%;
+        }
+        .slider {
+            width: 100%;
+        }
+        .results {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #graph {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: bold;
-            color: #34495e;
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .result {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 8px;
-            display: none;
-            border-left: 5px solid;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .error {
-            color: #e74c3c;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #fadbd8;
-            border-radius: 5px;
-            display: none;
-        }
-        .normal-range {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        .interpretation {
-            font-weight: bold;
-            font-size: 18px;
-            margin: 15px 0 10px;
-        }
-        .parameters {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .parameter {
-            background-color: #ecf0f1;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            flex: 1;
-            min-width: 120px;
-            margin-right: 10px;
-            text-align: center;
-        }
-        .parameter:last-child {
-            margin-right: 0;
-        }
-        .parameter-value {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        .reference {
-            margin-top: 30px;
-            font-size: 14px;
-            color: #7f8c8d;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-        .legend {
-            margin-top: 30px;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .legend h3 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-            margin-right: 10px;
-        }
-        #graph-container {
-            width: 100%;
-            height: 500px;
-            margin-top: 30px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: white;
-        }
-        .graph-controls {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .graph-note {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-top: 10px;
+        .value-display {
+            text-align: right;
+            font-size: 0.9em;
+            color: #555;
         }
     </style>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Advanced ABG Interpreter  - WIP - Need to Fix the logic</h1>
-    <p class="subtitle">Calculate blood pH and interpret acid-base disorders using the Henderson-Hasselbalch equation</p>
+    <h1>ABG Simulator</h1>
     
-    <div class="calculator">
-        <div class="input-group">
+    <div class="controls">
+        <div class="slider-container">
             <label for="paco2">PaCO₂ (mmHg):</label>
-            <input type="number" id="paco2" step="0.1" value="40" min="10" max="100">
-            <div class="normal-range">Normal range: 35 - 45 mmHg</div>
+            <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
+            <div class="value-display">Current: <span id="paco2-value">40</span></div>
         </div>
         
-        <div class="input-group">
+        <div class="slider-container">
             <label for="hco3">HCO₃⁻ (mEq/L):</label>
-            <input type="number" id="hco3" step="0.1" value="24" min="10" max="50">
-            <div class="normal-range">Normal range: 22 - 26 mEq/L</div>
-        </div>
-        
-        <button onclick="interpretABG()">Interpret ABG</button>
-        
-        <div id="error" class="error"></div>
-        
-        <div id="result" class="result">
-            <h3>Interpretation Result</h3>
-            <div class="interpretation" id="interpretation-text">-</div>
-            
-            <div class="parameters">
-                <div class="parameter">
-                    <div>Calculated pH</div>
-                    <div class="parameter-value" id="result-ph">-</div>
-                </div>
-                <div class="parameter">
-                    <div>PaCO₂</div>
-                    <div class="parameter-value" id="result-paco2">-</div>
-                </div>
-                <div class="parameter">
-                    <div>HCO₃⁻</div>
-                    <div class="parameter-value" id="result-hco3">-</div>
-                </div>
-            </div>
-            
-            <div id="additional-info" style="margin-top: 15px;"></div>
+            <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
+            <div class="value-display">Current: <span id="hco3-value">24</span></div>
         </div>
     </div>
-
-    <div id="graph-container"></div>
-    <div class="graph-controls">
-        <div>
-            <button onclick="updateGraph()">Update Graph</button>
-        </div>
-        <div class="graph-note">
-            The graph shows the relationship between PaCO₂ and HCO₃⁻ with pH isolines (Henderson-Hasselbalch equation)
-        </div>
+    
+    <div class="results">
+        <div><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></div>
+        <div><strong>Classification:</strong> <span id="classification" style="font-weight: bold;">Normal</span></div>
     </div>
-
-    <div class="legend">
-        <h3>Interpretation Legend</h3>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: green;"></div>
-            <div>Normal</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: tomato;"></div>
-            <div>Respiratory Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: darkorange;"></div>
-            <div>Metabolic Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: crimson;"></div>
-            <div>Mixed Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: gold;"></div>
-            <div>Partially Compensated Respiratory Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: orange;"></div>
-            <div>Partially Compensated Metabolic Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: blue;"></div>
-            <div>Fully Compensated Respiratory Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: purple;"></div>
-            <div>Fully Compensated Metabolic Acidosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: dodgerblue;"></div>
-            <div>Respiratory Alkalosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: deepskyblue;"></div>
-            <div>Metabolic Alkalosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: violet;"></div>
-            <div>Mixed Alkalosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: skyblue;"></div>
-            <div>Partially Compensated Respiratory Alkalosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: turquoise;"></div>
-            <div>Partially Compensated Metabolic Alkalosis</div>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: gray;"></div>
-            <div>Undefined/Complex</div>
-        </div>
-    </div>
-
-    <div class="reference">
-        <p><strong>Reference:</strong> Based on the Henderson-Hasselbalch equation and standard ABG interpretation guidelines.</p>
-    </div>
+    
+    <div id="graph"></div>
 
     <script>
-        // Global variables for graph data
-        let currentPoint = { paco2: 40, hco3: 24, ph: 7.4 };
-        let graphInitialized = false;
-
-        function interpretABG() {
-            // Get input values
-            const paco2 = parseFloat(document.getElementById('paco2').value);
-            const hco3 = parseFloat(document.getElementById('hco3').value);
-            
-            // Clear previous results and errors
-            document.getElementById('error').textContent = '';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('result').style.display = 'none';
-            
-            // Validate inputs
-            if (isNaN(paco2) || isNaN(hco3)) {
-                showError('Please enter valid numbers for all fields');
-                return;
-            }
-            
-            if (paco2 <= 10 || paco2 >= 100) {
-                showError('PaCO₂ value out of reasonable range (10-100 mmHg)');
-                return;
-            }
-            
-            if (hco3 <= 10 || hco3 >= 50) {
-                showError('HCO₃⁻ value out of reasonable range (10-50 mEq/L)');
-                return;
-            }
-            
-            // Calculate pH using Henderson-Hasselbalch equation
-            const ph = calculatePH(paco2, hco3);
-            
-            // Classify ABG
-            const [interpretation, color] = classifyABG(ph, paco2, hco3);
-            
-            // Update current point for graph
-            currentPoint = { paco2, hco3, ph };
-            
-            // Display results
-            document.getElementById('interpretation-text').textContent = interpretation;
-            document.getElementById('interpretation-text').style.color = color;
-            document.getElementById('result-ph').textContent = ph.toFixed(2);
-            document.getElementById('result-paco2').textContent = paco2.toFixed(1);
-            document.getElementById('result-hco3').textContent = hco3.toFixed(1);
-            
-            // Set border color based on interpretation
-            document.getElementById('result').style.borderLeftColor = color;
-            
-            // Show additional info for certain conditions
-            showAdditionalInfo(interpretation, ph, paco2, hco3);
-            
-            // Show result
-            document.getElementById('result').style.display = 'block';
-            
-            // Update graph if it's already initialized
-            if (graphInitialized) {
-                updateGraph();
-            } else {
-                initializeGraph();
-                graphInitialized = true;
-            }
-        }
+        // Initialize the graph
+        let graphData = {
+            pCO2Lines: [],
+            colorMap: [],
+            currentPoint: { x: 7.4, y: 24, text: "PaCO₂: 40" },
+            circlePoints: []
+        };
+        
+        // DOM elements
+        const paco2Slider = document.getElementById('paco2');
+        const hco3Slider = document.getElementById('hco3');
+        const paco2Value = document.getElementById('paco2-value');
+        const hco3Value = document.getElementById('hco3-value');
+        const phValue = document.getElementById('ph-value');
+        const classificationElement = document.getElementById('classification');
+        
+        // Event listeners
+        paco2Slider.addEventListener('input', update);
+        hco3Slider.addEventListener('input', update);
+        
+        // Initialize
+        initializeGraph();
+        update();
         
         function calculatePH(paco2, hco3) {
-            // Henderson-Hasselbalch equation: pH = 6.1 + log10(HCO3 / (0.03 * PaCO2))
-            return 6.1 + Math.log10(hco3 / (0.03 * paco2));
+            const pK = 6.1;
+            const PCO2_conversion = 0.03;
+            return pK + Math.log10(hco3 / (PCO2_conversion * paco2));
         }
         
         function classifyABG(pH, PaCO2, HCO3) {
-            // ABG Classification Function with Enhanced Color Scheme
-            if (pH < 7.35) {  // Acidic pH
-                if (PaCO2 > 45) {  // High PaCO2
-                    if (HCO3 > 26) {  // High HCO3
-                        return ["Partially Compensated Respiratory Acidosis", 'gold'];
-                    } else if (HCO3 < 22) {  // Low HCO3
-                        return ["Mixed Acidosis", 'crimson'];
-                    } else {  // Normal HCO3
-                        return ["Uncompensated Respiratory Acidosis", 'tomato'];
+            if (pH < 7.35) {
+                if (PaCO2 > 45) {
+                    if (HCO3 > 26) {
+                        return ["Partially Compensated Respiratory Acidosis", 'Yellow'];
+                    } else if (HCO3 < 22) {
+                        return ["Mixed Acidosis", 'Red'];
+                    } else {
+                        return ["Uncompensated Respiratory Acidosis", 'Orange'];
                     }
-                } else if (HCO3 < 22) {  // Low HCO3
-                    if (PaCO2 < 35) {  // Low PaCO2
-                        return ["Partially Compensated Metabolic Acidosis", 'orange'];
-                    } else {  // Normal or High PaCO2
-                        return ["Uncompensated Metabolic Acidosis", 'darkorange'];
+                } else if (HCO3 < 22) {
+                    if (PaCO2 < 35) {
+                        return ["Partially Compensated Metabolic Acidosis", 'Yellow'];
+                    } else if (PaCO2 > 45) {
+                        return ["Mixed Acidosis", 'Red'];
+                    } else {
+                        return ["Uncompensated Metabolic Acidosis", 'Orange'];
                     }
                 } else {
-                    return ["Undefined Acidosis", 'gray'];
+                    return ["Undefined", 'gray'];
                 }
-            } else if (pH >= 7.35 && pH <= 7.399) {  // Lower normal pH Range for compensation
-                if (PaCO2 > 45 && HCO3 > 26) {
-                    return ["Fully Compensated Respiratory Acidosis", 'blue'];
-                } else if (PaCO2 < 35 && HCO3 < 22) {
-                    return ["Fully Compensated Metabolic Acidosis", 'purple'];
+            } else if (pH > 7.45) {
+                if (PaCO2 < 35) {
+                    if (HCO3 < 22) {
+                        return ["Partially Compensated Respiratory Alkalosis", 'cyan'];
+                    } else if (HCO3 > 26) {
+                        return ["Mixed Alkalosis", 'Purple'];
+                    } else {
+                        return ["Uncompensated Respiratory Alkalosis", 'blue'];
+                    }
+                } else if (HCO3 > 26) {
+                    if (PaCO2 > 45) {
+                        return ["Partially Compensated Metabolic Alkalosis", 'cyan'];
+                    } else if (PaCO2 < 35) {
+                        return ["Mixed Alkalosis", 'Purple'];
+                    } else {
+                        return ["Uncompensated Metabolic Alkalosis", 'Blue'];
+                    }
                 } else {
-                    return ["Normal or Undefined", 'gray'];
+                    return ["Undefined", 'gray'];
                 }
-            } else if (pH >= 7.401 && pH <= 7.45) {  // Upper normal pH Range for compensation
-                if (PaCO2 < 35 && HCO3 < 22) {
-                    return ["Fully Compensated Respiratory Alkalosis", 'crimson'];
-                } else if (PaCO2 > 45 && HCO3 > 26) {
-                    return ["Fully Compensated Metabolic Alkalosis", 'red'];
-                } else {
-                    return ["Normal or Undefined", 'gray'];
-                }
-            } else if (pH >= 7.35 && pH <= 7.45) {  // Exact normal pH
+            } else {
                 if (35 <= PaCO2 && PaCO2 <= 45 && 22 <= HCO3 && HCO3 <= 26) {
                     return ["Normal", 'green'];
                 } else {
                     return ["Undefined", 'gray'];
                 }
-            } else if (pH > 7.45) {  // Alkaline pH
-                if (PaCO2 < 35) {  // Low PaCO2
-                    if (HCO3 < 22) {  // Low HCO3
-                        return ["Partially Compensated Respiratory Alkalosis", 'skyblue'];
-                    } else if (HCO3 > 26) {  // High HCO3
-                        return ["Mixed Alkalosis", 'violet'];
-                    } else {  // Normal HCO3
-                        return ["Uncompensated Respiratory Alkalosis", 'dodgerblue'];
-                    }
-                } else if (HCO3 > 26) {  // High HCO3
-                    if (PaCO2 > 45) {  // High PaCO2
-                        return ["Partially Compensated Metabolic Alkalosis", 'turquoise'];
-                    } else {  // Normal or Low PaCO2
-                        return ["Uncompensated Metabolic Alkalosis", 'deepskyblue'];
-                    }
-                } else {
-                    return ["Undefined Alkalosis", 'gray'];
-                }
-            } else {
-                return ["Undefined", 'gray'];
             }
         }
         
-        function showAdditionalInfo(interpretation, ph, paco2, hco3) {
-            const infoDiv = document.getElementById('additional-info');
-            infoDiv.innerHTML = '';
+        function calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3, radius=2, num_points=100) {
+            const pK = 6.1;
+            const PCO2_conversion = 0.03;
             
-            if (interpretation.includes("Respiratory Acidosis")) {
-                infoDiv.innerHTML = `
-                    <p><strong>Respiratory Acidosis:</strong> Caused by alveolar hypoventilation leading to CO₂ retention.</p>
-                    <p>Common causes: COPD, asthma, CNS depression, neuromuscular disorders.</p>
-                `;
-            } else if (interpretation.includes("Metabolic Acidosis")) {
-                infoDiv.innerHTML = `
-                    <p><strong>Metabolic Acidosis:</strong> Caused by increased acid production or decreased bicarbonate.</p>
-                    <p>Common causes: DKA, lactic acidosis, renal failure, diarrhea.</p>
-                `;
-            } else if (interpretation.includes("Respiratory Alkalosis")) {
-                infoDiv.innerHTML = `
-                    <p><strong>Respiratory Alkalosis:</strong> Caused by alveolar hyperventilation leading to CO₂ elimination.</p>
-                    <p>Common causes: anxiety, pain, fever, hypoxia, CNS disorders.</p>
-                `;
-            } else if (interpretation.includes("Metabolic Alkalosis")) {
-                infoDiv.innerHTML = `
-                    <p><strong>Metabolic Alkalosis:</strong> Caused by loss of acid or gain of bicarbonate.</p>
-                    <p>Common causes: vomiting, diuretics, hypokalemia, alkali administration.</p>
-                `;
-            } else if (interpretation.includes("Mixed")) {
-                infoDiv.innerHTML = `
-                    <p><strong>Mixed Disorder:</strong> Combination of two primary disorders.</p>
-                    <p>Requires careful clinical correlation to identify underlying causes.</p>
-                `;
-            } else if (interpretation.includes("Compensated")) {
-                infoDiv.innerHTML = `
-                    <p><strong>Compensated Disorder:</strong> The body has partially or fully responded to the primary disorder.</p>
-                    <p>pH may be near normal but other values show the underlying problem.</p>
-                `;
-            }
+            const angles = Array.from({length: num_points}, (_, i) => 2 * Math.PI * i / num_points);
+            const dHCO3_values = angles.map(angle => HCO3 + radius * Math.sin(angle));
+            const dPaCO2_values = angles.map(angle => PaCO2 + radius * Math.cos(angle));
+            
+            const pH_values = dHCO3_values.map((hco3, i) => {
+                return pK + Math.log10(hco3 / (PCO2_conversion * dPaCO2_values[i]));
+            });
+            
+            return { pH_values, hco3_values: dHCO3_values };
         }
         
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+        function createPCO2Lines() {
+            const pK = 6.1;
+            const PCO2_conversion = 0.03;
+            const lines = [];
+            
+            for (let PaCO2 = 10; PaCO2 <= 100; PaCO2 += 10) {
+                const hco3_values = Array.from({length: 100}, (_, i) => 5 + (45 * i / 99));
+                const pH_values = hco3_values.map(hco3 => pK + Math.log10(hco3 / (PaCO2 * PCO2_conversion)));
+                
+                lines.push({
+                    x: pH_values,
+                    y: hco3_values,
+                    mode: 'lines',
+                    line: { color: 'black', width: 1, dash: 'dot' },
+                    opacity: 0.5,
+                    showlegend: false,
+                    hoverinfo: 'none'
+                });
+                
+                // Add label
+                lines.push({
+                    x: [pH_values[pH_values.length - 1]],
+                    y: [hco3_values[hco3_values.length - 1]],
+                    mode: 'text',
+                    text: [PaCO2.toString()],
+                    textposition: 'top right',
+                    showlegend: false,
+                    hoverinfo: 'none'
+                });
+            }
+            
+            return lines;
+        }
+        
+        function createColorMap() {
+            const pK = 6.1;
+            const PCO2_conversion = 0.03;
+            const gridSize = 100;
+            const pHRange = { min: 6.2, max: 8.4 };
+            const HCO3Range = { min: 5, max: 50 };
+            
+            // Create grid points
+            const pHValues = Array.from({length: gridSize}, (_, i) => 
+                pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1));
+            const HCO3Values = Array.from({length: gridSize}, (_, i) => 
+                HCO3Range.min + (HCO3Range.max - HCO3Range.min) * i / (gridSize - 1));
+            
+            // Create colored rectangles
+            const rectangles = [];
+            const rectWidth = (pHRange.max - pHRange.min) / gridSize;
+            const rectHeight = (HCO3Range.max - HCO3Range.min) / gridSize;
+            
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const pH = pHValues[i];
+                    const HCO3 = HCO3Values[j];
+                    const PaCO2 = HCO3 / (Math.pow(10, pH - pK) * PCO2_conversion);
+                    
+                    const [classification, color] = classifyABG(pH, PaCO2, HCO3);
+                    
+                    rectangles.push({
+                        type: 'rect',
+                        x0: pH - rectWidth/2,
+                        x1: pH + rectWidth/2,
+                        y0: HCO3 - rectHeight/2,
+                        y1: HCO3 + rectHeight/2,
+                        fillcolor: color,
+                        opacity: 0.6,
+                        line: { width: 0 },
+                        hoverinfo: 'none'
+                    });
+                }
+            }
+            
+            return rectangles;
         }
         
         function initializeGraph() {
-            // Generate data for PaCO2 isolines
-            const pCO2Values = [20, 25, 30, 35, 40, 45, 50, 60, 70, 80];
-            const hco3Range = Array.from({length: 41}, (_, i) => i + 10); // 10 to 50 mEq/L
+            graphData.pCO2Lines = createPCO2Lines();
+            graphData.colorMap = createColorMap();
             
-            // Create traces for each PaCO2 isoline
-            const traces = pCO2Values.map(pCO2 => {
-                // For each PaCO2, calculate pH as function of HCO3: pH = 6.1 + log10(HCO3 / (0.03 * PaCO2))
-                const pHValues = hco3Range.map(hco3 => 6.1 + Math.log10(hco3 / (0.03 * pCO2)));
-                
-                return {
-                    x: hco3Range,
-                    y: pHValues,
-                    mode: 'lines',
-                    name: `PaCO₂ ${pCO2}`,
-                    line: {
-                        width: 2,
-                        color: getColorForPaCO2(pCO2)
-                    }
-                };
-            });
-            
-            // Add normal range box
-            traces.push({
-                x: [22, 22, 26, 26, 22],
-                y: [7.35, 7.45, 7.45, 7.35, 7.35],
+            // Create circle points (will be updated)
+            const circlePoints = calculatePossiblePaCO2HCO3(7.4, 40, 24);
+            graphData.circlePoints = [{
+                x: circlePoints.pH_values,
+                y: circlePoints.hco3_values,
                 mode: 'lines',
+                line: { color: 'red', width: 2 },
                 fill: 'toself',
-                name: 'Normal Range',
-                line: {
-                    color: 'green',
-                    width: 2
-                },
-                fillcolor: 'rgba(0, 128, 0, 0.1)'
-            });
+                fillcolor: 'rgba(255, 0, 0, 0.2)',
+                showlegend: false,
+                hoverinfo: 'none'
+            }];
             
-            // Add current point
-            traces.push({
-                x: [currentPoint.hco3],
-                y: [currentPoint.ph],
+            // Create current point
+            graphData.currentPoint = {
+                x: [7.4],
+                y: [24],
                 mode: 'markers',
-                name: 'Current Values',
-                marker: {
-                    size: 12,
-                    color: 'red'
-                },
-                text: [`PaCO₂: ${currentPoint.paco2.toFixed(1)}`],
-                hoverinfo: 'text'
-            });
+                marker: { size: 10, color: 'red' },
+                text: ["PaCO₂: 40"],
+                hoverinfo: 'text',
+                showlegend: false
+            };
+            
+            // Combine all traces
+            const traces = [
+                ...graphData.pCO2Lines,
+                ...graphData.circlePoints,
+                graphData.currentPoint
+            ];
             
             // Layout configuration
             const layout = {
-                title: 'Acid-Base Nomogram (HCO₃⁻ vs pH with PaCO₂ isolines)',
-                xaxis: {
-                    title: 'HCO₃⁻ (mEq/L)',
-                    range: [10, 50]
-                },
-                yaxis: {
-                    title: 'pH',
-                    range: [7.0, 7.8]
-                },
-                hovermode: 'closest',
+                title: 'ABG Simulator (pH vs HCO₃⁻ with PaCO₂ isolines)',
+                xaxis: { title: 'pH', range: [6.2, 8.4] },
+                yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
+                shapes: graphData.colorMap,
                 margin: { t: 50, b: 50, l: 50, r: 50 },
-                legend: {
-                    orientation: 'h',
-                    y: -0.3
-                },
-                annotations: [{
-                    text: 'Curved lines represent constant PaCO₂ values',
-                    x: 0.5,
-                    y: -0.4,
-                    xref: 'paper',
-                    yref: 'paper',
-                    showarrow: false,
-                    font: {
-                        size: 12
-                    }
-                }]
+                hovermode: 'closest'
             };
             
             // Create the plot
-            Plotly.newPlot('graph-container', traces, layout);
+            Plotly.newPlot('graph', traces, layout);
         }
         
-        function updateGraph() {
+        function update() {
             // Get current values
-            const paco2 = parseFloat(document.getElementById('paco2').value);
-            const hco3 = parseFloat(document.getElementById('hco3').value);
-            const ph = calculatePH(paco2, hco3);
+            const PaCO2 = parseFloat(paco2Slider.value);
+            const HCO3 = parseFloat(hco3Slider.value);
             
-            // Update the point in the graph
-            Plotly.restyle('graph-container', {
-                x: [[hco3]],
-                y: [[ph]],
-                text: [[`PaCO₂: ${paco2.toFixed(1)}`]]
-            }, [pCO2Values.length + 1]); // +1 for the normal range trace
+            // Update displayed values
+            paco2Value.textContent = PaCO2;
+            hco3Value.textContent = HCO3;
             
-            // Animate the transition
-            Plotly.animate('graph-container', {
-                data: [{x: [[hco3]], y: [[ph]]}],
-                traces: [pCO2Values.length + 1],
-                layout: {}
-            }, {
-                transition: {
-                    duration: 500,
-                    easing: 'cubic-in-out'
+            // Calculate pH
+            const pH = calculatePH(PaCO2, HCO3);
+            phValue.textContent = pH.toFixed(2);
+            
+            // Classify ABG
+            const [classification, color] = classifyABG(pH, PaCO2, HCO3);
+            classificationElement.textContent = classification;
+            classificationElement.style.color = color;
+            
+            // Calculate circle points
+            const circlePoints = calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3);
+            
+            // Update graph
+            Plotly.react('graph', [
+                ...graphData.pCO2Lines,
+                {
+                    x: circlePoints.pH_values,
+                    y: circlePoints.hco3_values,
+                    mode: 'lines',
+                    line: { color: 'red', width: 2 },
+                    fill: 'toself',
+                    fillcolor: 'rgba(255, 0, 0, 0.2)',
+                    showlegend: false,
+                    hoverinfo: 'none'
+                },
+                {
+                    x: [pH],
+                    y: [HCO3],
+                    mode: 'markers',
+                    marker: { size: 10, color: 'red' },
+                    text: [`PaCO₂: ${PaCO2}`],
+                    hoverinfo: 'text',
+                    showlegend: false
                 }
+            ], {
+                shapes: graphData.colorMap,
+                xaxis: { range: [6.2, 8.4] },
+                yaxis: { range: [5, 50] }
             });
         }
-        
-        function getColorForPaCO2(pCO2) {
-            // Return different colors for different PaCO2 ranges
-            if (pCO2 < 35) return 'rgba(30, 144, 255, 0.7)'; // Low - dodgerblue
-            if (pCO2 > 45) return 'rgba(255, 99, 71, 0.7)'; // High - tomato
-            return 'rgba(50, 205, 50, 0.7)'; // Normal - limegreen
-        }
-</script>
+    </script>
 </body>
 </html>
