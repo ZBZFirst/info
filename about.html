@@ -4,31 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Me</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* Container for all content with white background and black border */
+        .content-container {
+            background-color: white;
+            border: 2px solid black;
+            padding: 20px;
+            position: relative; /* Ensures content stays above the animation */
+            z-index: 1; /* Keeps content above the animated circle */
+        }
+        
+        /* Animated circle styling - position is controlled by CSS variables */
+        .animated-circle {
+            position: absolute;
+            --circle-top: 50%; /* Control vertical position */
+            --circle-left: 30%; /* Control horizontal position */
+            --circle-size: 100px; /* Control size */
+            
+            top: var(--circle-top);
+            left: var(--circle-left);
+            width: var(--circle-size);
+            height: var(--circle-size);
+            background-color: rgba(100, 200, 255, 0.3);
+            border-radius: 50%;
+            animation: 3s linear 1s infinite alternate slide-in;
+            z-index: 0; /* Keeps circle behind content */
+        }
+        
+        @keyframes slide-in {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(100px);
+            }
+        }
+        
+        blockquote {
+            font-style: italic;
+            border-left: 3px solid #ccc;
+            padding-left: 15px;
+            margin-left: 15px;
+        }
+        
+        hr {
+            margin: 20px 0;
+            border: 0;
+            height: 1px;
+            background: #ccc;
+        }
+        
+        .about-content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
+    <!-- Animated circle in the background -->
+    <div class="animated-circle"></div>
+    
+    <!-- All content wrapped in the container -->
+    <div class="content-container">
+        <center>
+            <h1>Who Am I?</h1>
+            <h2>The Question That Frames Everything</h2>
+            <hr width="50%">
+        </center>
 
-    <center>
-        <h1>Who Am I?</h1>
-        <h2>The Question That Frames Everything</h2>
-        <hr width="50%">
-    </center>
+        <p>Every great idea, every pursuit, and every creation begins with a single question: <b>Why?</b></p>
 
-    <p>Every great idea, every pursuit, and every creation begins with a single question: <b>Why?</b></p>
+        <blockquote>
+            "Judge a man by his questions rather than his answers." - Voltaire
+        </blockquote>
 
-    <blockquote>
-        "Judge a man by his questions rather than his answers." - Voltaire
-    </blockquote>
+        <div class="about-content">
+            <h2>About This Site</h2>
+            <p>The purpose of this page is to collect, compile and demonstrate various concepts or ideas that are based in software. All guides are a work in progress demonstrating a struggle to obtain an outcome. Most of the concepts included are medical in nature and I hope you can follow along.</p>
+        </div>
 
-    <h3>Explore Further:</h3>
-    <ul>
-        <li><a href="about.html">About This Site</a></li>
-        <li><a href="projects.html">Projects</a></li>
-    </ul>
+        <h3>Explore Further:</h3>
+        <ul>
+            <li><a href="about.html">About This Site</a></li>
+            <li><a href="projects.html">Projects</a></li>
+        </ul>
 
-    <hr>
-    <center>
-        <small>© 2025 Why? Initiative. All rights reserved.</small>
-    </center>
-
+        <hr>
+        <center>
+            <small>© 2025 Why? Initiative. All rights reserved.</small>
+        </center>
+    </div>
 </body>
 </html>
