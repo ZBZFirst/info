@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Job Search Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #16a085;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .note {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .warning {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 20px 0;
+        }
+        .step {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Automated Job Search System for California Healthcare Organizations</h1>
+    
+    <div class="note">
+        <p>This guide documents our automated job search system that scans three of California's largest healthcare organizations for job postings and compiles them into an Excel spreadsheet. It's designed to help you efficiently find job opportunities when you're ready to enter the workforce.</p>
+    </div>
+    
+    <h2>How the System Works</h2>
+    
+    <div class="step">
+        <h3>1. Target Organizations</h3>
+        <p>The system scans job postings from three major healthcare organizations in California:</p>
+        <ul>
+            <li>Kaiser Permanente</li>
+            <li>Sutter Health</li>
+            <li>Dignity Health (CommonSpirit Health)</li>
+        </ul>
+        <p>These were chosen because they are among the largest healthcare employers in the state with numerous locations and job types.</p>
+    </div>
+    
+    <div class="step">
+        <h3>2. Automated Web Scraping</h3>
+        <p>Python scripts automatically:</p>
+        <ul>
+            <li>Navigate to each organization's career page</li>
+            <li>Search for relevant job postings based on predefined criteria</li>
+            <li>Extract key information from each posting</li>
+        </ul>
+        
+        <div class="note">
+            <p>The scripts use libraries like <code>requests</code>, <code>BeautifulSoup</code>, and <code>selenium</code> to interact with websites and extract data.</p>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>3. Data Compilation</h3>
+        <p>All collected job information is compiled into a structured format with these fields:</p>
+        
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Job Title</td>
+                <td>The official title of the position</td>
+            </tr>
+            <tr>
+                <td>Organization</td>
+                <td>Which healthcare system the job is with</td>
+            </tr>
+            <tr>
+                <td>Location</td>
+                <td>City and facility where the job is based</td>
+            </tr>
+            <tr>
+                <td>Department</td>
+                <td>Which department the position is in</td>
+            </tr>
+            <tr>
+                <td>Job ID</td>
+                <td>The organization's internal job reference number</td>
+            </tr>
+            <tr>
+                <td>Posting Date</td>
+                <td>When the job was posted</td>
+            </tr>
+            <tr>
+                <td>Closing Date</td>
+                <td>Application deadline (if available)</td>
+            </tr>
+            <tr>
+                <td>Job URL</td>
+                <td>Direct link to the full job posting</td>
+            </tr>
+            <tr>
+                <td>Salary Range</td>
+                <td>If disclosed by the employer</td>
+            </tr>
+            <tr>
+                <td>Job Type</td>
+                <td>Full-time, Part-time, Per Diem, etc.</td>
+            </tr>
+            <tr>
+                <td>Shift</td>
+                <td>Day, Evening, Night, Rotating, etc.</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="step">
+        <h3>4. Excel File Generation</h3>
+        <p>The final output is an Excel spreadsheet (<code>.xlsx</code>) with:</p>
+        <ul>
+            <li>One worksheet per organization</li>
+            <li>All jobs sorted by posting date (newest first)</li>
+            <li>Hyperlinks to each job posting</li>
+            <li>Conditional formatting to highlight new postings</li>
+        </ul>
+        
+        <div class="note">
+            <p>The script uses the <code>openpyxl</code> or <code>pandas</code> library to create professional-looking Excel files with proper formatting.</p>
+        </div>
+    </div>
+    
+    <h2>How to Use the System</h2>
+    
+    <div class="step">
+        <h3>1. Prerequisites</h3>
+        <p>Before running the scripts, you'll need:</p>
+        <ul>
+            <li>Python 3.x installed</li>
+            <li>Required Python libraries (install with pip)</li>
+        </ul>
+        
+        <pre><code>pip install requests beautifulsoup4 selenium openpyxl pandas</code></pre>
+        
+        <div class="warning">
+            <p>For Selenium, you'll also need the appropriate web driver (ChromeDriver for Chrome, GeckoDriver for Firefox) installed and in your system PATH.</p>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>2. Running the Scripts</h3>
+        <p>The main script is run from the command line:</p>
+        
+        <pre><code>python healthcare_job_scraper.py</code></pre>
+        
+        <p>Optional arguments:</p>
+        <ul>
+            <li><code>--location "San Francisco"</code> - Filter by specific city/region</li>
+            <li><code>--department "Nursing"</code> - Filter by department</li>
+            <li><code>--job-type "Full-time"</code> - Filter by employment type</li>
+            <li><code>--output "jobs.xlsx"</code> - Specify output filename</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h3>3. Reviewing Results</h3>
+        <p>After running the script:</p>
+        <ol>
+            <li>Open the generated Excel file</li>
+            <li>Review jobs in each organization's tab</li>
+            <li>Use Excel's filter and sort functions to narrow down</li>
+            <li>Click on job titles or URLs to view full postings</li>
+        </ol>
+        
+        <div class="note">
+            <p>The spreadsheet includes a "Last Checked" timestamp so you can track when new postings appear between runs.</p>
+        </div>
+    </div>
+    
+    <h2>Why This Approach is Effective</h2>
+    
+    <div class="step">
+        <h3>Time Efficiency</h3>
+        <p>Manually checking multiple career sites is time-consuming. This system:</p>
+        <ul>
+            <li>Checks all three organizations simultaneously</li>
+            <li>Processes results in minutes instead of hours</li>
+            <li>Ensures you don't miss new postings</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h3>Comprehensive Coverage</h3>
+        <p>The automated search:</p>
+        <ul>
+            <li>Finds jobs you might miss in manual searches</li>
+            <li>Captures all relevant details in one place</li>
+            <li>Can be expanded to include more organizations</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h3>Customizable Filters</h3>
+        <p>You can easily modify the scripts to:</p>
+        <ul>
+            <li>Add new search criteria (experience level, education requirements)</li>
+            <li>Include additional organizations</li>
+            <li>Change how results are sorted and presented</li>
+        </ul>
+    </div>
+    
+    <h2>Tips for Job Searching</h2>
+    
+    <div class="note">
+        <h3>1. Check Regularly</h3>
+        <p>Run the script weekly to catch new postings early. Many healthcare organizations hire on a rolling basis.</p>
+    </div>
+    
+    <div class="note">
+        <h3>2. Tailor Your Search</h3>
+        <p>Modify the script parameters to focus on:</p>
+        <ul>
+            <li>Specific roles you're qualified for</li>
+            <li>Locations you can commute to</li>
+            <li>Departments that match your skills</li>
+        </ul>
+    </div>
+    
+    <div class="note">
+        <h3>3. Track Applications</h3>
+        <p>Add columns to the Excel file to track:</p>
+        <ul>
+            <li>When you applied</li>
+            <li>Application status</li>
+            <li>Follow-up dates</li>
+            <li>Interview schedules</li>
+        </ul>
+    </div>
+    
+    <h2>Sample Python Code Structure</h2>
+    
+    <p>Here's a simplified version of what the main script might look like:</p>
+    
+    <pre><code>import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+from datetime import datetime
+
+def scrape_kaiser_jobs(location=None):
+    """Scrape job postings from Kaiser Permanente"""
+    jobs = []
+    base_url = "https://jobs.kaiserpermanente.org"
+    search_url = f"{base_url}/search-jobs/results"
+    
+    params = {
+        'Location': location or 'California',
+        'Radius': 50
+    }
+    
+    response = requests.get(search_url, params=params)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    for job in soup.select('.job-list-item'):
+        title = job.select_one('.job-title a').text.strip()
+        job_url = base_url + job.select_one('.job-title a')['href']
+        location = job.select_one('.job-location').text.strip()
+        department = job.select_one('.job-department').text.strip()
+        date = job.select_one('.job-date').text.strip()
+        
+        jobs.append({
+            'Title': title,
+            'Organization': 'Kaiser Permanente',
+            'Location': location,
+            'Department': department,
+            'Posting Date': date,
+            'URL': job_url
+        })
+    
+    return jobs
+
+def save_to_excel(jobs, filename='healthcare_jobs.xlsx'):
+    """Save collected jobs to Excel file"""
+    df = pd.DataFrame(jobs)
+    df['Date Collected'] = datetime.now().strftime('%Y-%m-%d %H:%M')
+    
+    with pd.ExcelWriter(filename) as writer:
+        for org in df['Organization'].unique():
+            org_df = df[df['Organization'] == org]
+            org_df.to_excel(writer, sheet_name=org[:31], index=False)
+
+if __name__ == '__main__':
+    all_jobs = []
+    all_jobs.extend(scrape_kaiser_jobs())
+    # Add calls to other organization scrapers here
+    
+    save_to_excel(all_jobs)
+    print(f"Saved {len(all_jobs)} jobs to healthcare_jobs.xlsx")</code></pre>
+    
+    <div class="warning">
+        <p>Note: This is a simplified example. The actual scripts need to handle pagination, error handling, and may require more complex navigation for some sites.</p>
+    </div>
+    
+    <h2>Final Advice</h2>
+    
+    <p>Remember that while this system helps you find opportunities, the application process still requires:</p>
+    <ul>
+        <li>A well-prepared resume tailored to healthcare positions</li>
+        <li>Thoughtful cover letters that address each job's requirements</li>
+        <li>Professional follow-up after applying</li>
+        <li>Preparation for interviews specific to healthcare roles</li>
+    </ul>
+    
+    <p>This automated search is just the first step in a successful job search strategy. Use the time you save to focus on preparing strong applications.</p>
+    
+    <footer>
+        <p>Last updated: <span id="current-date"></span></p>
+    </footer>
+    
+    <script>
+        // Add current date to footer
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric'
+        });
+    </script>
+</body>
+</html>
