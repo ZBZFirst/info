@@ -3,121 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABG pH Calculator</title>
+    <title>Advanced ABG Interpreter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            line-height: 1.6;
         }
         .calculator {
             background-color: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
         }
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
+            color: #34495e;
         }
         input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 5px;
             box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
             font-size: 16px;
         }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
         button:hover {
-            background-color: #45a049;
+            background-color: #2980b9;
         }
         .result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e8f5e9;
-            border-radius: 4px;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
             display: none;
+            border-left: 5px solid;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .error {
-            color: #d32f2f;
-            margin-top: 10px;
+            color: #e74c3c;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fadbd8;
+            border-radius: 5px;
+            display: none;
+        }
+        .normal-range {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .interpretation {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 15px 0 10px;
+        }
+        .parameters {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .parameter {
+            background-color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            flex: 1;
+            min-width: 120px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .parameter:last-child {
+            margin-right: 0;
+        }
+        .parameter-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .reference {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .legend {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>ABG pH Calculator</h1>
-    <p>Calculate blood pH using the Henderson-Hasselbalch equation</p>
+    <h1>Advanced ABG Interpreter</h1>
+    <p class="subtitle">Calculate blood pH and interpret acid-base disorders using the Henderson-Hasselbalch equation</p>
     
     <div class="calculator">
         <div class="input-group">
+            <label for="ph">pH:</label>
+            <input type="number" id="ph" step="0.01" placeholder="7.40" min="6.8" max="7.8">
+            <div class="normal-range">Normal range: 7.35 - 7.45</div>
+        </div>
+        
+        <div class="input-group">
             <label for="paco2">PaCO₂ (mmHg):</label>
-            <input type="number" id="paco2" step="0.1" placeholder="40">
+            <input type="number" id="paco2" step="0.1" placeholder="40" min="10" max="100">
+            <div class="normal-range">Normal range: 35 - 45 mmHg</div>
         </div>
         
         <div class="input-group">
             <label for="hco3">HCO₃⁻ (mEq/L):</label>
-            <input type="number" id="hco3" step="0.1" placeholder="24">
+            <input type="number" id="hco3" step="0.1" placeholder="24" min="10" max="50">
+            <div class="normal-range">Normal range: 22 - 26 mEq/L</div>
         </div>
         
-        <button onclick="calculatePH()">Calculate pH</button>
+        <button onclick="interpretABG()">Interpret ABG</button>
         
         <div id="error" class="error"></div>
         
         <div id="result" class="result">
-            <h3>Result</h3>
-            <p>Calculated pH: <span id="ph-value">-</span></p>
-            <p>Interpretation: <span id="interpretation">-</span></p>
+            <h3>Interpretation Result</h3>
+            <div class="interpretation" id="interpretation-text">-</div>
+            
+            <div class="parameters">
+                <div class="parameter">
+                    <div>pH</div>
+                    <div class="parameter-value" id="result-ph">-</div>
+                </div>
+                <div class="parameter">
+                    <div>PaCO₂</div>
+                    <div class="parameter-value" id="result-paco2">-</div>
+                </div>
+                <div class="parameter">
+                    <div>HCO₃⁻</div>
+                    <div class="parameter-value" id="result-hco3">-</div>
+                </div>
+            </div>
+            
+            <div id="additional-info" style="margin-top: 15px;"></div>
         </div>
     </div>
 
+    <div class="legend">
+        <h3>Interpretation Legend</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: green;"></div>
+            <div>Normal</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: tomato;"></div>
+            <div>Respiratory Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: darkorange;"></div>
+            <div>Metabolic Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: crimson;"></div>
+            <div>Mixed Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: gold;"></div>
+            <div>Partially Compensated Respiratory Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: orange;"></div>
+            <div>Partially Compensated Metabolic Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: blue;"></div>
+            <div>Fully Compensated Respiratory Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: purple;"></div>
+            <div>Fully Compensated Metabolic Acidosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: dodgerblue;"></div>
+            <div>Respiratory Alkalosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: deepskyblue;"></div>
+            <div>Metabolic Alkalosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: violet;"></div>
+            <div>Mixed Alkalosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: skyblue;"></div>
+            <div>Partially Compensated Respiratory Alkalosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: turquoise;"></div>
+            <div>Partially Compensated Metabolic Alkalosis</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: gray;"></div>
+            <div>Undefined/Complex</div>
+        </div>
+    </div>
+
+    <div class="reference">
+        <p><strong>Reference:</strong> Based on the Henderson-Hasselbalch equation and standard ABG interpretation guidelines.</p>
+    </div>
+
     <script>
-        function calculatePH() {
+        function interpretABG() {
             // Get input values
+            const ph = parseFloat(document.getElementById('ph').value);
             const paco2 = parseFloat(document.getElementById('paco2').value);
             const hco3 = parseFloat(document.getElementById('hco3').value);
             
             // Clear previous results and errors
             document.getElementById('error').textContent = '';
+            document.getElementById('error').style.display = 'none';
             document.getElementById('result').style.display = 'none';
             
             // Validate inputs
-            if (isNaN(paco2) || isNaN(hco3)) {
-                document.getElementById('error').textContent = 'Please enter valid numbers for both fields';
+            if (isNaN(ph) || isNaN(paco2) || isNaN(hco3)) {
+                showError('Please enter valid numbers for all fields');
                 return;
             }
             
-            if (paco2 <= 0 || hco3 <= 0) {
-                document.getElementById('error').textContent = 'PaCO2 and HCO3 must be greater than zero';
+            if (ph <= 6.8 || ph >= 7.8) {
+                showError('pH value out of reasonable range (6.8-7.8)');
                 return;
             }
             
-            // Calculate pH using Henderson-Hasselbalch equation
-            const ph = 6.1 + Math.log10(hco3 / (0.03 * paco2));
+            if (paco2 <= 10 || paco2 >= 100) {
+                showError('PaCO₂ value out of reasonable range (10-100 mmHg)');
+                return;
+            }
             
-            // Display result
-            document.getElementById('ph-value').textContent = ph.toFixed(2);
-            document.getElementById('interpretation').textContent = interpretPH(ph);
+            if (hco3 <= 10 || hco3 >= 50) {
+                showError('HCO₃⁻ value out of reasonable range (10-50 mEq/L)');
+                return;
+            }
+            
+            // Classify ABG
+            const [interpretation, color] = classifyABG(ph, paco2, hco3);
+            
+            // Display results
+            document.getElementById('interpretation-text').textContent = interpretation;
+            document.getElementById('interpretation-text').style.color = color;
+            document.getElementById('result-ph').textContent = ph.toFixed(2);
+            document.getElementById('result-paco2').textContent = paco2.toFixed(1);
+            document.getElementById('result-hco3').textContent = hco3.toFixed(1);
+            
+            // Set border color based on interpretation
+            document.getElementById('result').style.borderLeftColor = color;
+            
+            // Show additional info for certain conditions
+            showAdditionalInfo(interpretation, ph, paco2, hco3);
+            
+            // Show result
             document.getElementById('result').style.display = 'block';
         }
         
-        function interpretPH(ph) {
-            if (ph < 7.35) return 'Acidemia';
-            if (ph > 7.45) return 'Alkalemia';
-            return 'Normal pH range';
+        function classifyABG(pH, PaCO2, HCO3) {
+            // ABG Classification Function with Enhanced Color Scheme
+            if (pH < 7.35) {  // Acidic pH
+                if (PaCO2 > 45) {  // High PaCO2
+                    if (HCO3 > 26) {  // High HCO3
+                        return ["Partially Compensated Respiratory Acidosis", 'gold'];
+                    } else if (HCO3 < 22) {  // Low HCO3
+                        return ["Mixed Acidosis", 'crimson'];
+                    } else {  // Normal HCO3
+                        return ["Uncompensated Respiratory Acidosis", 'tomato'];
+                    }
+                } else if (HCO3 < 22) {  // Low HCO3
+                    if (PaCO2 < 35) {  // Low PaCO2
+                        return ["Partially Compensated Metabolic Acidosis", 'orange'];
+                    } else {  // Normal or High PaCO2
+                        return ["Uncompensated Metabolic Acidosis", 'darkorange'];
+                    }
+                } else {
+                    return ["Undefined Acidosis", 'gray'];
+                }
+            } else if (7.35 <= pH <= 7.399) {  // Lower normal pH Range for compensation
+                if (PaCO2 > 45 && HCO3 > 26) {
+                    return ["Fully Compensated Respiratory Acidosis", 'blue'];
+                } else if (PaCO2 < 35 && HCO3 < 22) {
+                    return ["Fully Compensated Metabolic Acidosis", 'purple'];
+                } else {
+                    return ["Normal or Undefined", 'gray'];
+                }
+            } else if (7.401 <= pH <= 7.45) {  // Upper normal pH Range for compensation
+                if (PaCO2 < 35 && HCO3 < 22) {
+                    return ["Fully Compensated Respiratory Alkalosis", 'crimson'];
+                } else if (PaCO2 > 45 && HCO3 > 26) {
+                    return ["Fully Compensated Metabolic Alkalosis", 'red'];
+                } else {
+                    return ["Normal or Undefined", 'gray'];
+                }
+            } else if (7.35 <= pH <= 7.45) {  // Exact normal pH
+                if (35 <= PaCO2 <= 45 && 22 <= HCO3 <= 26) {
+                    return ["Normal", 'green'];
+                } else {
+                    return ["Undefined", 'gray'];
+                }
+            } else if (pH > 7.45) {  // Alkaline pH
+                if (PaCO2 < 35) {  // Low PaCO2
+                    if (HCO3 < 22) {  // Low HCO3
+                        return ["Partially Compensated Respiratory Alkalosis", 'skyblue'];
+                    } else if (HCO3 > 26) {  // High HCO3
+                        return ["Mixed Alkalosis", 'violet'];
+                    } else {  // Normal HCO3
+                        return ["Uncompensated Respiratory Alkalosis", 'dodgerblue'];
+                    }
+                } else if (HCO3 > 26) {  // High HCO3
+                    if (PaCO2 > 45) {  // High PaCO2
+                        return ["Partially Compensated Metabolic Alkalosis", 'turquoise'];
+                    } else {  // Normal or Low PaCO2
+                        return ["Uncompensated Metabolic Alkalosis", 'deepskyblue'];
+                    }
+                } else {
+                    return ["Undefined Alkalosis", 'gray'];
+                }
+            } else {
+                return ["Undefined", 'gray'];
+            }
         }
+        
+        function showAdditionalInfo(interpretation, ph, paco2, hco3) {
+            const infoDiv = document.getElementById('additional-info');
+            infoDiv.innerHTML = '';
+            
+            if (interpretation.includes("Respiratory Acidosis")) {
+                infoDiv.innerHTML = `
+                    <p><strong>Respiratory Acidosis:</strong> Caused by alveolar hypoventilation leading to CO₂ retention.</p>
+                    <p>Common causes: COPD, asthma, CNS depression, neuromuscular disorders.</p>
+                `;
+            } else if (interpretation.includes("Metabolic Acidosis")) {
+                infoDiv.innerHTML = `
+                    <p><strong>Metabolic Acidosis:</strong> Caused by increased acid production or decreased bicarbonate.</p>
+                    <p>Common causes: DKA, lactic acidosis, renal failure, diarrhea.</p>
+                `;
+            } else if (interpretation.includes("Respiratory Alkalosis")) {
+                infoDiv.innerHTML = `
+                    <p><strong>Respiratory Alkalosis:</strong> Caused by alveolar hyperventilation leading to CO₂ elimination.</p>
+                    <p>Common causes: anxiety, pain, fever, hypoxia, CNS disorders.</p>
+                `;
+            } else if (interpretation.includes("Metabolic Alkalosis")) {
+                infoDiv.innerHTML = `
+                    <p><strong>Metabolic Alkalosis:</strong> Caused by loss of acid or gain of bicarbonate.</p>
+                    <p>Common causes: vomiting, diuretics, hypokalemia, alkali administration.</p>
+                `;
+            } else if (interpretation.includes("Mixed")) {
+                infoDiv.innerHTML = `
+                    <p><strong>Mixed Disorder:</strong> Combination of two primary disorders.</p>
+                    <p>Requires careful clinical correlation to identify underlying causes.</p>
+                `;
+            } else if (interpretation.includes("Compensated")) {
+                infoDiv.innerHTML = `
+                    <p><strong>Compensated Disorder:</strong> The body has partially or fully responded to the primary disorder.</p>
+                    <p>pH may be near normal but other values show the underlying problem.</p>
+                `;
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Fix for the JavaScript comparison issue
+        function fixComparison() {
+            // In JavaScript, 7.35 <= pH <= 7.399 doesn't work as in Python
+            // So we'll modify the classifyABG function to use proper comparisons
+            const originalClassifyABG = classifyABG;
+            
+            classifyABG = function(pH, PaCO2, HCO3) {
+                // Fix the range comparisons
+                if (pH < 7.35) {
+                    return originalClassifyABG(pH, PaCO2, HCO3);
+                } else if (pH >= 7.35 && pH <= 7.399) {
+                    if (PaCO2 > 45 && HCO3 > 26) {
+                        return ["Fully Compensated Respiratory Acidosis", 'blue'];
+                    } else if (PaCO2 < 35 && HCO3 < 22) {
+                        return ["Fully Compensated Metabolic Acidosis", 'purple'];
+                    } else {
+                        return ["Normal or Undefined", 'gray'];
+                    }
+                } else if (pH >= 7.401 && pH <= 7.45) {
+                    if (PaCO2 < 35 && HCO3 < 22) {
+                        return ["Fully Compensated Respiratory Alkalosis", 'crimson'];
+                    } else if (PaCO2 > 45 && HCO3 > 26) {
+                        return ["Fully Compensated Metabolic Alkalosis", 'red'];
+                    } else {
+                        return ["Normal or Undefined", 'gray'];
+                    }
+                } else if (pH > 7.45) {
+                    return originalClassifyABG(pH, PaCO2, HCO3);
+                } else {
+                    return ["Undefined", 'gray'];
+                }
+            };
+        }
+        
+        // Apply the fix
+        fixComparison();
     </script>
 </body>
 </html>
