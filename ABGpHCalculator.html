@@ -90,8 +90,17 @@
         const classificationElement = document.getElementById('classification');
         
         // Event listeners
-        paco2Slider.addEventListener('input', update);
-        hco3Slider.addEventListener('input', update);
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+        
+        paco2Slider.addEventListener('input', debounce(update, 50));
+        hco3Slider.addEventListener('input', debounce(update, 50));
         
         // Initialize
         initializeGraph();
@@ -153,7 +162,7 @@
             }
         }
         
-        function calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3, radius=2, num_points=100) {
+        function calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3, radius=2, num_points=20) {
             const pK = 6.1;
             const PCO2_conversion = 0.03;
             
@@ -203,46 +212,62 @@
         }
         
         function createColorMap() {
-            const pK = 6.1;
-            const PCO2_conversion = 0.03;
-            const gridSize = 100;
+            // Reduce grid size - 50x50 is usually sufficient for visualization
+            const gridSize = 50;
             const pHRange = { min: 6.2, max: 8.4 };
             const HCO3Range = { min: 5, max: 50 };
             
-            // Create grid points
-            const pHValues = Array.from({length: gridSize}, (_, i) => 
-                pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1));
-            const HCO3Values = Array.from({length: gridSize}, (_, i) => 
-                HCO3Range.min + (HCO3Range.max - HCO3Range.min) * i / (gridSize - 1));
+            // Create a single heatmap instead of individual rectangles
+            const z = [];
+            const pHValues = [];
+            const HCO3Values = [];
             
-            // Create colored rectangles
-            const rectangles = [];
-            const rectWidth = (pHRange.max - pHRange.min) / gridSize;
-            const rectHeight = (HCO3Range.max - HCO3Range.min) / gridSize;
+            // Color mapping
+            const colorMap = {
+                'Normal': 'green',
+                'Uncompensated Respiratory Acidosis': 'orange',
+                'Partially Compensated Respiratory Acidosis': 'yellow',
+                'Mixed Acidosis': 'red',
+                'Uncompensated Metabolic Acidosis': 'orange',
+                'Partially Compensated Metabolic Acidosis': 'yellow',
+                'Uncompensated Respiratory Alkalosis': 'blue',
+                'Partially Compensated Respiratory Alkalosis': 'cyan',
+                'Mixed Alkalosis': 'purple',
+                'Uncompensated Metabolic Alkalosis': 'blue',
+                'Partially Compensated Metabolic Alkalosis': 'cyan',
+                'Undefined': 'gray'
+            };
             
             for (let i = 0; i < gridSize; i++) {
+                const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
+                pHValues.push(pH);
+                const row = [];
+                
                 for (let j = 0; j < gridSize; j++) {
-                    const pH = pHValues[i];
-                    const HCO3 = HCO3Values[j];
-                    const PaCO2 = HCO3 / (Math.pow(10, pH - pK) * PCO2_conversion);
+                    const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
+                    if (i === 0) HCO3Values.push(HCO3);
                     
-                    const [classification, color] = classifyABG(pH, PaCO2, HCO3);
-                    
-                    rectangles.push({
-                        type: 'rect',
-                        x0: pH - rectWidth/2,
-                        x1: pH + rectWidth/2,
-                        y0: HCO3 - rectHeight/2,
-                        y1: HCO3 + rectHeight/2,
-                        fillcolor: color,
-                        opacity: 0.6,
-                        line: { width: 0 },
-                        hoverinfo: 'none'
-                    });
+                    const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
+                    const [classification] = classifyABG(pH, PaCO2, HCO3);
+                    row.push(colorMap[classification]);
                 }
+                z.push(row);
             }
             
-            return rectangles;
+            return [{
+                x: pHValues,
+                y: HCO3Values,
+                z: z,
+                type: 'heatmap',
+                colorscale: [
+                    [0, 'green'], [0.1, 'orange'], [0.2, 'yellow'], 
+                    [0.3, 'red'], [0.4, 'blue'], [0.5, 'cyan'],
+                    [0.6, 'purple'], [0.7, 'gray']
+                ],
+                showscale: false,
+                hoverinfo: 'none',
+                opacity: 0.6
+            }];
         }
         
         function initializeGraph() {
@@ -298,49 +323,52 @@
             // Get current values
             const PaCO2 = parseFloat(paco2Slider.value);
             const HCO3 = parseFloat(hco3Slider.value);
-            
+        
             // Update displayed values
             paco2Value.textContent = PaCO2;
             hco3Value.textContent = HCO3;
-            
+        
             // Calculate pH
             const pH = calculatePH(PaCO2, HCO3);
             phValue.textContent = pH.toFixed(2);
-            
+        
             // Classify ABG
             const [classification, color] = classifyABG(pH, PaCO2, HCO3);
             classificationElement.textContent = classification;
             classificationElement.style.color = color;
-            
+        
             // Calculate circle points
             const circlePoints = calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3);
-            
-            // Update graph
-            Plotly.react('graph', [
-                ...graphData.pCO2Lines,
-                {
-                    x: circlePoints.pH_values,
-                    y: circlePoints.hco3_values,
-                    mode: 'lines',
-                    line: { color: 'red', width: 2 },
-                    fill: 'toself',
-                    fillcolor: 'rgba(255, 0, 0, 0.2)',
-                    showlegend: false,
-                    hoverinfo: 'none'
-                },
-                {
-                    x: [pH],
-                    y: [HCO3],
-                    mode: 'markers',
-                    marker: { size: 10, color: 'red' },
-                    text: [`PaCO₂: ${PaCO2}`],
-                    hoverinfo: 'text',
-                    showlegend: false
+        
+            // Only update the traces that need changing (not the entire plot)
+            Plotly.react('graph', {
+                data: [
+                    graphData.pCO2Lines[0], // First trace (heatmap)
+                    ...graphData.pCO2Lines.slice(1), // Other traces
+                    {
+                        x: circlePoints.pH_values,
+                        y: circlePoints.hco3_values,
+                        mode: 'lines',
+                        line: { color: 'red', width: 2 },
+                        fill: 'toself',
+                        fillcolor: 'rgba(255, 0, 0, 0.2)',
+                        showlegend: false,
+                        hoverinfo: 'none'
+                    },
+                    {
+                        x: [pH],
+                        y: [HCO3],
+                        mode: 'markers',
+                        marker: { size: 10, color: 'red' },
+                        text: [`PaCO₂: ${PaCO2}`],
+                        hoverinfo: 'text',
+                        showlegend: false
+                    }
+                ],
+                layout: {
+                    xaxis: { range: [6.2, 8.4] },
+                    yaxis: { range: [5, 50] }
                 }
-            ], {
-                shapes: graphData.colorMap,
-                xaxis: { range: [6.2, 8.4] },
-                yaxis: { range: [5, 50] }
             });
         }
     </script>
