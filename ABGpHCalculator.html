@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
@@ -17,6 +17,7 @@
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         h1 {
             color: #2c3e50;
@@ -139,7 +140,26 @@
             border-radius: 3px;
             margin-right: 10px;
         }
+        #graph-container {
+            width: 100%;
+            height: 500px;
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+        }
+        .graph-controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .graph-note {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
     </style>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <h1>Advanced ABG Interpreter</h1>
@@ -147,20 +167,14 @@
     
     <div class="calculator">
         <div class="input-group">
-            <label for="ph">pH:</label>
-            <input type="number" id="ph" step="0.01" placeholder="7.40" min="6.8" max="7.8">
-            <div class="normal-range">Normal range: 7.35 - 7.45</div>
-        </div>
-        
-        <div class="input-group">
             <label for="paco2">PaCO₂ (mmHg):</label>
-            <input type="number" id="paco2" step="0.1" placeholder="40" min="10" max="100">
+            <input type="number" id="paco2" step="0.1" value="40" min="10" max="100">
             <div class="normal-range">Normal range: 35 - 45 mmHg</div>
         </div>
         
         <div class="input-group">
             <label for="hco3">HCO₃⁻ (mEq/L):</label>
-            <input type="number" id="hco3" step="0.1" placeholder="24" min="10" max="50">
+            <input type="number" id="hco3" step="0.1" value="24" min="10" max="50">
             <div class="normal-range">Normal range: 22 - 26 mEq/L</div>
         </div>
         
@@ -174,7 +188,7 @@
             
             <div class="parameters">
                 <div class="parameter">
-                    <div>pH</div>
+                    <div>Calculated pH</div>
                     <div class="parameter-value" id="result-ph">-</div>
                 </div>
                 <div class="parameter">
@@ -188,6 +202,16 @@
             </div>
             
             <div id="additional-info" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <div id="graph-container"></div>
+    <div class="graph-controls">
+        <div>
+            <button onclick="updateGraph()">Update Graph</button>
+        </div>
+        <div class="graph-note">
+            The graph shows the relationship between PaCO₂ and HCO₃⁻ with pH isolines (Henderson-Hasselbalch equation)
         </div>
     </div>
 
@@ -256,9 +280,12 @@
     </div>
 
     <script>
+        // Global variables for graph data
+        let currentPoint = { paco2: 40, hco3: 24, ph: 7.4 };
+        let graphInitialized = false;
+
         function interpretABG() {
             // Get input values
-            const ph = parseFloat(document.getElementById('ph').value);
             const paco2 = parseFloat(document.getElementById('paco2').value);
             const hco3 = parseFloat(document.getElementById('hco3').value);
             
@@ -268,13 +295,8 @@
             document.getElementById('result').style.display = 'none';
             
             // Validate inputs
-            if (isNaN(ph) || isNaN(paco2) || isNaN(hco3)) {
+            if (isNaN(paco2) || isNaN(hco3)) {
                 showError('Please enter valid numbers for all fields');
-                return;
-            }
-            
-            if (ph <= 6.8 || ph >= 7.8) {
-                showError('pH value out of reasonable range (6.8-7.8)');
                 return;
             }
             
@@ -288,8 +310,14 @@
                 return;
             }
             
+            // Calculate pH using Henderson-Hasselbalch equation
+            const ph = calculatePH(paco2, hco3);
+            
             // Classify ABG
             const [interpretation, color] = classifyABG(ph, paco2, hco3);
+            
+            // Update current point for graph
+            currentPoint = { paco2, hco3, ph };
             
             // Display results
             document.getElementById('interpretation-text').textContent = interpretation;
@@ -306,6 +334,19 @@
             
             // Show result
             document.getElementById('result').style.display = 'block';
+            
+            // Update graph if it's already initialized
+            if (graphInitialized) {
+                updateGraph();
+            } else {
+                initializeGraph();
+                graphInitialized = true;
+            }
+        }
+        
+        function calculatePH(paco2, hco3) {
+            // Henderson-Hasselbalch equation: pH = 6.1 + log10(HCO3 / (0.03 * PaCO2))
+            return 6.1 + Math.log10(hco3 / (0.03 * paco2));
         }
         
         function classifyABG(pH, PaCO2, HCO3) {
@@ -328,7 +369,7 @@
                 } else {
                     return ["Undefined Acidosis", 'gray'];
                 }
-            } else if (7.35 <= pH <= 7.399) {  // Lower normal pH Range for compensation
+            } else if (pH >= 7.35 && pH <= 7.399) {  // Lower normal pH Range for compensation
                 if (PaCO2 > 45 && HCO3 > 26) {
                     return ["Fully Compensated Respiratory Acidosis", 'blue'];
                 } else if (PaCO2 < 35 && HCO3 < 22) {
@@ -336,7 +377,7 @@
                 } else {
                     return ["Normal or Undefined", 'gray'];
                 }
-            } else if (7.401 <= pH <= 7.45) {  // Upper normal pH Range for compensation
+            } else if (pH >= 7.401 && pH <= 7.45) {  // Upper normal pH Range for compensation
                 if (PaCO2 < 35 && HCO3 < 22) {
                     return ["Fully Compensated Respiratory Alkalosis", 'crimson'];
                 } else if (PaCO2 > 45 && HCO3 > 26) {
@@ -344,8 +385,8 @@
                 } else {
                     return ["Normal or Undefined", 'gray'];
                 }
-            } else if (7.35 <= pH <= 7.45) {  // Exact normal pH
-                if (35 <= PaCO2 <= 45 && 22 <= HCO3 <= 26) {
+            } else if (pH >= 7.35 && pH <= 7.45) {  // Exact normal pH
+                if (35 <= PaCO2 && PaCO2 <= 45 && 22 <= HCO3 && HCO3 <= 26) {
                     return ["Normal", 'green'];
                 } else {
                     return ["Undefined", 'gray'];
@@ -416,42 +457,117 @@
             errorDiv.style.display = 'block';
         }
         
-        // Fix for the JavaScript comparison issue
-        function fixComparison() {
-            // In JavaScript, 7.35 <= pH <= 7.399 doesn't work as in Python
-            // So we'll modify the classifyABG function to use proper comparisons
-            const originalClassifyABG = classifyABG;
+        function initializeGraph() {
+            // Generate data for pH isolines
+            const pHValues = [7.0, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7];
+            const paco2Range = Array.from({length: 91}, (_, i) => i + 10); // 10 to 100
+            const hco3Range = Array.from({length: 41}, (_, i) => i + 10); // 10 to 50
             
-            classifyABG = function(pH, PaCO2, HCO3) {
-                // Fix the range comparisons
-                if (pH < 7.35) {
-                    return originalClassifyABG(pH, PaCO2, HCO3);
-                } else if (pH >= 7.35 && pH <= 7.399) {
-                    if (PaCO2 > 45 && HCO3 > 26) {
-                        return ["Fully Compensated Respiratory Acidosis", 'blue'];
-                    } else if (PaCO2 < 35 && HCO3 < 22) {
-                        return ["Fully Compensated Metabolic Acidosis", 'purple'];
-                    } else {
-                        return ["Normal or Undefined", 'gray'];
+            // Create traces for each pH isoline
+            const traces = pHValues.map(pH => {
+                // For each pH, calculate HCO3 as function of PaCO2: HCO3 = 0.03 * PaCO2 * 10^(pH - 6.1)
+                const hco3Values = paco2Range.map(paco2 => 0.03 * paco2 * Math.pow(10, pH - 6.1));
+                
+                return {
+                    x: paco2Range,
+                    y: hco3Values,
+                    mode: 'lines',
+                    name: `pH ${pH}`,
+                    line: {
+                        width: 2,
+                        color: getColorForPH(pH)
                     }
-                } else if (pH >= 7.401 && pH <= 7.45) {
-                    if (PaCO2 < 35 && HCO3 < 22) {
-                        return ["Fully Compensated Respiratory Alkalosis", 'crimson'];
-                    } else if (PaCO2 > 45 && HCO3 > 26) {
-                        return ["Fully Compensated Metabolic Alkalosis", 'red'];
-                    } else {
-                        return ["Normal or Undefined", 'gray'];
-                    }
-                } else if (pH > 7.45) {
-                    return originalClassifyABG(pH, PaCO2, HCO3);
-                } else {
-                    return ["Undefined", 'gray'];
+                };
+            });
+            
+            // Add normal ranges
+            traces.push({
+                x: [35, 35, 45, 45, 35],
+                y: [22, 26, 26, 22, 22],
+                mode: 'lines',
+                fill: 'toself',
+                name: 'Normal Range',
+                line: {
+                    color: 'green',
+                    width: 2
+                },
+                fillcolor: 'rgba(0, 128, 0, 0.1)'
+            });
+            
+            // Add current point
+            traces.push({
+                x: [currentPoint.paco2],
+                y: [currentPoint.hco3],
+                mode: 'markers',
+                name: 'Current Values',
+                marker: {
+                    size: 12,
+                    color: 'red'
+                },
+                text: [`pH: ${currentPoint.ph.toFixed(2)}`],
+                hoverinfo: 'text'
+            });
+            
+            // Layout configuration
+            const layout = {
+                title: 'Acid-Base Nomogram (Henderson-Hasselbalch Equation)',
+                xaxis: {
+                    title: 'PaCO₂ (mmHg)',
+                    range: [10, 100]
+                },
+                yaxis: {
+                    title: 'HCO₃⁻ (mEq/L)',
+                    range: [10, 50]
+                },
+                hovermode: 'closest',
+                margin: { t: 50, b: 50, l: 50, r: 50 },
+                legend: {
+                    orientation: 'h',
+                    y: -0.2
                 }
             };
+            
+            // Create the plot
+            Plotly.newPlot('graph-container', traces, layout);
         }
         
-        // Apply the fix
-        fixComparison();
+        function updateGraph() {
+            // Get current values
+            const paco2 = parseFloat(document.getElementById('paco2').value);
+            const hco3 = parseFloat(document.getElementById('hco3').value);
+            const ph = calculatePH(paco2, hco3);
+            
+            // Update the point in the graph
+            Plotly.restyle('graph-container', {
+                x: [[paco2]],
+                y: [[hco3]],
+                text: [[`pH: ${ph.toFixed(2)}`]]
+            }, [pHValues.length + 1]); // +1 for the normal range trace
+            
+            // Optionally, you could also animate the transition
+            Plotly.animate('graph-container', {
+                data: [{x: [[paco2]], y: [[hco3]]}],
+                traces: [pHValues.length + 1],
+                layout: {}
+            }, {
+                transition: {
+                    duration: 500,
+                    easing: 'cubic-in-out'
+                }
+            });
+        }
+        
+        function getColorForPH(pH) {
+            // Return different colors for different pH ranges
+            if (pH < 7.35) return 'rgba(255, 99, 71, 0.7)'; // Acidosis - tomato
+            if (pH > 7.45) return 'rgba(30, 144, 255, 0.7)'; // Alkalosis - dodgerblue
+            return 'rgba(50, 205, 50, 0.7)'; // Normal - limegreen
+        }
+        
+        // Initialize the calculator with default values on page load
+        window.onload = function() {
+            interpretABG();
+        };
     </script>
 </body>
 </html>
