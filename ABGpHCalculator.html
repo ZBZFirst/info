@@ -458,32 +458,31 @@
         }
         
         function initializeGraph() {
-            // Generate data for pH isolines
-            const pHValues = [7.0, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7];
-            const paco2Range = Array.from({length: 91}, (_, i) => i + 10); // 10 to 100
-            const hco3Range = Array.from({length: 41}, (_, i) => i + 10); // 10 to 50
+            // Generate data for PaCO2 isolines
+            const pCO2Values = [20, 25, 30, 35, 40, 45, 50, 60, 70, 80];
+            const hco3Range = Array.from({length: 41}, (_, i) => i + 10); // 10 to 50 mEq/L
             
-            // Create traces for each pH isoline
-            const traces = pHValues.map(pH => {
-                // For each pH, calculate HCO3 as function of PaCO2: HCO3 = 0.03 * PaCO2 * 10^(pH - 6.1)
-                const hco3Values = paco2Range.map(paco2 => 0.03 * paco2 * Math.pow(10, pH - 6.1));
+            // Create traces for each PaCO2 isoline
+            const traces = pCO2Values.map(pCO2 => {
+                // For each PaCO2, calculate pH as function of HCO3: pH = 6.1 + log10(HCO3 / (0.03 * PaCO2))
+                const pHValues = hco3Range.map(hco3 => 6.1 + Math.log10(hco3 / (0.03 * pCO2)));
                 
                 return {
-                    x: paco2Range,
-                    y: hco3Values,
+                    x: hco3Range,
+                    y: pHValues,
                     mode: 'lines',
-                    name: `pH ${pH}`,
+                    name: `PaCO₂ ${pCO2}`,
                     line: {
                         width: 2,
-                        color: getColorForPH(pH)
+                        color: getColorForPaCO2(pCO2)
                     }
                 };
             });
             
-            // Add normal ranges
+            // Add normal range box
             traces.push({
-                x: [35, 35, 45, 45, 35],
-                y: [22, 26, 26, 22, 22],
+                x: [22, 22, 26, 26, 22],
+                y: [7.35, 7.45, 7.45, 7.35, 7.35],
                 mode: 'lines',
                 fill: 'toself',
                 name: 'Normal Range',
@@ -496,35 +495,46 @@
             
             // Add current point
             traces.push({
-                x: [currentPoint.paco2],
-                y: [currentPoint.hco3],
+                x: [currentPoint.hco3],
+                y: [currentPoint.ph],
                 mode: 'markers',
                 name: 'Current Values',
                 marker: {
                     size: 12,
                     color: 'red'
                 },
-                text: [`pH: ${currentPoint.ph.toFixed(2)}`],
+                text: [`PaCO₂: ${currentPoint.paco2.toFixed(1)}`],
                 hoverinfo: 'text'
             });
             
             // Layout configuration
             const layout = {
-                title: 'Acid-Base Nomogram (Henderson-Hasselbalch Equation)',
+                title: 'Acid-Base Nomogram (HCO₃⁻ vs pH with PaCO₂ isolines)',
                 xaxis: {
-                    title: 'PaCO₂ (mmHg)',
-                    range: [10, 100]
-                },
-                yaxis: {
                     title: 'HCO₃⁻ (mEq/L)',
                     range: [10, 50]
+                },
+                yaxis: {
+                    title: 'pH',
+                    range: [7.0, 7.8]
                 },
                 hovermode: 'closest',
                 margin: { t: 50, b: 50, l: 50, r: 50 },
                 legend: {
                     orientation: 'h',
-                    y: -0.2
-                }
+                    y: -0.3
+                },
+                annotations: [{
+                    text: 'Curved lines represent constant PaCO₂ values',
+                    x: 0.5,
+                    y: -0.4,
+                    xref: 'paper',
+                    yref: 'paper',
+                    showarrow: false,
+                    font: {
+                        size: 12
+                    }
+                }]
             };
             
             // Create the plot
@@ -539,15 +549,15 @@
             
             // Update the point in the graph
             Plotly.restyle('graph-container', {
-                x: [[paco2]],
-                y: [[hco3]],
-                text: [[`pH: ${ph.toFixed(2)}`]]
-            }, [pHValues.length + 1]); // +1 for the normal range trace
+                x: [[hco3]],
+                y: [[ph]],
+                text: [[`PaCO₂: ${paco2.toFixed(1)}`]]
+            }, [pCO2Values.length + 1]); // +1 for the normal range trace
             
-            // Optionally, you could also animate the transition
+            // Animate the transition
             Plotly.animate('graph-container', {
-                data: [{x: [[paco2]], y: [[hco3]]}],
-                traces: [pHValues.length + 1],
+                data: [{x: [[hco3]], y: [[ph]]}],
+                traces: [pCO2Values.length + 1],
                 layout: {}
             }, {
                 transition: {
@@ -557,17 +567,12 @@
             });
         }
         
-        function getColorForPH(pH) {
-            // Return different colors for different pH ranges
-            if (pH < 7.35) return 'rgba(255, 99, 71, 0.7)'; // Acidosis - tomato
-            if (pH > 7.45) return 'rgba(30, 144, 255, 0.7)'; // Alkalosis - dodgerblue
+        function getColorForPaCO2(pCO2) {
+            // Return different colors for different PaCO2 ranges
+            if (pCO2 < 35) return 'rgba(30, 144, 255, 0.7)'; // Low - dodgerblue
+            if (pCO2 > 45) return 'rgba(255, 99, 71, 0.7)'; // High - tomato
             return 'rgba(50, 205, 50, 0.7)'; // Normal - limegreen
         }
-        
-        // Initialize the calculator with default values on page load
-        window.onload = function() {
-            interpretABG();
-        };
-    </script>
+</script>
 </body>
 </html>
