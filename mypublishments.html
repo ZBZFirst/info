@@ -98,11 +98,20 @@
             font-size: 12px;
             font-weight: bold;
         }
+        .doi-link {
+            color: #3498db;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .doi-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <h1>Research Publications</h1>
 
+    <!-- Publication 1 -->
     <div class="publication">
         <span class="publication-type">Journal Article</span>
         <h2>The Effect of Biologic Therapy in Severe Asthmatics and ER Admissions During COVID-19: A Retrospective Study</h2>
@@ -111,16 +120,18 @@
         <div class="year">2023</div>
         <div class="pages">Pages: 833-837</div>
         <div class="publisher">Publisher: Taylor & Francis</div>
+        <div class="doi">DOI: <a href="https://www.tandfonline.com/doi/full/10.2147/JAA.S416054" class="doi-link" target="_blank">https://www.tandfonline.com/doi/full/10.2147/JAA.S416054</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('cleland2023')">Show First Page</button>
         <div id="cleland2023" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.tandfonline.com/doi/full/10.2147/JAA.S416054" class="pdf-link" target="_blank">View Full Article</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 2 -->
     <div class="publication">
         <span class="publication-type">Conference Paper</span>
         <h2>Perception of Challenges and Barriers of Implementing Point of Care Lung Ultrasound Among Respiratory Therapists in California</h2>
@@ -129,48 +140,54 @@
         <div class="year">2023</div>
         <div class="pages">Pages: A1670-A1670</div>
         <div class="publisher">Publisher: American Thoracic Society</div>
+        <div class="doi">DOI: <a href="https://www.atsjournals.org/doi/pdf/10.1164/ajrccm-conference.2023.207.1_MeetingAbstracts.A1670" class="doi-link" target="_blank">https://www.atsjournals.org/doi/pdf/10.1164/ajrccm-conference.2023.207.1_MeetingAbstracts.A1670</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('ireland2023')">Show First Page</button>
         <div id="ireland2023" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.atsjournals.org/doi/pdf/10.1164/ajrccm-conference.2023.207.1_MeetingAbstracts.A1670" class="pdf-link" target="_blank">View Full PDF</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 3 -->
     <div class="publication">
         <span class="publication-type">Conference Abstract</span>
         <h2>Post Bronchial Thermoplasty Discharge in Severe Asthmatics</h2>
         <div class="authors">Alismail, Abdullah and Casillas, Paul and Nayak, Sandeep and Lopez, David and Tan, Laren</div>
         <div class="journal">Respiratory Care</div>
         <div class="year">2018</div>
+        <div class="doi">DOI: <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20183025968" class="doi-link" target="_blank">https://www.liebertpub.com/doi/abs/10.4187/respcare.20183025968</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('alismail2018post')">Show First Page</button>
         <div id="alismail2018post" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20183025968" class="pdf-link" target="_blank">View Full Abstract</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 4 -->
     <div class="publication">
         <span class="publication-type">Conference Abstract</span>
         <h2>Bronchial Thermoplasty in Severe Asthmatics: Pre and Post Anxiety Levels</h2>
         <div class="authors">Alismail, Abdullah and Nayak, Sandeep and Casillas, Paul and Lopez, David and Tan, Laren</div>
         <div class="journal">Respiratory Care</div>
         <div class="year">2018</div>
+        <div class="doi">DOI: <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20183022725" class="doi-link" target="_blank">https://www.liebertpub.com/doi/abs/10.4187/respcare.20183022725</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('alismail2018bronchial')">Show First Page</button>
         <div id="alismail2018bronchial" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20183022725" class="pdf-link" target="_blank">View Full Abstract</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 5 -->
     <div class="publication">
         <span class="publication-type">Journal Article</span>
         <h2>Evaluation of ventilatory ratio in airway pressure release ventilation (APRV) in patients with acute respiratory failure: Brief communication</h2>
@@ -179,16 +196,18 @@
         <div class="year">2023</div>
         <div class="volume">Volume: 219</div>
         <div class="publisher">Publisher: Elsevier</div>
+        <div class="doi">DOI: <a href="https://www.resmedjournal.com/article/S0954-6111(23)00311-6/abstract" class="doi-link" target="_blank">https://www.resmedjournal.com/article/S0954-6111(23)00311-6/abstract</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('liu2023')">Show First Page</button>
         <div id="liu2023" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.resmedjournal.com/article/S0954-6111(23)00311-6/abstract" class="pdf-link" target="_blank">View Full Article</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 6 -->
     <div class="publication">
         <span class="publication-type">Conference Paper</span>
         <h2>Sleep Knowledge and Perception of Health Care Professional Students in a Faith Based Health Institution</h2>
@@ -197,16 +216,18 @@
         <div class="year">2018</div>
         <div class="pages">Pages: A1504-A1504</div>
         <div class="publisher">Publisher: American Thoracic Society</div>
+        <div class="doi">DOI: <a href="https://www.atsjournals.org/doi/abs/10.1164/ajrccm-conference.2018.197.1_MeetingAbstracts.A1504" class="doi-link" target="_blank">https://www.atsjournals.org/doi/abs/10.1164/ajrccm-conference.2018.197.1_MeetingAbstracts.A1504</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('alismail2018sleep')">Show First Page</button>
         <div id="alismail2018sleep" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.atsjournals.org/doi/abs/10.1164/ajrccm-conference.2018.197.1_MeetingAbstracts.A1504" class="pdf-link" target="_blank">View Full Paper</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 7 -->
     <div class="publication">
         <span class="publication-type">Journal Article</span>
         <h2>Perception, Challenges, and Barriers of Point-of-Care Lung Ultrasound Among Respiratory Therapist in the United States</h2>
@@ -216,16 +237,18 @@
         <div class="volume">Volume: 2, Number: 1</div>
         <div class="pages">Pages: 100029</div>
         <div class="publisher">Publisher: Elsevier</div>
+        <div class="doi">DOI: <a href="https://www.sciencedirect.com/science/article/pii/S2949789223000296" class="doi-link" target="_blank">https://www.sciencedirect.com/science/article/pii/S2949789223000296</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('ireland2024')">Show First Page</button>
         <div id="ireland2024" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.sciencedirect.com/science/article/pii/S2949789223000296" class="pdf-link" target="_blank">View Full Article</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 8 -->
     <div class="publication">
         <span class="publication-type">Conference Abstract</span>
         <h2>Healthcare Professional Students Knowledge of Sleep at a Faith Based Institution</h2>
@@ -235,16 +258,18 @@
         <div class="volume">Volume: 63, Supplement 10</div>
         <div class="pages">Pages: 3022699</div>
         <div class="publisher">Organization: Daedalus Enterprises Inc.</div>
+        <div class="doi">DOI: <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20183022699" class="doi-link" target="_blank">https://www.liebertpub.com/doi/abs/10.4187/respcare.20183022699</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('sari2018')">Show First Page</button>
         <div id="sari2018" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20183022699" class="pdf-link" target="_blank">View Full Abstract</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 9 -->
     <div class="publication">
         <span class="publication-type">Journal Article</span>
         <h2>853: RESPIRATORY THERAPIST PERSPECTIVE ON USING LUNG ULTRASOUND: A PRE-AND POST-INTERVENTIONAL STUDY</h2>
@@ -254,28 +279,31 @@
         <div class="volume">Volume: 51, Number: 1</div>
         <div class="pages">Pages: 418</div>
         <div class="publisher">Publisher: LWW</div>
+        <div class="doi">DOI: <a href="https://journals.lww.com/ccmjournal/citation/2023/01001/853__respiratory_therapist_perspective_on_using.818.aspx" class="doi-link" target="_blank">https://journals.lww.com/ccmjournal/citation/2023/01001/853__respiratory_therapist_perspective_on_using.818.aspx</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('ireland2023ccm')">Show First Page</button>
         <div id="ireland2023ccm" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://journals.lww.com/ccmjournal/citation/2023/01001/853__respiratory_therapist_perspective_on_using.818.aspx" class="pdf-link" target="_blank">View Full Article</a>
             </div>
         </div>
     </div>
 
+    <!-- Publication 10 -->
     <div class="publication">
         <span class="publication-type">Conference Abstract</span>
         <h2>Perceptions, Challenges, and Barriers on Establishing Advance Practice Respiratory Therapy in the State of California: A Needs Assessment Study</h2>
         <div class="authors">Xu, Yiqing and Terry, Michael and Casillas, Paul and Lopez, David and Tan, Laran and Lavery, Adrian and Alismail, Abdullah</div>
         <div class="journal">Respiratory Care</div>
         <div class="year">2023</div>
+        <div class="doi">DOI: <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20233951551" class="doi-link" target="_blank">https://www.liebertpub.com/doi/abs/10.4187/respcare.20233951551</a></div>
         
         <button class="toggle-pdf" onclick="togglePDF('xu2023')">Show First Page</button>
         <div id="xu2023" class="pdf-preview" style="display: none;">
             <img src="placeholder.jpg" alt="First page of PDF">
             <div>
-                <a href="#" class="pdf-link">View Full PDF</a>
+                <a href="https://www.liebertpub.com/doi/abs/10.4187/respcare.20233951551" class="pdf-link" target="_blank">View Full Abstract</a>
             </div>
         </div>
     </div>
