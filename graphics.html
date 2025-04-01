@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reusable Graphics</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+
+        /* Moving Circle (top layer) */
+        #moving-circle {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #FF6B6B;
+            border-radius: 50%;
+            z-index: 4;
+            animation: move 8s infinite linear;
+        }
+
+        /* Other Shapes */
+        #triangle {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 100px solid #4ECDC4;
+            top: 100px;
+            left: 100px;
+            z-index: 2;
+        }
+
+        #square {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: #FFE66D;
+            top: 200px;
+            left: 200px;
+            z-index: 1;
+        }
+
+        #pentagon {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-color: #7D70BA;
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            top: 150px;
+            left: 300px;
+            z-index: 3;
+        }
+
+        @keyframes move {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(200px, 100px); }
+            50% { transform: translate(400px, 50px); }
+            75% { transform: translate(200px, 200px); }
+            100% { transform: translate(0, 0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Moving Circle (will animate around screen) -->
+    <div id="moving-circle"></div>
+
+    <!-- Static Shapes -->
+    <div id="triangle"></div>
+    <div id="square"></div>
+    <div id="pentagon"></div>
+
+    <script>
+        // Optional: Add interactivity
+        document.addEventListener('mousemove', (e) => {
+            const circle = document.getElementById('moving-circle');
+            circle.style.left = e.clientX - 40 + 'px';
+            circle.style.top = e.clientY - 40 + 'px';
+        });
+    </script>
+</body>
+</html>
