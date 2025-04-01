@@ -1,7 +1,6 @@
 ---
 layout: default
 title: Ventilator Screen OCR Parser
-permalink: /VentScreenOCR/
 ---
 
 <div class="vent-content">
