@@ -1,0 +1,11 @@
+<h1>{{ site.title }}</h1>
+
+<table style="width:100%; border-collapse: collapse;">
+    <tr>
+        {% for item in site.data.navigation %}
+        <td style="border:1px solid #ddd; padding:8px; text-align:center;">
+            <a href="{{ item.url }}">{{ item.name }}</a>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
