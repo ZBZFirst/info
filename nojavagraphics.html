@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Static Moving Circle</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: #f0f0f0;
+    }
+
+    /* Circle with predefined animation path */
+    .moving-circle {
+      width: 80px;
+      height: 80px;
+      background: #FF6B6B;
+      border-radius: 50%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: moveLoop 8s infinite linear;
+    }
+
+    /* Keyframes for the movement path */
+    @keyframes moveLoop {
+      0%   { top: 10%;  left: 10%; }
+      25%  { top: 10%;  left: 80%; }
+      50%  { top: 80%;  left: 80%; }
+      75%  { top: 80%;  left: 10%; }
+      100% { top: 10%;  left: 10%; }
+    }
+
+    /* Optional: Add other static shapes */
+    .static-square {
+      width: 100px;
+      height: 100px;
+      background: #4ECDC4;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1; /* Behind the circle */
+    }
+  </style>
+</head>
+<body>
+  <!-- The animated circle -->
+  <div class="moving-circle"></div>
+
+  <!-- Optional static shapes -->
+  <div class="static-square"></div>
+</body>
+</html>
