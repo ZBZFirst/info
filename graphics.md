@@ -11,7 +11,7 @@
     .shape {
         position: absolute;
         cursor: grab;
-    }
+}
 
     #moving-circle {
         width: 80px;
