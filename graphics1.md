@@ -7,7 +7,7 @@ title: Interactive Draggable Graphics
     .shape-container {
         margin: 0;
         overflow: hidden;
-        height: 70vh; /* Reduced to make room for form */
+        height: 70vh;
         position: relative;
         background: url('image.png') no-repeat center center;
         background-size: contain;
@@ -18,21 +18,24 @@ title: Interactive Draggable Graphics
     .shape {
         position: absolute;
         cursor: grab;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-family: Arial, sans-serif;
-        font-weight: bold;
         user-select: none;
     }
 
     .shape-label {
+        position: absolute;
         background-color: white;
         color: black;
         padding: 2px 6px;
         border-radius: 3px;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        white-space: nowrap;
+        transform: translateX(-50%);
+        left: 50%;
+        top: -25px; /* Position above the shape */
         pointer-events: none;
         z-index: 10;
+        border: 1px solid #ddd; /* Optional border for better visibility */
     }
 
     /* Circle style */
@@ -74,24 +77,24 @@ title: Interactive Draggable Graphics
 
 <div class="shape-container">
     <!-- Circles -->
-    <div id="circle1" class="shape circle" style="top: 50px; left: 50px;">
+    <div id="circle1" class="shape circle" style="top: 80px; left: 50px;">
         <div class="shape-label">Circle 1</div>
     </div>
-    <div id="circle2" class="shape circle" style="top: 50px; left: 150px;">
+    <div id="circle2" class="shape circle" style="top: 80px; left: 150px;">
         <div class="shape-label">Circle 2</div>
     </div>
-    <div id="circle3" class="shape circle" style="top: 50px; left: 250px;">
+    <div id="circle3" class="shape circle" style="top: 80px; left: 250px;">
         <div class="shape-label">Circle 3</div>
     </div>
     
     <!-- Squares -->
-    <div id="square1" class="shape square" style="top: 150px; left: 50px;">
+    <div id="square1" class="shape square" style="top: 180px; left: 50px;">
         <div class="shape-label">Square 1</div>
     </div>
-    <div id="square2" class="shape square" style="top: 150px; left: 150px;">
+    <div id="square2" class="shape square" style="top: 180px; left: 150px;">
         <div class="shape-label">Square 2</div>
     </div>
-    <div id="square3" class="shape square" style="top: 150px; left: 250px;">
+    <div id="square3" class="shape square" style="top: 180px; left: 250px;">
         <div class="shape-label">Square 3</div>
     </div>
 </div>
@@ -146,6 +149,7 @@ title: Interactive Draggable Graphics
         });
 
         function startDrag(e) {
+            // Don't start drag if clicking on the label
             if (e.target.classList.contains('shape-label')) return;
             
             activeShape = e.target.closest('.shape');
