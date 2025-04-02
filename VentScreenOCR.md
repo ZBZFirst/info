@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "VentScreen OCR"
+title: "VentScreenOCR"
 ---
 <h2>How Would a Computer Parse a Ventilator Screen?</h2>
 
