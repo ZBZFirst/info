@@ -20,7 +20,6 @@ title: Paul's Desktop Reference
 <ul>
     <li><a href="VentScreenOCR.html" title="Using python libraries to extract data from ventilator screens">How would AI Parse a Ventilator Screen?</a></li>
     <li><a href="howto-jobscrape.html" title="Automating job searches with Python in 2025">How to Scrape Job Listings Using Python</a></li>
-    <li><a href="jobscrapes.html" title="Live-updated job postings I've aggregated">Access the Current Job Postings</a></li>
 </ul>
 
 <h3>Explore My Current Software Answers</h3>
