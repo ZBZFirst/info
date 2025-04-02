@@ -4,3 +4,5 @@
   url: "/info/MinuteVentilationExplained.html"
 - name: "Software Qs"
   url: "/info/VentScreenOCR.html"
+- name: "Graphics"
+  url: "/info/graphics.html"
