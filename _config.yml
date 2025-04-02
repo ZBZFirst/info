@@ -7,17 +7,7 @@ theme: minima
 plugins:
   - jekyll-feed
   - jekyll-data
-  - jekyll-remote-include # Optional but helpful for Staticman
 
 data_dir: _data
 
-# Staticman configuration
-staticman:
-  allowedFields: ["name", "message", "date"]
-  branch: "main"
-  path: "guestbook" # This will create entries in _data/guestbook/
-  filename: "entry-{@timestamp}"
-  format: "yaml"
-  requiredFields: ["name", "message"]
-  transforms:
-    date: "date" # This will automatically add a timestamp
+
