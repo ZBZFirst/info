@@ -4,9 +4,7 @@ baseurl: ""
 url: "" 
 theme: minima
 
-# Enable plugins
 plugins:
   - jekyll-data
 
-# Where to look for data
 data_dir: _data
