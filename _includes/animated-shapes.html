@@ -1,0 +1,104 @@
+<style>
+    .animation-container {
+        position: relative;
+        width: 100%;
+        height: 60vh;
+        border: 1px solid #eee;
+        overflow: hidden;
+        background-color: #f8f8f8;
+    }
+    
+    .animated-shape {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: 24px;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    /* Shape-specific styles */
+    .skull { color: white; background: black; border-radius: 50%; }
+    .cross { color: white; background: red; }
+    .star { color: black; background: yellow; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+    .circle { color: white; background: orange; border-radius: 50%; }
+    .square { color: white; background: blue; }
+    .moon { color: black; background: silver; clip-path: polygon(50% 0%, 81% 0%, 100% 50%, 81% 100%, 50% 100%, 30% 50%); }
+    .diamond { color: white; background: purple; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+    .triangle { color: white; background: green; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+</style>
+
+<div class="animation-container" id="shapes-animation-container">
+    <!-- Shapes will be injected here by JavaScript -->
+</div>
+
+<script>
+    function initShapeAnimation(containerId = 'shapes-animation-container') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const shapes = [
+            { class: 'skull', symbol: '☠', size: 60, duration: 20, path: 'square' },
+            { class: 'cross', symbol: '✚', size: 60, duration: 25, path: 'square' },
+            { class: 'star', symbol: '★', size: 60, duration: 30, path: 'square' },
+            { class: 'circle', symbol: '●', size: 60, duration: 35, path: 'square' },
+            { class: 'square', symbol: '■', size: 60, duration: 40, path: 'square' },
+            { class: 'moon', symbol: '☾', size: 60, duration: 45, path: 'square' },
+            { class: 'diamond', symbol: '◆', size: 60, duration: 50, path: 'square' },
+            { class: 'triangle', symbol: '▲', size: 60, duration: 55, path: 'square' }
+        ];
+        
+        // Clear previous animations
+        container.innerHTML = '';
+        
+        // Calculate container dimensions
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        const pathPadding = 100;
+        
+        // Create shapes
+        shapes.forEach((shape, index) => {
+            const shapeEl = document.createElement('div');
+            shapeEl.className = `animated-shape ${shape.class}`;
+            shapeEl.textContent = shape.symbol;
+            shapeEl.style.width = `${shape.size}px`;
+            shapeEl.style.height = `${shape.size}px`;
+            
+            // Calculate path based on type
+            if (shape.path === 'square') {
+                const pathSize = Math.min(containerWidth, containerHeight) - pathPadding;
+                const startX = pathPadding + (index * 20) % (containerWidth - pathPadding - shape.size);
+                const startY = pathPadding + (index * 30) % (containerHeight - pathPadding - shape.size);
+                
+                shapeEl.style.left = `${startX}px`;
+                shapeEl.style.top = `${startY}px`;
+                
+                // Square path animation
+                shapeEl.style.animationName = `squarePath${index}`;
+                shapeEl.style.animationDuration = `${shape.duration}s`;
+                
+                // Create keyframes
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes squarePath${index} {
+                        0% { transform: translate(0, 0); }
+                        25% { transform: translate(${pathSize}px, 0); }
+                        50% { transform: translate(${pathSize}px, ${pathSize}px); }
+                        75% { transform: translate(0, ${pathSize}px); }
+                        100% { transform: translate(0, 0); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            container.appendChild(shapeEl);
+        });
+    }
+    
+    // Initialize on window load and resize
+    window.addEventListener('load', () => initShapeAnimation());
+    window.addEventListener('resize', () => initShapeAnimation());
+</script>
