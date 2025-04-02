@@ -7,11 +7,11 @@ title: Interactive Draggable Graphics
     .shape-container {
         margin: 0;
         overflow: hidden;
-        height: 100vh;
+        height: 70vh; /* Reduced to make room for form */
         position: relative;
         background: url('image.png') no-repeat center center;
         background-size: contain;
-        background-color: #f0f0f0; /* Fallback if image doesn't load */
+        background-color: #f0f0f0;
         cursor: grab;
     }
 
@@ -32,69 +32,105 @@ title: Interactive Draggable Graphics
         padding: 2px 6px;
         border-radius: 3px;
         pointer-events: none;
-        z-index: 10; /* Ensure label stays above everything */
+        z-index: 10;
     }
 
-    /* Shape outlines with proper sizing */
-    #moving-circle {
-        width: 88px; /* Original width + border */
-        height: 88px;
+    /* Circle style */
+    .circle {
+        width: 80px;
+        height: 80px;
         border: 4px solid #FF6B6B;
         border-radius: 50%;
         background-color: transparent;
-        z-index: 4;
     }
 
-    #triangle {
-        width: 108px; /* Adjusted for border */
-        height: 94px;
-        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-        background-color: transparent;
+    /* Square style */
+    .square {
+        width: 80px;
+        height: 80px;
         border: 4px solid #4ECDC4;
-        top: 100px;
-        left: 100px;
-        z-index: 2;
-    }
-
-    #square {
-        width: 128px; /* Original + border */
-        height: 128px;
-        border: 4px solid #FFE66D;
         background-color: transparent;
-        top: 200px;
-        left: 200px;
-        z-index: 1;
     }
 
-    #pentagon {
-        width: 108px; /* Adjusted for border */
-        height: 108px;
-        clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-        background-color: transparent;
-        border: 4px solid #7D70BA;
-        top: 150px;
-        left: 300px;
-        z-index: 3;
+    /* Form styling */
+    .label-controls {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #ddd;
     }
-
-    /* Ensure shapes are properly layered */
-    .shape > * {
-        position: relative;
+    
+    .shape-control {
+        margin: 10px 0;
+    }
+    
+    button {
+        padding: 8px 15px;
+        background: #4ECDC4;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
     }
 </style>
 
 <div class="shape-container">
-    <div id="moving-circle" class="shape">
-        <div class="shape-label" contenteditable="true">Circle</div>
+    <!-- Circles -->
+    <div id="circle1" class="shape circle" style="top: 50px; left: 50px;">
+        <div class="shape-label">Circle 1</div>
     </div>
-    <div id="triangle" class="shape">
-        <div class="shape-label" contenteditable="true">Triangle</div>
+    <div id="circle2" class="shape circle" style="top: 50px; left: 150px;">
+        <div class="shape-label">Circle 2</div>
     </div>
-    <div id="square" class="shape">
-        <div class="shape-label" contenteditable="true">Square</div>
+    <div id="circle3" class="shape circle" style="top: 50px; left: 250px;">
+        <div class="shape-label">Circle 3</div>
     </div>
-    <div id="pentagon" class="shape">
-        <div class="shape-label" contenteditable="true">Pentagon</div>
+    
+    <!-- Squares -->
+    <div id="square1" class="shape square" style="top: 150px; left: 50px;">
+        <div class="shape-label">Square 1</div>
+    </div>
+    <div id="square2" class="shape square" style="top: 150px; left: 150px;">
+        <div class="shape-label">Square 2</div>
+    </div>
+    <div id="square3" class="shape square" style="top: 150px; left: 250px;">
+        <div class="shape-label">Square 3</div>
+    </div>
+</div>
+
+<div class="label-controls">
+    <h3>Shape Label Editor</h3>
+    
+    <!-- Circle Labels -->
+    <div class="shape-control">
+        <label for="circle1-label">Circle 1 Label:</label>
+        <input type="text" id="circle1-label" value="Circle 1">
+        <button onclick="updateLabel('circle1')">Update</button>
+    </div>
+    <div class="shape-control">
+        <label for="circle2-label">Circle 2 Label:</label>
+        <input type="text" id="circle2-label" value="Circle 2">
+        <button onclick="updateLabel('circle2')">Update</button>
+    </div>
+    <div class="shape-control">
+        <label for="circle3-label">Circle 3 Label:</label>
+        <input type="text" id="circle3-label" value="Circle 3">
+        <button onclick="updateLabel('circle3')">Update</button>
+    </div>
+    
+    <!-- Square Labels -->
+    <div class="shape-control">
+        <label for="square1-label">Square 1 Label:</label>
+        <input type="text" id="square1-label" value="Square 1">
+        <button onclick="updateLabel('square1')">Update</button>
+    </div>
+    <div class="shape-control">
+        <label for="square2-label">Square 2 Label:</label>
+        <input type="text" id="square2-label" value="Square 2">
+        <button onclick="updateLabel('square2')">Update</button>
+    </div>
+    <div class="shape-control">
+        <label for="square3-label">Square 3 Label:</label>
+        <input type="text" id="square3-label" value="Square 3">
+        <button onclick="updateLabel('square3')">Update</button>
     </div>
 </div>
 
@@ -103,28 +139,14 @@ title: Interactive Draggable Graphics
         const shapes = document.querySelectorAll('.shape');
         let activeShape = null;
         let offsetX, offsetY;
-        let isEditingText = false;
 
         // Make all shapes draggable
         shapes.forEach(shape => {
             shape.addEventListener('mousedown', startDrag);
-            
-            const label = shape.querySelector('.shape-label');
-            label.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                isEditingText = true;
-                label.contentEditable = true;
-                label.focus();
-            });
-            
-            label.addEventListener('blur', () => {
-                isEditingText = false;
-                label.contentEditable = false;
-            });
         });
 
         function startDrag(e) {
-            if (isEditingText || e.target.classList.contains('shape-label')) return;
+            if (e.target.classList.contains('shape-label')) return;
             
             activeShape = e.target.closest('.shape');
             if (!activeShape) return;
@@ -154,11 +176,12 @@ title: Interactive Draggable Graphics
             document.removeEventListener('mousemove', dragShape);
             document.removeEventListener('mouseup', stopDrag);
         }
-
-        // Handle window resize to maintain background
-        window.addEventListener('resize', function() {
-            const container = document.querySelector('.shape-container');
-            container.style.backgroundSize = 'contain';
-        });
     });
+
+    // Label update function
+    function updateLabel(shapeId) {
+        const input = document.getElementById(`${shapeId}-label`);
+        const label = document.querySelector(`#${shapeId} .shape-label`);
+        label.textContent = input.value;
+    }
 </script>
