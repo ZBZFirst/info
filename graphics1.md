@@ -164,11 +164,11 @@ title: Interactive Draggable Graphics
         </div>
         <div class="control-row">
             <label for="square1-width">Width:</label>
-            <input type="range" id="square1-width" min="40" max="200" value="100" oninput="updateSquareSize('square1')">
+            <input type="range" id="square1-width" min="40" max="800" value="100" oninput="updateSquareSize('square1')">
         </div>
         <div class="control-row">
             <label for="square1-height">Height:</label>
-            <input type="range" id="square1-height" min="40" max="200" value="80" oninput="updateSquareSize('square1')">
+            <input type="range" id="square1-height" min="40" max="800" value="80" oninput="updateSquareSize('square1')">
         </div>
         
         <div class="control-row">
@@ -178,11 +178,11 @@ title: Interactive Draggable Graphics
         </div>
         <div class="control-row">
             <label for="square2-width">Width:</label>
-            <input type="range" id="square2-width" min="40" max="200" value="100" oninput="updateSquareSize('square2')">
+            <input type="range" id="square2-width" min="40" max="800" value="100" oninput="updateSquareSize('square2')">
         </div>
         <div class="control-row">
             <label for="square2-height">Height:</label>
-            <input type="range" id="square2-height" min="40" max="200" value="80" oninput="updateSquareSize('square2')">
+            <input type="range" id="square2-height" min="40" max="800" value="80" oninput="updateSquareSize('square2')">
         </div>
         
         <div class="control-row">
@@ -192,11 +192,11 @@ title: Interactive Draggable Graphics
         </div>
         <div class="control-row">
             <label for="square3-width">Width:</label>
-            <input type="range" id="square3-width" min="40" max="200" value="100" oninput="updateSquareSize('square3')">
+            <input type="range" id="square3-width" min="40" max="800" value="100" oninput="updateSquareSize('square3')">
         </div>
         <div class="control-row">
             <label for="square3-height">Height:</label>
-            <input type="range" id="square3-height" min="40" max="200" value="80" oninput="updateSquareSize('square3')">
+            <input type="range" id="square3-height" min="40" max="800" value="80" oninput="updateSquareSize('square3')">
         </div>
     </div>
 </div>
