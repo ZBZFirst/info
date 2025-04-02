@@ -115,52 +115,78 @@ function calculatePH(paco2, hco3) {
 }
 
 function classifyABG(pH, PaCO2, HCO3) {
+    // Define the normal ranges
+    const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
+    const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
+    const normalPH = pH >= 7.35 && pH <= 7.45;
+
+    // Acidosis conditions (pH < 7.35)
     if (pH < 7.35) {
         if (PaCO2 > 45) {
-            if (HCO3 > 26) {
-                return ["Partially Compensated Respiratory Acidosis", 'Yellow'];
-            } else if (HCO3 < 22) {
-                return ["Mixed Acidosis", 'Red'];
+            if (HCO3 < 22) {
+                return ["Mixed Acidosis", 'red'];
+            } else if (HCO3 > 26) {
+                return ["Partially Compensated Respiratory Acidosis", 'orange'];
             } else {
-                return ["Uncompensated Respiratory Acidosis", 'Orange'];
+                return ["Uncompensated Respiratory Acidosis", 'darkorange'];
             }
         } else if (HCO3 < 22) {
             if (PaCO2 < 35) {
-                return ["Partially Compensated Metabolic Acidosis", 'Yellow'];
-            } else if (PaCO2 > 45) {
-                return ["Mixed Acidosis", 'Red'];
+                return ["Partially Compensated Metabolic Acidosis", 'yellow'];
+            } else if (normalPaCO2) {
+                return ["Uncompensated Metabolic Acidosis", 'gold'];
             } else {
-                return ["Uncompensated Metabolic Acidosis", 'Orange'];
+                return ["Undefined Acidosis", 'gray'];
             }
         } else {
-            return ["Undefined", 'gray'];
+            return ["Undefined Acidosis", 'lightgray'];
         }
-    } else if (pH > 7.45) {
+    }
+    // Alkalosis conditions (pH > 7.45)
+    else if (pH > 7.45) {
         if (PaCO2 < 35) {
             if (HCO3 < 22) {
-                return ["Partially Compensated Respiratory Alkalosis", 'cyan'];
+                return ["Partially Compensated Respiratory Alkalosis", 'lightblue'];
             } else if (HCO3 > 26) {
-                return ["Mixed Alkalosis", 'Purple'];
+                return ["Mixed Alkalosis", 'purple'];
             } else {
                 return ["Uncompensated Respiratory Alkalosis", 'blue'];
             }
         } else if (HCO3 > 26) {
             if (PaCO2 > 45) {
                 return ["Partially Compensated Metabolic Alkalosis", 'cyan'];
-            } else if (PaCO2 < 35) {
-                return ["Mixed Alkalosis", 'Purple'];
+            } else if (normalPaCO2) {
+                return ["Uncompensated Metabolic Alkalosis", 'deepskyblue'];
             } else {
-                return ["Uncompensated Metabolic Alkalosis", 'Blue'];
+                return ["Undefined Alkalosis", 'gray'];
             }
         } else {
-            return ["Undefined", 'gray'];
+            return ["Undefined Alkalosis", 'lightgray'];
         }
-    } else {
-        if (35 <= PaCO2 && PaCO2 <= 45 && 22 <= HCO3 && HCO3 <= 26) {
+    }
+    // Normal pH range (7.35-7.45)
+    else {
+        // Fully compensated conditions
+        if (pH >= 7.35 && pH <= 7.399) {
+            if (PaCO2 > 45 && HCO3 > 26) {
+                return ["Fully Compensated Respiratory Acidosis", 'darkgreen'];
+            } else if (PaCO2 < 35 && HCO3 < 22) {
+                return ["Fully Compensated Metabolic Acidosis", 'limegreen'];
+            }
+        } else if (pH >= 7.401 && pH <= 7.45) {
+            if (PaCO2 > 45 && HCO3 > 26) {
+                return ["Fully Compensated Metabolic Alkalosis", 'mediumseagreen'];
+            } else if (PaCO2 < 35 && HCO3 < 22) {
+                return ["Fully Compensated Respiratory Alkalosis", 'springgreen'];
+            }
+        }
+        
+        // Normal condition
+        if (normalPaCO2 && normalHCO3) {
             return ["Normal", 'green'];
-        } else {
-            return ["Undefined", 'gray'];
         }
+        
+        return ["Undefined", 'gray'];
     }
 }
 
