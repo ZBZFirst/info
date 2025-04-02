@@ -16,5 +16,8 @@ EXPERIMENTAL - UNSTABLE
 
 # Animation Movement Test Page
 
+A Test of Moving Graphics with No Java
+[View the Animated Graphic Page](/info/nojavagraphics.html)
+
 Simple Animation Test Page
 [View the Animation Graphics Page](/info/shapes-demo.html)
