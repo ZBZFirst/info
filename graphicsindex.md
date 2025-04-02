@@ -8,5 +8,8 @@ title: Interactive Draggable Graphics
 Simple Interactive Graphics Test
 [View the Interactive Graphics Page](/info/graphics.html)
 
-Simple Interactive Graphics Test
+Label the Ventilator Screen
 [View the Interactive Graphics Page](/info/graphics1.html)
+
+EXPERIMENTAL - UNSTABLE
+[View the Interactive Graphics Page](/info/graphics2.html)
