@@ -13,3 +13,8 @@ Label the Ventilator Screen
 
 EXPERIMENTAL - UNSTABLE
 [View the Interactive Graphics Page](/info/graphics2.html)
+
+# Animation Movement Test Page
+
+Simple Animation Test Page
+[View the Animation Graphics Page](/info/animated-shapes.html)
