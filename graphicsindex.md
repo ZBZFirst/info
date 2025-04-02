@@ -9,7 +9,13 @@ This is an interactive demo showcasing draggable geometric shapes with labels. T
 
 ## Demo Section
 
-[Launch Interactive Geometry Demo](/info/graphicsindex.html){: .btn .btn-primary .btn-lg }
+<h2>Explore some of the topics I have explored below.</h2>
+
+<h3>Explore Arterial Blood Gases</h3>
+<ul>
+    <li><a href="graphics.html" title="Graphics Test">A Graphics Test</a></li>
+
+</ul>
 
 ## Features
 
@@ -38,8 +44,6 @@ This demo uses:
 - Pure JavaScript for drag functionality
 - CSS for styling and positioning
 - HTML5 for structure
-
-[View Source Code](https://github.com/ZBZFirst/info/graphics.html){: .btn .btn-outline }
 
 ---
 
