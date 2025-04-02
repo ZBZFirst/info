@@ -1,6 +1,6 @@
 ---
 layout: default
-title: <center>Paul's Desktop Reference</center>
+title: Paul's Desktop Reference
 ---
 
 <h2>Explore some of the topics I have explored below.</h2>
