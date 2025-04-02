@@ -5,14 +5,8 @@ title: Interactive Draggable Graphics
 
 # Geometry Movement Test Page
 
-## Option 1: Simple Markdown link (recommended)
+Simple Interactive Graphics Test
 [View the Interactive Graphics Page](/info/graphics.html)
 
-## Option 2: Using Liquid's relative_url filter (more robust)
-[View the Interactive Graphics Page]({{ "/info/graphics.html" | relative_url }})
-
-## Option 3: If you want it to appear as a button
-[Launch Demo]({{ "/info/graphics.html" | relative_url }}){: .btn .btn-primary }
-
-## Option 4: If the file is in a subdirectory
-[View Graphics]({{ "/info/graphics.html" | relative_url }})
+Simple Interactive Graphics Test
+[View the Interactive Graphics Page](/info/graphics1.html)
