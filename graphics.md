@@ -16,6 +16,14 @@ title: Interactive Draggable Graphics
     .shape {
         position: absolute;
         cursor: grab;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        user-select: none; /* Prevent text selection */
     }
 
     #moving-circle {
@@ -35,6 +43,10 @@ title: Interactive Draggable Graphics
         top: 100px;
         left: 100px;
         z-index: 2;
+        /* Special positioning for triangle text */
+        display: flex;
+        justify-content: center;
+        padding-top: 20px;
     }
 
     #square {
@@ -44,6 +56,7 @@ title: Interactive Draggable Graphics
         top: 200px;
         left: 200px;
         z-index: 1;
+        color: #333; /* Darker color for light background */
     }
 
     #pentagon {
@@ -58,10 +71,10 @@ title: Interactive Draggable Graphics
 </style>
 
 <div class="shape-container">
-    <div id="moving-circle" class="shape"></div>
-    <div id="triangle" class="shape"></div>
-    <div id="square" class="shape"></div>
-    <div id="pentagon" class="shape"></div>
+    <div id="moving-circle" class="shape">Circle</div>
+    <div id="triangle" class="shape">Triangle</div>
+    <div id="square" class="shape">Square</div>
+    <div id="pentagon" class="shape">Pentagon</div>
 </div>
 
 <script>
@@ -76,15 +89,19 @@ title: Interactive Draggable Graphics
         });
 
         function startDrag(e) {
-            activeShape = e.target;
-            // Calculate offset between mouse and shape's top-left corner
-            offsetX = e.clientX - activeShape.getBoundingClientRect().left;
-            offsetY = e.clientY - activeShape.getBoundingClientRect().top;
-            
-            activeShape.style.cursor = 'grabbing';
-            document.addEventListener('mousemove', dragShape);
-            document.addEventListener('mouseup', stopDrag);
-            e.preventDefault(); // Prevent text selection while dragging
+            // Only start drag if clicking on the shape itself, not the text
+            if (e.target === activeShape || e.target.classList.contains('shape')) {
+                activeShape = e.target.classList.contains('shape') ? e.target : e.target.parentElement;
+                // Calculate offset between mouse and shape's top-left corner
+                const rect = activeShape.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                
+                activeShape.style.cursor = 'grabbing';
+                document.addEventListener('mousemove', dragShape);
+                document.addEventListener('mouseup', stopDrag);
+                e.preventDefault(); // Prevent text selection while dragging
+            }
         }
 
         function dragShape(e) {
