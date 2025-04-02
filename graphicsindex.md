@@ -9,7 +9,7 @@ This is an interactive demo showcasing draggable geometric shapes with labels. T
 
 ## Demo Section
 
-[Launch Interactive Geometry Demo](/graphics.html){: .btn .btn-primary .btn-lg }
+[Launch Interactive Geometry Demo](/info/graphicsindex.html){: .btn .btn-primary .btn-lg }
 
 ## Features
 
