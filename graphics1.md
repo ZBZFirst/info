@@ -7,7 +7,7 @@ title: Interactive Draggable Graphics
     .shape-container {
         margin: 0;
         overflow: hidden;
-        height: 70vh;
+        height: 60vh; /* Reduced to make room for controls */
         position: relative;
         background: url('image.png') no-repeat center center;
         background-size: contain;
@@ -32,108 +32,172 @@ title: Interactive Draggable Graphics
         white-space: nowrap;
         transform: translateX(-50%);
         left: 50%;
-        top: -25px; /* Position above the shape */
+        top: -25px;
         pointer-events: none;
         z-index: 10;
-        border: 1px solid #ddd; /* Optional border for better visibility */
+        border: 1px solid #ddd;
     }
 
-    /* Circle style */
     .circle {
-        width: 80px;
-        height: 80px;
         border: 4px solid #FF6B6B;
         border-radius: 50%;
         background-color: transparent;
     }
 
-    /* Square style */
     .square {
-        width: 80px;
-        height: 80px;
         border: 4px solid #4ECDC4;
         background-color: transparent;
     }
 
-    /* Form styling */
-    .label-controls {
+    .controls-panel {
         padding: 20px;
         background: white;
         border-top: 1px solid #ddd;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
-    
-    .shape-control {
+
+    .shape-control-group {
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .control-row {
         margin: 10px 0;
+        display: flex;
+        align-items: center;
     }
-    
+
+    label {
+        min-width: 100px;
+        display: inline-block;
+    }
+
+    input[type="text"], input[type="range"] {
+        margin-right: 10px;
+    }
+
+    input[type="range"] {
+        flex-grow: 1;
+    }
+
     button {
-        padding: 8px 15px;
+        padding: 6px 12px;
         background: #4ECDC4;
         border: none;
         border-radius: 4px;
         cursor: pointer;
+        margin-left: 5px;
     }
 </style>
 
 <div class="shape-container">
     <!-- Circles -->
-    <div id="circle1" class="shape circle" style="top: 80px; left: 50px;">
+    <div id="circle1" class="shape circle" style="top: 100px; left: 50px; width: 80px; height: 80px;">
         <div class="shape-label">Circle 1</div>
     </div>
-    <div id="circle2" class="shape circle" style="top: 80px; left: 150px;">
+    <div id="circle2" class="shape circle" style="top: 100px; left: 200px; width: 80px; height: 80px;">
         <div class="shape-label">Circle 2</div>
     </div>
-    <div id="circle3" class="shape circle" style="top: 80px; left: 250px;">
+    <div id="circle3" class="shape circle" style="top: 100px; left: 350px; width: 80px; height: 80px;">
         <div class="shape-label">Circle 3</div>
     </div>
     
     <!-- Squares -->
-    <div id="square1" class="shape square" style="top: 180px; left: 50px;">
+    <div id="square1" class="shape square" style="top: 250px; left: 50px; width: 100px; height: 80px;">
         <div class="shape-label">Square 1</div>
     </div>
-    <div id="square2" class="shape square" style="top: 180px; left: 150px;">
+    <div id="square2" class="shape square" style="top: 250px; left: 200px; width: 100px; height: 80px;">
         <div class="shape-label">Square 2</div>
     </div>
-    <div id="square3" class="shape square" style="top: 180px; left: 250px;">
+    <div id="square3" class="shape square" style="top: 250px; left: 350px; width: 100px; height: 80px;">
         <div class="shape-label">Square 3</div>
     </div>
 </div>
 
-<div class="label-controls">
-    <h3>Shape Label Editor</h3>
-    
-    <!-- Circle Labels -->
-    <div class="shape-control">
-        <label for="circle1-label">Circle 1 Label:</label>
-        <input type="text" id="circle1-label" value="Circle 1">
-        <button onclick="updateLabel('circle1')">Update</button>
+<div class="controls-panel">
+    <!-- Circle Controls -->
+    <div class="shape-control-group">
+        <h3>Circle Controls</h3>
+        
+        <div class="control-row">
+            <label for="circle1-label">Circle 1:</label>
+            <input type="text" id="circle1-label" value="Circle 1">
+            <button onclick="updateLabel('circle1')">Update</button>
+        </div>
+        <div class="control-row">
+            <label for="circle1-size">Size:</label>
+            <input type="range" id="circle1-size" min="40" max="150" value="80" oninput="updateCircleSize('circle1')">
+        </div>
+        
+        <div class="control-row">
+            <label for="circle2-label">Circle 2:</label>
+            <input type="text" id="circle2-label" value="Circle 2">
+            <button onclick="updateLabel('circle2')">Update</button>
+        </div>
+        <div class="control-row">
+            <label for="circle2-size">Size:</label>
+            <input type="range" id="circle2-size" min="40" max="150" value="80" oninput="updateCircleSize('circle2')">
+        </div>
+        
+        <div class="control-row">
+            <label for="circle3-label">Circle 3:</label>
+            <input type="text" id="circle3-label" value="Circle 3">
+            <button onclick="updateLabel('circle3')">Update</button>
+        </div>
+        <div class="control-row">
+            <label for="circle3-size">Size:</label>
+            <input type="range" id="circle3-size" min="40" max="150" value="80" oninput="updateCircleSize('circle3')">
+        </div>
     </div>
-    <div class="shape-control">
-        <label for="circle2-label">Circle 2 Label:</label>
-        <input type="text" id="circle2-label" value="Circle 2">
-        <button onclick="updateLabel('circle2')">Update</button>
-    </div>
-    <div class="shape-control">
-        <label for="circle3-label">Circle 3 Label:</label>
-        <input type="text" id="circle3-label" value="Circle 3">
-        <button onclick="updateLabel('circle3')">Update</button>
-    </div>
-    
-    <!-- Square Labels -->
-    <div class="shape-control">
-        <label for="square1-label">Square 1 Label:</label>
-        <input type="text" id="square1-label" value="Square 1">
-        <button onclick="updateLabel('square1')">Update</button>
-    </div>
-    <div class="shape-control">
-        <label for="square2-label">Square 2 Label:</label>
-        <input type="text" id="square2-label" value="Square 2">
-        <button onclick="updateLabel('square2')">Update</button>
-    </div>
-    <div class="shape-control">
-        <label for="square3-label">Square 3 Label:</label>
-        <input type="text" id="square3-label" value="Square 3">
-        <button onclick="updateLabel('square3')">Update</button>
+
+    <!-- Square Controls -->
+    <div class="shape-control-group">
+        <h3>Square Controls</h3>
+        
+        <div class="control-row">
+            <label for="square1-label">Square 1:</label>
+            <input type="text" id="square1-label" value="Square 1">
+            <button onclick="updateLabel('square1')">Update</button>
+        </div>
+        <div class="control-row">
+            <label for="square1-width">Width:</label>
+            <input type="range" id="square1-width" min="40" max="200" value="100" oninput="updateSquareSize('square1')">
+        </div>
+        <div class="control-row">
+            <label for="square1-height">Height:</label>
+            <input type="range" id="square1-height" min="40" max="200" value="80" oninput="updateSquareSize('square1')">
+        </div>
+        
+        <div class="control-row">
+            <label for="square2-label">Square 2:</label>
+            <input type="text" id="square2-label" value="Square 2">
+            <button onclick="updateLabel('square2')">Update</button>
+        </div>
+        <div class="control-row">
+            <label for="square2-width">Width:</label>
+            <input type="range" id="square2-width" min="40" max="200" value="100" oninput="updateSquareSize('square2')">
+        </div>
+        <div class="control-row">
+            <label for="square2-height">Height:</label>
+            <input type="range" id="square2-height" min="40" max="200" value="80" oninput="updateSquareSize('square2')">
+        </div>
+        
+        <div class="control-row">
+            <label for="square3-label">Square 3:</label>
+            <input type="text" id="square3-label" value="Square 3">
+            <button onclick="updateLabel('square3')">Update</button>
+        </div>
+        <div class="control-row">
+            <label for="square3-width">Width:</label>
+            <input type="range" id="square3-width" min="40" max="200" value="100" oninput="updateSquareSize('square3')">
+        </div>
+        <div class="control-row">
+            <label for="square3-height">Height:</label>
+            <input type="range" id="square3-height" min="40" max="200" value="80" oninput="updateSquareSize('square3')">
+        </div>
     </div>
 </div>
 
@@ -149,7 +213,6 @@ title: Interactive Draggable Graphics
         });
 
         function startDrag(e) {
-            // Don't start drag if clicking on the label
             if (e.target.classList.contains('shape-label')) return;
             
             activeShape = e.target.closest('.shape');
@@ -187,5 +250,22 @@ title: Interactive Draggable Graphics
         const input = document.getElementById(`${shapeId}-label`);
         const label = document.querySelector(`#${shapeId} .shape-label`);
         label.textContent = input.value;
+    }
+
+    // Circle size update function
+    function updateCircleSize(shapeId) {
+        const size = document.getElementById(`${shapeId}-size`).value;
+        const shape = document.getElementById(shapeId);
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+    }
+
+    // Square size update function
+    function updateSquareSize(shapeId) {
+        const width = document.getElementById(`${shapeId}-width`).value;
+        const height = document.getElementById(`${shapeId}-height`).value;
+        const shape = document.getElementById(shapeId);
+        shape.style.width = `${width}px`;
+        shape.style.height = `${height}px`;
     }
 </script>
