@@ -17,4 +17,4 @@ EXPERIMENTAL - UNSTABLE
 # Animation Movement Test Page
 
 Simple Animation Test Page
-[View the Animation Graphics Page](/info/animated-shapes.html)
+[View the Animation Graphics Page](/info/shapes-demo.html)
