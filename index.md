@@ -26,11 +26,3 @@ title: Paul's Desktop Reference
 <ul>
     <li><a href="jobscrapes.html" title="Curated job listings scraped programmatically">Access the Current Job Postings I have Found</a></li>
 </ul>
-
-<hr>
-
-<h3>Graphics Tests</h3>
-<ul>
-    <li><a href="graphics.html" title="Hello World of Graphics">A page to move geometry around</a></li>
-    <li><a href="nojavagraphics.html" title="Hello World of No Java Graphics">A page to move geometry around with no Java</a></li>
-</ul>
