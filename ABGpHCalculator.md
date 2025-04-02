@@ -5,7 +5,7 @@ title: "ABG pH Calculator"
 
 # ABG Simulator
 
-[ABG Table to All Possible Value Pairs](abg_table.md)
+[ABG Table to All Possible Value Pairs](abg_table.html)
 
 <div class="controls">
     <div class="slider-container">
