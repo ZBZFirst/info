@@ -10,7 +10,8 @@ title: Interactive Draggable Graphics
         height: 100vh;
         position: relative;
         background: url('image.png') no-repeat center center;
-        background-size: cover;
+        background-size: contain;
+        background-color: #f0f0f0; /* Fallback if image doesn't load */
         cursor: grab;
     }
 
@@ -30,12 +31,14 @@ title: Interactive Draggable Graphics
         color: black;
         padding: 2px 6px;
         border-radius: 3px;
-        pointer-events: none; /* Allows clicks to pass through to shape */
+        pointer-events: none;
+        z-index: 10; /* Ensure label stays above everything */
     }
 
+    /* Shape outlines with proper sizing */
     #moving-circle {
-        width: 80px;
-        height: 80px;
+        width: 88px; /* Original width + border */
+        height: 88px;
         border: 4px solid #FF6B6B;
         border-radius: 50%;
         background-color: transparent;
@@ -43,8 +46,8 @@ title: Interactive Draggable Graphics
     }
 
     #triangle {
-        width: 100px;
-        height: 86px; /* height = width * √3/2 */
+        width: 108px; /* Adjusted for border */
+        height: 94px;
         clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
         background-color: transparent;
         border: 4px solid #4ECDC4;
@@ -54,8 +57,8 @@ title: Interactive Draggable Graphics
     }
 
     #square {
-        width: 120px;
-        height: 120px;
+        width: 128px; /* Original + border */
+        height: 128px;
         border: 4px solid #FFE66D;
         background-color: transparent;
         top: 200px;
@@ -64,14 +67,19 @@ title: Interactive Draggable Graphics
     }
 
     #pentagon {
-        width: 100px;
-        height: 100px;
+        width: 108px; /* Adjusted for border */
+        height: 108px;
         clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
         background-color: transparent;
         border: 4px solid #7D70BA;
         top: 150px;
         left: 300px;
         z-index: 3;
+    }
+
+    /* Ensure shapes are properly layered */
+    .shape > * {
+        position: relative;
     }
 </style>
 
@@ -101,26 +109,26 @@ title: Interactive Draggable Graphics
         shapes.forEach(shape => {
             shape.addEventListener('mousedown', startDrag);
             
-            // Handle double-click for text editing
             const label = shape.querySelector('.shape-label');
             label.addEventListener('dblclick', (e) => {
                 e.stopPropagation();
                 isEditingText = true;
+                label.contentEditable = true;
                 label.focus();
             });
             
             label.addEventListener('blur', () => {
                 isEditingText = false;
+                label.contentEditable = false;
             });
         });
 
         function startDrag(e) {
-            if (isEditingText) return;
+            if (isEditingText || e.target.classList.contains('shape-label')) return;
             
             activeShape = e.target.closest('.shape');
             if (!activeShape) return;
             
-            // Calculate offset between mouse and shape's top-left corner
             const rect = activeShape.getBoundingClientRect();
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
@@ -146,5 +154,11 @@ title: Interactive Draggable Graphics
             document.removeEventListener('mousemove', dragShape);
             document.removeEventListener('mouseup', stopDrag);
         }
+
+        // Handle window resize to maintain background
+        window.addEventListener('resize', function() {
+            const container = document.querySelector('.shape-container');
+            container.style.backgroundSize = 'contain';
+        });
     });
 </script>
