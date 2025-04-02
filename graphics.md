@@ -1,3 +1,8 @@
+---
+layout: default
+title: Interactive Draggable Graphics
+---
+
 <style>
     .shape-container {
         margin: 0;
