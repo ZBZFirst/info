@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Audio FFT Visualizer</title>
+  <title>Bin-Based FFT Visualizer</title>
   <style>
     body {
       margin: 0;
@@ -16,85 +16,148 @@
       color: white;
     }
     
-    #visualizer {
-      position: relative;
-      width: 100vw;
-      height: 80vh;
+    #visualizer-container {
+      width: 90vw;
+      height: 70vh;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 5px;
     }
     
-    .shape {
-      position: absolute;
-      transition: all 0.1s ease-out;
+    .bin {
+      width: 30px;
+      min-height: 10px;
+      background: linear-gradient(to top, #4ECDC4, #FF6B6B);
+      border-radius: 5px 5px 0 0;
+      transition: transform 0.05s ease-out, height 0.05s ease-out;
+      will-change: transform, height;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
     }
     
-    #circle {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: rgba(255, 107, 107, 0.7);
-      top: 50%;
-      left: 30%;
-      transform: translate(-50%, -50%);
+    .bin-label {
+      font-size: 8px;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      white-space: nowrap;
+      margin-bottom: 5px;
     }
     
-    #square {
-      width: 100px;
-      height: 100px;
-      background: rgba(78, 205, 196, 0.7);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    
-    #triangle {
-      width: 0;
-      height: 0;
-      border-left: 50px solid transparent;
-      border-right: 50px solid transparent;
-      border-bottom: 100px solid rgba(107, 185, 255, 0.7);
-      top: 50%;
-      left: 70%;
-      transform: translate(-50%, -50%);
+    #controls {
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     
     button {
-      margin: 20px;
       padding: 10px 20px;
       font-size: 16px;
       background: #4ECDC4;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-bottom: 10px;
     }
     
     #status {
       margin-top: 10px;
+      text-align: center;
+    }
+    
+    #bin-count {
+      margin-top: 10px;
+      width: 200px;
+    }
+    
+    .control-group {
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    label {
+      margin-bottom: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Audio FFT Visualizer</h1>
-  <button id="startButton">Start Microphone</button>
-  <div id="status">Click the button to start</div>
+  <h1>Frequency Bin Visualizer</h1>
   
-  <div id="visualizer">
-    <div id="circle" class="shape"></div>
-    <div id="square" class="shape"></div>
-    <div id="triangle" class="shape"></div>
+  <div id="visualizer-container"></div>
+  
+  <div id="controls">
+    <button id="startButton">Start Microphone</button>
+    <div id="status">Click the button to start</div>
+    
+    <div class="control-group">
+      <label for="bin-count">Number of Bins: <span id="bin-count-value">32</span></label>
+      <input type="range" id="bin-count" min="8" max="64" value="32" step="8">
+    </div>
+    
+    <div class="control-group">
+      <label for="sensitivity">Sensitivity: <span id="sensitivity-value">1.0</span></label>
+      <input type="range" id="sensitivity" min="0.1" max="3" value="1.0" step="0.1">
+    </div>
   </div>
 
   <script>
     const startButton = document.getElementById('startButton');
     const statusElement = document.getElementById('status');
-    const circle = document.getElementById('circle');
-    const square = document.getElementById('square');
-    const triangle = document.getElementById('triangle');
+    const visualizerContainer = document.getElementById('visualizer-container');
+    const binCountInput = document.getElementById('bin-count');
+    const binCountValue = document.getElementById('bin-count-value');
+    const sensitivityInput = document.getElementById('sensitivity');
+    const sensitivityValue = document.getElementById('sensitivity-value');
     
     let audioContext;
     let analyser;
     let microphone;
     let dataArray;
     let isRunning = false;
+    let bins = [];
+    let currentBinCount = 32;
+    let currentSensitivity = 1.0;
+    
+    // Initialize bins
+    function initBins(count) {
+      visualizerContainer.innerHTML = '';
+      bins = [];
+      
+      for (let i = 0; i < count; i++) {
+        const bin = document.createElement('div');
+        bin.className = 'bin';
+        
+        const label = document.createElement('div');
+        label.className = 'bin-label';
+        label.textContent = `Bin ${i+1}`;
+        
+        bin.appendChild(label);
+        visualizerContainer.appendChild(bin);
+        bins.push(bin);
+      }
+    }
+    
+    // Update bin count when slider changes
+    binCountInput.addEventListener('input', () => {
+      currentBinCount = parseInt(binCountInput.value);
+      binCountValue.textContent = currentBinCount;
+      if (isRunning) {
+        analyser.fftSize = currentBinCount * 2;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        initBins(currentBinCount);
+      }
+    });
+    
+    // Update sensitivity when slider changes
+    sensitivityInput.addEventListener('input', () => {
+      currentSensitivity = parseFloat(sensitivityInput.value);
+      sensitivityValue.textContent = currentSensitivity.toFixed(1);
+    });
     
     startButton.addEventListener('click', async () => {
       if (isRunning) {
@@ -109,16 +172,19 @@
         // Set up audio context
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
+        analyser.fftSize = currentBinCount * 2; // fftSize must be power of 2
         
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
         
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         
+        // Initialize bins
+        initBins(currentBinCount);
+        
         isRunning = true;
         startButton.textContent = "Stop Visualizer";
-        statusElement.textContent = "Microphone active - making noise will animate the shapes";
+        statusElement.textContent = "Microphone active - making noise will animate the bins";
         
         // Start visualization loop
         requestAnimationFrame(visualize);
@@ -142,31 +208,36 @@
       
       analyser.getByteFrequencyData(dataArray);
       
-      // Low frequencies (bass) affect the circle
-      const bass = averageInRange(dataArray, 0, 10);
-      circle.style.width = `${100 + bass}px`;
-      circle.style.height = `${100 + bass}px`;
-      circle.style.backgroundColor = `rgba(255, 107, 107, ${0.5 + bass/255})`;
+      // Calculate how many original bins map to each visual bin
+      const binsPerVisualBin = Math.floor(dataArray.length / bins.length);
       
-      // Mid frequencies affect the square
-      const mids = averageInRange(dataArray, 20, 60);
-      square.style.transform = `translate(-50%, -50%) rotate(${mids}deg)`;
-      square.style.width = `${100 + mids/2}px`;
-      square.style.height = `${100 + mids/2}px`;
-      
-      // High frequencies affect the triangle
-      const highs = averageInRange(dataArray, 100, 150);
-      triangle.style.borderBottomWidth = `${100 + highs}px`;
-      triangle.style.borderBottomColor = `rgba(107, 185, 255, ${0.5 + highs/255})`;
-      triangle.style.transform = `translate(-50%, -50%) rotate(${highs}deg)`;
+      for (let i = 0; i < bins.length; i++) {
+        // Calculate average for this visual bin's frequency range
+        const start = i * binsPerVisualBin;
+        const end = start + binsPerVisualBin;
+        let sum = 0;
+        
+        for (let j = start; j < end; j++) {
+          sum += dataArray[j];
+        }
+        
+        const average = sum / binsPerVisualBin;
+        const scaledValue = average * currentSensitivity;
+        
+        // Update the bin visualization
+        bins[i].style.height = `${10 + scaledValue}px`;
+        bins[i].style.transform = `scaleY(${1 + scaledValue/100})`;
+        
+        // Color based on frequency (low to high = blue to red)
+        const hue = 240 - (i / bins.length * 240);
+        bins[i].style.backgroundColor = `hsla(${hue}, 80%, 50%, ${0.5 + scaledValue/200})`;
+      }
       
       requestAnimationFrame(visualize);
     }
     
-    function averageInRange(data, start, end) {
-      const subset = data.slice(start, end);
-      return subset.reduce((sum, value) => sum + value, 0) / subset.length;
-    }
+    // Initialize with default bins
+    initBins(currentBinCount);
   </script>
 </body>
 </html>
