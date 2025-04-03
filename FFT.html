@@ -1,205 +1,434 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bin-Based FFT Visualizer</title>
+  <title>Customizable Frequency Bin Visualizer</title>
   <style>
     body {
       margin: 0;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      font-family: Arial, sans-serif;
       color: white;
-    }
-    
-    #visualizer-container {
-      width: 100vw;
-      height: 70vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      overflow-x: auto;
-      white-space: nowrap;
-      padding: 0 20px;
+      font-family: Arial, sans-serif;
+      padding: 20px;
       box-sizing: border-box;
     }
     
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    #visualizer-container {
+      height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 2px;
+      padding: 20px 0;
+      overflow-x: auto;
+    }
+    
     .bin {
-      width: 20px; /* Make bins slightly narrower to fit more */
+      width: 30px;
       min-height: 10px;
       background: linear-gradient(to top, #4ECDC4, #FF6B6B);
       border-radius: 5px 5px 0 0;
-      transition: transform 0.05s ease-out, height 0.05s ease-out;
-      will-change: transform, height;
-      display: inline-flex; /* Change from flex to inline-flex */
-      justify-content: center;
-      align-items: flex-end;
-      margin-right: 2px; /* Reduce gap between bins */
+      transition: height 0.05s ease-out;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
     }
     
     .bin-label {
-      font-size: 8px;
-      transform: rotate(-90deg);
-      transform-origin: center;
-      white-space: nowrap;
-      margin-bottom: 5px;
+      font-size: 10px;
+      margin-top: 5px;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
     }
     
     #controls {
-      margin: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 15px;
     }
     
     button {
       padding: 10px 20px;
-      font-size: 16px;
       background: #4ECDC4;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-bottom: 10px;
-    }
-    
-    #status {
-      margin-top: 10px;
-      text-align: center;
-    }
-    
-    #bin-count {
-      margin-top: 10px;
-      width: 200px;
+      font-size: 16px;
     }
     
     .control-group {
-      margin: 10px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
     }
     
-    label {
-      margin-bottom: 5px;
+    .control-group h3 {
+      margin-top: 0;
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .slider-container label {
+      width: 180px;
+      font-size: 14px;
+    }
+    
+    input[type="range"] {
+      flex-grow: 1;
+      margin: 0 10px;
+    }
+    
+    .slider-value {
+      width: 50px;
+      text-align: right;
+    }
+    
+    #bin-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    
+    .bin-control {
+      background: #333;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    
+    #status {
+      text-align: center;
+      margin-top: 10px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <h1>Frequency Bin Visualizer</h1>
+  <h1>Customizable Frequency Bin Visualizer</h1>
   
-  <div id="visualizer-container"></div>
-  
-  <div id="controls">
-    <button id="startButton">Start Microphone</button>
-    <div id="status">Click the button to start</div>
+  <div class="container">
+    <div id="visualizer-container"></div>
     
-    <div class="control-group">
-      <label for="bin-count">Number of Bins: <span id="bin-count-value">32</span></label>
-      <input type="range" id="bin-count" min="8" max="64" value="32" step="8">
-    </div>
-    
-    <div class="control-group">
-      <label for="sensitivity">Sensitivity: <span id="sensitivity-value">1.0</span></label>
-      <input type="range" id="sensitivity" min="0.1" max="3" value="1.0" step="0.1">
+    <div id="controls">
+      <button id="startButton">Start Microphone</button>
+      <div id="status">Click the button to start</div>
+      
+      <div class="control-group">
+        <h3>Master Controls</h3>
+        <div class="slider-container">
+          <label for="bin-count">Number of Bins:</label>
+          <input type="range" id="bin-count" min="4" max="16" value="8" step="1">
+          <span class="slider-value" id="bin-count-value">8</span>
+        </div>
+        <div class="slider-container">
+          <label for="master-min">Master Min Frequency (Hz):</label>
+          <input type="range" id="master-min" min="20" max="20000" value="20" step="10">
+          <span class="slider-value" id="master-min-value">20</span>
+        </div>
+        <div class="slider-container">
+          <label for="master-max">Master Max Frequency (Hz):</label>
+          <input type="range" id="master-max" min="20" max="20000" value="20000" step="10">
+          <span class="slider-value" id="master-max-value">20000</span>
+        </div>
+        <div class="slider-container">
+          <label for="sensitivity">Sensitivity:</label>
+          <input type="range" id="sensitivity" min="0.1" max="3" value="1.0" step="0.1">
+          <span class="slider-value" id="sensitivity-value">1.0</span>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>Bin Frequency Ranges</h3>
+        <div id="bin-controls"></div>
+      </div>
     </div>
   </div>
 
   <script>
+    // DOM Elements
     const startButton = document.getElementById('startButton');
     const statusElement = document.getElementById('status');
     const visualizerContainer = document.getElementById('visualizer-container');
+    const binControlsContainer = document.getElementById('bin-controls');
+    
+    // Slider elements
     const binCountInput = document.getElementById('bin-count');
     const binCountValue = document.getElementById('bin-count-value');
+    const masterMinInput = document.getElementById('master-min');
+    const masterMinValue = document.getElementById('master-min-value');
+    const masterMaxInput = document.getElementById('master-max');
+    const masterMaxValue = document.getElementById('master-max-value');
     const sensitivityInput = document.getElementById('sensitivity');
     const sensitivityValue = document.getElementById('sensitivity-value');
     
+    // Audio variables
     let audioContext;
     let analyser;
     let microphone;
     let dataArray;
     let isRunning = false;
-    let bins = [];
-    let currentBinCount = 32;
-    let currentSensitivity = 1.0;
     
-    // Initialize bins
-    function initBins(count) {
+    // Configuration
+    let config = {
+      binCount: 8,
+      masterMin: 20,
+      masterMax: 20000,
+      sensitivity: 1.0,
+      binRanges: []
+    };
+    
+    // Initialize the app
+    function init() {
+      setupEventListeners();
+      updateBinCount(config.binCount);
+      updateMasterRange();
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+      startButton.addEventListener('click', toggleVisualizer);
+      
+      binCountInput.addEventListener('input', () => {
+        config.binCount = parseInt(binCountInput.value);
+        binCountValue.textContent = config.binCount;
+        updateBinCount(config.binCount);
+      });
+      
+      masterMinInput.addEventListener('input', () => {
+        config.masterMin = parseInt(masterMinInput.value);
+        masterMinValue.textContent = config.masterMin;
+        updateMasterRange();
+      });
+      
+      masterMaxInput.addEventListener('input', () => {
+        config.masterMax = parseInt(masterMaxInput.value);
+        masterMaxValue.textContent = config.masterMax;
+        updateMasterRange();
+      });
+      
+      sensitivityInput.addEventListener('input', () => {
+        config.sensitivity = parseFloat(sensitivityInput.value);
+        sensitivityValue.textContent = config.sensitivity.toFixed(1);
+      });
+    }
+    
+    // Update the number of bins
+    function updateBinCount(count) {
+      // Clear existing bins
       visualizerContainer.innerHTML = '';
-      bins = [];
+      binControlsContainer.innerHTML = '';
+      config.binRanges = [];
       
-      // Calculate bin width based on count to ensure they fit
-      const binWidth = Math.max(10, Math.min(30, 2000 / count));
+      // Calculate initial frequency range per bin (logarithmic distribution)
+      const logMin = Math.log10(config.masterMin);
+      const logMax = Math.log10(config.masterMax);
+      const logRange = logMax - logMin;
+      const logStep = logRange / count;
       
+      // Create new bins
       for (let i = 0; i < count; i++) {
-        const bin = document.createElement('div');
-        bin.className = 'bin';
-        bin.style.width = `${binWidth}px`;
+        // Calculate initial frequency range for this bin
+        const binMin = i === 0 ? config.masterMin : Math.pow(10, logMin + i * logStep);
+        const binMax = i === count - 1 ? config.masterMax : Math.pow(10, logMin + (i + 1) * logStep);
         
-        const label = document.createElement('div');
-        label.className = 'bin-label';
-        label.textContent = `Bin ${i+1}`;
+        // Store the bin range
+        config.binRanges.push({
+          min: binMin,
+          max: binMax,
+          minElement: null,
+          maxElement: null,
+          minValueElement: null,
+          maxValueElement: null
+        });
         
-        bin.appendChild(label);
-        visualizerContainer.appendChild(bin);
-        bins.push(bin);
+        // Create visual bin
+        createVisualBin(i);
+        // Create bin controls
+        createBinControls(i);
       }
     }
     
-    // Update bin count when slider changes
-    binCountInput.addEventListener('input', () => {
-      currentBinCount = parseInt(binCountInput.value);
-      binCountValue.textContent = currentBinCount;
-      if (isRunning) {
-        analyser.fftSize = currentBinCount * 2;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        initBins(currentBinCount);
-      }
-    });
+    // Create a visual bin element
+    function createVisualBin(index) {
+      const bin = document.createElement('div');
+      bin.className = 'bin';
+      bin.id = `bin-${index}`;
+      
+      const label = document.createElement('div');
+      label.className = 'bin-label';
+      label.textContent = `Bin ${index + 1}`;
+      
+      bin.appendChild(label);
+      visualizerContainer.appendChild(bin);
+    }
     
-    // Update sensitivity when slider changes
-    sensitivityInput.addEventListener('input', () => {
-      currentSensitivity = parseFloat(sensitivityInput.value);
-      sensitivityValue.textContent = currentSensitivity.toFixed(1);
-    });
+    // Create controls for a bin
+    function createBinControls(index) {
+      const binControl = document.createElement('div');
+      binControl.className = 'bin-control';
+      
+      const title = document.createElement('h4');
+      title.textContent = `Bin ${index + 1} Frequency Range`;
+      binControl.appendChild(title);
+      
+      // Min frequency slider
+      const minContainer = document.createElement('div');
+      minContainer.className = 'slider-container';
+      
+      const minLabel = document.createElement('label');
+      minLabel.textContent = 'Min (Hz):';
+      minLabel.htmlFor = `bin-${index}-min`;
+      minContainer.appendChild(minLabel);
+      
+      const minInput = document.createElement('input');
+      minInput.type = 'range';
+      minInput.id = `bin-${index}-min`;
+      minInput.min = config.masterMin;
+      minInput.max = config.masterMax;
+      minInput.value = config.binRanges[index].min;
+      minContainer.appendChild(minInput);
+      
+      const minValue = document.createElement('span');
+      minValue.className = 'slider-value';
+      minValue.id = `bin-${index}-min-value`;
+      minValue.textContent = config.binRanges[index].min;
+      minContainer.appendChild(minValue);
+      
+      binControl.appendChild(minContainer);
+      
+      // Max frequency slider
+      const maxContainer = document.createElement('div');
+      maxContainer.className = 'slider-container';
+      
+      const maxLabel = document.createElement('label');
+      maxLabel.textContent = 'Max (Hz):';
+      maxLabel.htmlFor = `bin-${index}-max`;
+      maxContainer.appendChild(maxLabel);
+      
+      const maxInput = document.createElement('input');
+      maxInput.type = 'range';
+      maxInput.id = `bin-${index}-max`;
+      maxInput.min = config.masterMin;
+      maxInput.max = config.masterMax;
+      maxInput.value = config.binRanges[index].max;
+      maxContainer.appendChild(maxInput);
+      
+      const maxValue = document.createElement('span');
+      maxValue.className = 'slider-value';
+      maxValue.id = `bin-${index}-max-value`;
+      maxValue.textContent = config.binRanges[index].max;
+      maxContainer.appendChild(maxValue);
+      
+      binControl.appendChild(maxContainer);
+      
+      // Store references to the elements
+      config.binRanges[index].minElement = minInput;
+      config.binRanges[index].maxElement = maxInput;
+      config.binRanges[index].minValueElement = minValue;
+      config.binRanges[index].maxValueElement = maxValue;
+      
+      // Add event listeners
+      minInput.addEventListener('input', () => {
+        const value = parseInt(minInput.value);
+        config.binRanges[index].min = value;
+        minValue.textContent = value;
+        
+        // Ensure min doesn't exceed max
+        if (value > config.binRanges[index].max) {
+          config.binRanges[index].max = value;
+          maxInput.value = value;
+          maxValue.textContent = value;
+        }
+      });
+      
+      maxInput.addEventListener('input', () => {
+        const value = parseInt(maxInput.value);
+        config.binRanges[index].max = value;
+        maxValue.textContent = value;
+        
+        // Ensure max doesn't go below min
+        if (value < config.binRanges[index].min) {
+          config.binRanges[index].min = value;
+          minInput.value = value;
+          minValue.textContent = value;
+        }
+      });
+      
+      binControlsContainer.appendChild(binControl);
+    }
     
-    startButton.addEventListener('click', async () => {
+    // Update master frequency range
+    function updateMasterRange() {
+      // Update all bin sliders' min/max to match master range
+      config.binRanges.forEach((bin, index) => {
+        bin.minElement.min = config.masterMin;
+        bin.maxElement.min = config.masterMin;
+        bin.minElement.max = config.masterMax;
+        bin.maxElement.max = config.masterMax;
+        
+        // Ensure bin ranges stay within master range
+        if (bin.min < config.masterMin) {
+          bin.min = config.masterMin;
+          bin.minElement.value = config.masterMin;
+          bin.minValueElement.textContent = config.masterMin;
+        }
+        
+        if (bin.max > config.masterMax) {
+          bin.max = config.masterMax;
+          bin.maxElement.value = config.masterMax;
+          bin.maxValueElement.textContent = config.masterMax;
+        }
+      });
+    }
+    
+    // Toggle visualizer on/off
+    async function toggleVisualizer() {
       if (isRunning) {
         stopVisualizer();
         return;
       }
       
       try {
-        // Request microphone access
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // Set up audio context
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
-        analyser.fftSize = currentBinCount * 2; // fftSize must be power of 2
+        analyser.fftSize = 2048; // Use a large FFT size for better frequency resolution
         
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
         
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         
-        // Initialize bins
-        initBins(currentBinCount);
-        
         isRunning = true;
         startButton.textContent = "Stop Visualizer";
         statusElement.textContent = "Microphone active - making noise will animate the bins";
         
-        // Start visualization loop
-        requestAnimationFrame(visualize);
+        visualize();
       } catch (error) {
         statusElement.textContent = `Error: ${error.message}`;
       }
-    });
+    }
     
+    // Stop the visualizer
     function stopVisualizer() {
       if (microphone && audioContext) {
         microphone.disconnect();
@@ -210,41 +439,50 @@
       statusElement.textContent = "Visualizer stopped";
     }
     
+    // Visualization loop
     function visualize() {
       if (!isRunning) return;
       
       analyser.getByteFrequencyData(dataArray);
       
-      // Calculate how many original bins map to each visual bin
-      const binsPerVisualBin = Math.floor(dataArray.length / bins.length);
+      // Calculate frequency resolution
+      const sampleRate = audioContext.sampleRate;
+      const frequencyResolution = sampleRate / analyser.fftSize;
       
-      for (let i = 0; i < bins.length; i++) {
-        // Calculate average for this visual bin's frequency range
-        const start = i * binsPerVisualBin;
-        const end = start + binsPerVisualBin;
-        let sum = 0;
+      // Process each bin
+      config.binRanges.forEach((bin, index) => {
+        // Calculate which FFT bins correspond to our frequency range
+        const startBin = Math.floor(bin.min / frequencyResolution);
+        const endBin = Math.min(Math.ceil(bin.max / frequencyResolution), dataArray.length - 1);
         
-        for (let j = start; j < end; j++) {
-          sum += dataArray[j];
+        // Calculate average amplitude in this frequency range
+        let sum = 0;
+        let count = 0;
+        
+        for (let i = startBin; i <= endBin; i++) {
+          sum += dataArray[i];
+          count++;
         }
         
-        const average = sum / binsPerVisualBin;
-        const scaledValue = average * currentSensitivity;
+        const average = count > 0 ? sum / count : 0;
+        const scaledValue = average * config.sensitivity;
         
-        // Update the bin visualization
-        bins[i].style.height = `${10 + scaledValue}px`;
-        bins[i].style.transform = `scaleY(${1 + scaledValue/100})`;
-        
-        // Color based on frequency (low to high = blue to red)
-        const hue = 240 - (i / bins.length * 240);
-        bins[i].style.backgroundColor = `hsla(${hue}, 80%, 50%, ${0.5 + scaledValue/200})`;
-      }
+        // Update the visual bin
+        const visualBin = document.getElementById(`bin-${index}`);
+        if (visualBin) {
+          visualBin.style.height = `${10 + scaledValue}px`;
+          
+          // Color based on frequency (low to high = blue to red)
+          const hue = 240 - (index / config.binRanges.length * 240);
+          visualBin.style.backgroundColor = `hsla(${hue}, 80%, 50%, ${0.5 + scaledValue/200})`;
+        }
+      });
       
       requestAnimationFrame(visualize);
     }
     
-    // Initialize with default bins
-    initBins(currentBinCount);
+    // Initialize the app
+    init();
   </script>
 </body>
 </html>
