@@ -17,25 +17,28 @@
     }
     
     #visualizer-container {
-      width: 90vw;
+      width: 100vw;
       height: 70vh;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       align-items: flex-end;
-      gap: 5px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
     
     .bin {
-      width: 30px;
+      width: 20px; /* Make bins slightly narrower to fit more */
       min-height: 10px;
       background: linear-gradient(to top, #4ECDC4, #FF6B6B);
       border-radius: 5px 5px 0 0;
       transition: transform 0.05s ease-out, height 0.05s ease-out;
       will-change: transform, height;
-      display: flex;
+      display: inline-flex; /* Change from flex to inline-flex */
       justify-content: center;
       align-items: flex-end;
+      margin-right: 2px; /* Reduce gap between bins */
     }
     
     .bin-label {
@@ -128,9 +131,13 @@
       visualizerContainer.innerHTML = '';
       bins = [];
       
+      // Calculate bin width based on count to ensure they fit
+      const binWidth = Math.max(10, Math.min(30, 2000 / count));
+      
       for (let i = 0; i < count; i++) {
         const bin = document.createElement('div');
         bin.className = 'bin';
+        bin.style.width = `${binWidth}px`;
         
         const label = document.createElement('div');
         label.className = 'bin-label';
