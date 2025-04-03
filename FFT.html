@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Full-Screen Frequency Bin Visualizer</title>
+  <title>Full-Screen Frequency Visualizer with QR Codes</title>
   <style>
     body {
       margin: 0;
@@ -155,10 +155,56 @@
       color: white;
       cursor: pointer;
     }
+    
+    #qr-code-container {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      transition: opacity 0.3s ease;
+    }
+    
+    #qr-code-container.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .qr-code {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+    
+    .qr-code-label {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
   <div id="fullscreen-container"></div>
+  
+  <div id="qr-code-container" class="hidden">
+    <div>
+      <img src="qrcode.svg" class="qr-code" alt="QR Code SVG">
+      <div class="qr-code-label">SVG Version</div>
+    </div>
+    <div>
+      <img src="qrcode.png" class="qr-code" alt="QR Code PNG">
+      <div class="qr-code-label">PNG Version</div>
+    </div>
+    <div>
+      <img src="qrcode.jpeg" class="qr-code" alt="QR Code JPEG">
+      <div class="qr-code-label">JPEG Version</div>
+    </div>
+  </div>
   
   <button id="fullscreen-button">Toggle Fullscreen</button>
   
@@ -209,6 +255,7 @@
     const toggleControlsButton = document.getElementById('toggle-controls');
     const controlsPanel = document.getElementById('controls-panel');
     const fullscreenButton = document.getElementById('fullscreen-button');
+    const qrCodeContainer = document.getElementById('qr-code-container');
     
     // Slider elements
     const binCountInput = document.getElementById('bin-count');
@@ -245,6 +292,9 @@
       // Check if fullscreen is already active (for reloads)
       if (document.fullscreenElement) {
         visualizerContainer.style.height = '100vh';
+        qrCodeContainer.classList.add('hidden');
+      } else {
+        qrCodeContainer.classList.remove('hidden');
       }
     }
     
@@ -275,22 +325,22 @@
         sensitivityValue.textContent = config.sensitivity.toFixed(1);
       });
       
-      toggleControlsButton.addEventListener('click', () => {
-        controlsPanel.classList.toggle('collapsed');
-        toggleControlsButton.textContent = controlsPanel.classList.contains('collapsed') ? '▲ Show Controls ▼' : '▲ Hide Controls ▼';
-      });
+      toggleControlsButton.addEventListener('click', toggleControls);
       
       fullscreenButton.addEventListener('click', toggleFullscreen);
       
-      document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) {
-          fullscreenButton.textContent = 'Exit Fullscreen';
-          visualizerContainer.style.height = '100vh';
-        } else {
-          fullscreenButton.textContent = 'Toggle Fullscreen';
-          visualizerContainer.style.height = 'calc(100vh - 300px)';
-        }
-      });
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+    }
+    
+    // Toggle controls visibility
+    function toggleControls() {
+      controlsPanel.classList.toggle('collapsed');
+      toggleControlsButton.textContent = controlsPanel.classList.contains('collapsed') ? '▲ Show Controls ▼' : '▲ Hide Controls ▼';
+      
+      // Show QR codes when controls are visible
+      if (!document.fullscreenElement) {
+        qrCodeContainer.classList.toggle('hidden', !controlsPanel.classList.contains('collapsed'));
+      }
     }
     
     // Toggle fullscreen mode
@@ -299,10 +349,21 @@
         visualizerContainer.requestFullscreen().catch(err => {
           console.error(`Error attempting to enable fullscreen: ${err.message}`);
         });
-        fullscreenButton.textContent = 'Exit Fullscreen';
       } else {
         document.exitFullscreen();
+      }
+    }
+    
+    // Handle fullscreen change events
+    function handleFullscreenChange() {
+      if (document.fullscreenElement) {
+        fullscreenButton.textContent = 'Exit Fullscreen';
+        visualizerContainer.style.height = '100vh';
+        qrCodeContainer.classList.add('hidden');
+      } else {
         fullscreenButton.textContent = 'Toggle Fullscreen';
+        visualizerContainer.style.height = 'calc(100vh - 300px)';
+        qrCodeContainer.classList.remove('hidden');
       }
     }
     
