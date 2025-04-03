@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio FFT Visualizer</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+    
+    #visualizer {
+      position: relative;
+      width: 100vw;
+      height: 80vh;
+    }
+    
+    .shape {
+      position: absolute;
+      transition: all 0.1s ease-out;
+    }
+    
+    #circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255, 107, 107, 0.7);
+      top: 50%;
+      left: 30%;
+      transform: translate(-50%, -50%);
+    }
+    
+    #square {
+      width: 100px;
+      height: 100px;
+      background: rgba(78, 205, 196, 0.7);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    #triangle {
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-bottom: 100px solid rgba(107, 185, 255, 0.7);
+      top: 50%;
+      left: 70%;
+      transform: translate(-50%, -50%);
+    }
+    
+    button {
+      margin: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #4ECDC4;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    #status {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Audio FFT Visualizer</h1>
+  <button id="startButton">Start Microphone</button>
+  <div id="status">Click the button to start</div>
+  
+  <div id="visualizer">
+    <div id="circle" class="shape"></div>
+    <div id="square" class="shape"></div>
+    <div id="triangle" class="shape"></div>
+  </div>
+
+  <script>
+    const startButton = document.getElementById('startButton');
+    const statusElement = document.getElementById('status');
+    const circle = document.getElementById('circle');
+    const square = document.getElementById('square');
+    const triangle = document.getElementById('triangle');
+    
+    let audioContext;
+    let analyser;
+    let microphone;
+    let dataArray;
+    let isRunning = false;
+    
+    startButton.addEventListener('click', async () => {
+      if (isRunning) {
+        stopVisualizer();
+        return;
+      }
+      
+      try {
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Set up audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+        
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        
+        isRunning = true;
+        startButton.textContent = "Stop Visualizer";
+        statusElement.textContent = "Microphone active - making noise will animate the shapes";
+        
+        // Start visualization loop
+        requestAnimationFrame(visualize);
+      } catch (error) {
+        statusElement.textContent = `Error: ${error.message}`;
+      }
+    });
+    
+    function stopVisualizer() {
+      if (microphone && audioContext) {
+        microphone.disconnect();
+        audioContext.close();
+      }
+      isRunning = false;
+      startButton.textContent = "Start Microphone";
+      statusElement.textContent = "Visualizer stopped";
+    }
+    
+    function visualize() {
+      if (!isRunning) return;
+      
+      analyser.getByteFrequencyData(dataArray);
+      
+      // Low frequencies (bass) affect the circle
+      const bass = averageInRange(dataArray, 0, 10);
+      circle.style.width = `${100 + bass}px`;
+      circle.style.height = `${100 + bass}px`;
+      circle.style.backgroundColor = `rgba(255, 107, 107, ${0.5 + bass/255})`;
+      
+      // Mid frequencies affect the square
+      const mids = averageInRange(dataArray, 20, 60);
+      square.style.transform = `translate(-50%, -50%) rotate(${mids}deg)`;
+      square.style.width = `${100 + mids/2}px`;
+      square.style.height = `${100 + mids/2}px`;
+      
+      // High frequencies affect the triangle
+      const highs = averageInRange(dataArray, 100, 150);
+      triangle.style.borderBottomWidth = `${100 + highs}px`;
+      triangle.style.borderBottomColor = `rgba(107, 185, 255, ${0.5 + highs/255})`;
+      triangle.style.transform = `translate(-50%, -50%) rotate(${highs}deg)`;
+      
+      requestAnimationFrame(visualize);
+    }
+    
+    function averageInRange(data, start, end) {
+      const subset = data.slice(start, end);
+      return subset.reduce((sum, value) => sum + value, 0) / subset.length;
+    }
+  </script>
+</body>
+</html>
