@@ -282,7 +282,7 @@
             populateFileDropdown(filteredFiles);
         }
 
-        // Load the selected file
+            // Load the selected file - UPDATED to use loadFileByPath
         async function loadSelectedFile() {
             const selectedFile = fileSelect.value;
             if (!selectedFile) {
@@ -290,19 +290,27 @@
                 return;
             }
             
-            await loadFile(selectedFile);
+            // Find the full file object from allFiles
+            const fileObj = allFiles.find(f => f.path === selectedFile || f.name === selectedFile);
+            if (!fileObj) {
+                alert("Selected file not found in the file list");
+                return;
+            }
+            
+            await loadFileByPath(fileObj.path, fileObj.url);
         }
-
-        // Load all files (with a small delay between each to avoid rate limiting)
+    
+        // Load all files - UPDATED to use loadFileByPath
         async function loadAllFiles() {
             tablesContainer.innerHTML = "<p>Loading all files...</p>";
             
             for (const file of allFiles) {
-                await loadFile(file);
+                await loadFileByPath(file.path, file.url);
                 // Small delay to avoid hitting rate limits
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
         }
+
 
         // Modified loadFile to use path
         async function loadFileByPath(path, url) {
@@ -325,12 +333,69 @@
                 
                 const arrayBuffer = await response.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
+        
                 tablesContainer.removeChild(loadingIndicator);
                 
                 workbook.SheetNames.forEach(sheetName => {
-                    // (Keep your existing table creation code here)
-                    // Just update it to use the full path if needed
+                    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                    if (sheet.length === 0) return;
+                    
+                    // Create wrapper div with class based on filename
+                    const wrapperDiv = document.createElement("div");
+                    wrapperDiv.id = `table-${filename}-${sheetName}`;
+                    
+                    // Apply filename-based styling
+                    if (filename.includes("ClaremontCollegesJobs")) {
+                        wrapperDiv.classList.add("claremont-file");
+                    } else if (filename.includes("DignityHospitals")) {
+                        wrapperDiv.classList.add("dignity-file");
+                    } else if (filename.includes("kpjobs")) {
+                        wrapperDiv.classList.add("kpjobs-file");
+                    }
+                    
+                    // Create title with filename and sheetname
+                    const title = document.createElement("h3");
+                    title.textContent = `${filename} - ${sheetName}`;
+                    
+                    // Add file metadata
+                    const fileInfo = document.createElement("div");
+                    fileInfo.className = "file-info";
+                    fileInfo.textContent = `Rows: ${sheet.length - 1} | Columns: ${sheet[0].length}`;
+                    
+                    // Create table element
+                    const table = document.createElement("table");
+                    table.classList.add("dynamicTable");
+                    
+                    // Create Table Headers
+                    let thead = document.createElement("thead");
+                    let headerRow = document.createElement("tr");
+                    sheet[0].forEach((header, index) => {
+                        let th = document.createElement("th");
+                        th.textContent = header;
+                        th.onclick = () => sortTable(table, index);
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                    
+                    // Create Table Body
+                    let tbody = document.createElement("tbody");
+                    sheet.slice(1).forEach(row => {
+                        let tr = document.createElement("tr");
+                        row.forEach(cell => {
+                            let td = document.createElement("td");
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    
+                    // Assemble all elements
+                    wrapperDiv.appendChild(title);
+                    wrapperDiv.appendChild(fileInfo);
+                    wrapperDiv.appendChild(table);
+                    tablesContainer.appendChild(wrapperDiv);
                 });
                 
                 updateRowSpacing();
