@@ -6,111 +6,36 @@
     <title>Job Scrapes Browser</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+        /* (Keep all your existing styles here) */
+        .folder {
+            margin-left: 20px;
+            border-left: 2px solid #ddd;
+            padding-left: 10px;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
+        .folder-name {
+            font-weight: bold;
+            color: #555;
             cursor: pointer;
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .folder-name:hover {
+            color: #333;
         }
-        tr:hover {
-            background-color: #f1f1f1;
+        .folder-contents {
+            display: none;
+            margin-left: 10px;
         }
-        .controls {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #e9e9e9;
-            border-radius: 5px;
-        }
-        .file-info {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
-        }
-        .claremont-file {
-            border-left: 4px solid #4CAF50;
-        }
-        .dignity-file {
-            border-left: 4px solid #2196F3;
-        }
-        .kpjobs-file {
-            border-left: 4px solid #FF9800;
-        }
-        .loading {
-            color: #666;
-            font-style: italic;
-        }
-        .error {
-            color: #f44336;
+        .folder-expanded .folder-contents {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Job Scrapes Browser</h1>
-        
-        <div class="controls">
-            <div>
-                <label for="repoUrl">GitHub Repository URL:</label>
-                <input type="text" id="repoUrl" value="https://api.github.com/repos/ZBZFirst/info/contents/jobpostings" style="width: 400px;">
-                <button onclick="fetchFileList()">Load Files</button>
-                <span id="loadingStatus" class="loading"></span>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <label for="fileSelect">Select a job posting file:</label>
-                <select id="fileSelect" style="min-width: 300px;">
-                    <option value="">-- Select a file --</option>
-                </select>
-                <button onclick="loadSelectedFile()">Load Selected File</button>
-                <button onclick="loadAllFiles()">Load All Files</button>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <h3>Adjust Row Spacing: <input type="number" id="rowSpacing" value="15" min="5" max="50" onchange="updateRowSpacing()"> px</h3>
-                <h3>Adjust Column Width: <input type="number" id="colWidth" value="150" min="50" max="500" onchange="updateColumnWidth()"> px</h3>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <label for="filterText">Filter files:</label>
-                <input type="text" id="filterText" placeholder="Enter part of filename" oninput="filterFileList()">
-                <button onclick="document.getElementById('filterText').value = ''; filterFileList()">Clear</button>
-            </div>
-        </div>
-
-        <div id="tables"></div>
-    </div>
-
+    <!-- (Keep all your existing HTML here) -->
+    
     <script>
-        let allFiles = [];
-        const fileSelect = document.getElementById("fileSelect");
-        const loadingStatus = document.getElementById("loadingStatus");
-        const tablesContainer = document.getElementById("tables");
+        // (Keep all your existing variables and helper functions here)
 
-        // Fetch list of files from GitHub API
+        // Modified fetchFileList to handle recursive directory scanning
         async function fetchFileList() {
             const repoUrl = document.getElementById("repoUrl").value;
             if (!repoUrl) {
@@ -120,20 +45,16 @@
 
             loadingStatus.textContent = "Loading file list...";
             fileSelect.disabled = true;
+            tablesContainer.innerHTML = "";
             
             try {
-                const response = await fetch(repoUrl);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+                // Start scanning from root directory
+                allFiles = await scanGitHubDirectory(repoUrl);
                 
-                // Filter for Excel files and extract names
-                allFiles = data
-                    .filter(item => item.name.endsWith('.xlsx'))
-                    .map(item => item.name);
-                
+                // Populate both dropdown and folder tree
                 populateFileDropdown(allFiles);
+                createFolderTree(allFiles);
+                
                 loadingStatus.textContent = `Loaded ${allFiles.length} files`;
             } catch (error) {
                 console.error("Error fetching file list:", error);
@@ -144,51 +65,113 @@
             }
         }
 
-        // Populate dropdown with files
-        function populateFileDropdown(files) {
-            fileSelect.innerHTML = '<option value="">-- Select a file --</option>';
+        // Recursively scan GitHub directory structure
+        async function scanGitHubDirectory(baseUrl, path = "") {
+            let files = [];
+            const url = path ? `${baseUrl}/${path}` : baseUrl;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const contents = await response.json();
+                
+                for (const item of contents) {
+                    if (item.type === "file" && item.name.endsWith('.xlsx')) {
+                        files.push({
+                            path: path ? `${path}/${item.name}` : item.name,
+                            name: item.name,
+                            url: item.download_url
+                        });
+                    } 
+                    else if (item.type === "dir") {
+                        const subFiles = await scanGitHubDirectory(baseUrl, path ? `${path}/${item.name}` : item.name);
+                        files = files.concat(subFiles);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error scanning directory ${path}:`, error);
+            }
+            
+            return files;
+        }
+
+        // Create interactive folder tree
+        function createFolderTree(files) {
+            const treeContainer = document.createElement('div');
+            treeContainer.id = 'folderTree';
+            treeContainer.style.margin = '20px 0';
+            
+            // Build folder structure
+            const root = { name: 'Root', children: [], path: '' };
+            
             files.forEach(file => {
-                let option = document.createElement("option");
-                option.value = file;
-                option.textContent = file;
-                fileSelect.appendChild(option);
+                const pathParts = file.path.split('/');
+                let current = root;
+                
+                for (let i = 0; i < pathParts.length - 1; i++) {
+                    const part = pathParts[i];
+                    let child = current.children.find(c => c.name === part);
+                    
+                    if (!child) {
+                        child = { name: part, children: [], path: current.path ? `${current.path}/${part}` : part };
+                        current.children.push(child);
+                    }
+                    
+                    current = child;
+                }
+                
+                // Add file to current folder
+                current.children.push({
+                    name: pathParts[pathParts.length - 1],
+                    isFile: true,
+                    path: file.path,
+                    url: file.url
+                });
             });
+            
+            // Render tree
+            renderFolder(root, treeContainer);
+            document.querySelector('.controls').after(treeContainer);
         }
 
-        // Filter file list based on input
-        function filterFileList() {
-            const filterText = document.getElementById("filterText").value.toLowerCase();
-            const filteredFiles = allFiles.filter(file => 
-                file.toLowerCase().includes(filterText)
-            );
-            populateFileDropdown(filteredFiles);
-        }
-
-        // Load the selected file
-        async function loadSelectedFile() {
-            const selectedFile = fileSelect.value;
-            if (!selectedFile) {
-                alert("Please select a file to load.");
-                return;
+        function renderFolder(folder, container) {
+            const folderDiv = document.createElement('div');
+            folderDiv.className = 'folder';
+            
+            if (folder.children.length > 0) {
+                const header = document.createElement('div');
+                header.className = 'folder-name';
+                header.textContent = folder.name;
+                header.onclick = () => folderDiv.classList.toggle('folder-expanded');
+                folderDiv.appendChild(header);
+                
+                const contentsDiv = document.createElement('div');
+                contentsDiv.className = 'folder-contents';
+                
+                folder.children.forEach(child => {
+                    if (child.isFile) {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.textContent = child.name;
+                        fileDiv.style.cursor = 'pointer';
+                        fileDiv.style.padding = '2px 5px';
+                        fileDiv.onclick = () => loadFileByPath(child.path, child.url);
+                        contentsDiv.appendChild(fileDiv);
+                    } else {
+                        renderFolder(child, contentsDiv);
+                    }
+                });
+                
+                folderDiv.appendChild(contentsDiv);
             }
             
-            await loadFile(selectedFile);
+            container.appendChild(folderDiv);
         }
 
-        // Load all files (with a small delay between each to avoid rate limiting)
-        async function loadAllFiles() {
-            tablesContainer.innerHTML = "<p>Loading all files...</p>";
+        // Modified loadFile to use path
+        async function loadFileByPath(path, url) {
+            const filename = path.split('/').pop();
             
-            for (const file of allFiles) {
-                await loadFile(file);
-                // Small delay to avoid hitting rate limits
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-        }
-
-        // Main function to load and display a file
-        async function loadFile(filename) {
-            // Check if this file is already loaded
+            // Check if already loaded
             if (document.getElementById(`table-${filename}`)) {
                 console.log(`${filename} already loaded`);
                 return;
@@ -200,93 +183,19 @@
             tablesContainer.appendChild(loadingIndicator);
             
             try {
-                // Construct raw GitHub URL
-                const repoUrl = document.getElementById("repoUrl").value;
-                const baseUrl = repoUrl.replace(
-                    'api.github.com/repos', 
-                    'raw.githubusercontent.com'
-                ).replace(
-                    '/contents/jobpostings', 
-                    '/main/jobpostings'
-                );
-                
-                const fileUrl = `${baseUrl}/${filename}`;
-                const response = await fetch(fileUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const arrayBuffer = await response.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: "array" });
 
-                // Remove loading indicator
                 tablesContainer.removeChild(loadingIndicator);
                 
-                // Process each sheet in the workbook
                 workbook.SheetNames.forEach(sheetName => {
-                    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-                    if (sheet.length === 0) return;
-                    
-                    // Create wrapper div with class based on filename
-                    const wrapperDiv = document.createElement("div");
-                    wrapperDiv.id = `table-${filename}-${sheetName}`;
-                    
-                    // Apply filename-based styling
-                    if (filename.includes("ClaremontCollegesJobs")) {
-                        wrapperDiv.classList.add("claremont-file");
-                    } else if (filename.includes("DignityHospitals")) {
-                        wrapperDiv.classList.add("dignity-file");
-                    } else if (filename.includes("kpjobs")) {
-                        wrapperDiv.classList.add("kpjobs-file");
-                    }
-                    
-                    // Create title with filename and sheetname
-                    const title = document.createElement("h3");
-                    title.textContent = `${filename} - ${sheetName}`;
-                    
-                    // Add file metadata
-                    const fileInfo = document.createElement("div");
-                    fileInfo.className = "file-info";
-                    fileInfo.textContent = `Rows: ${sheet.length - 1} | Columns: ${sheet[0].length}`;
-                    
-                    // Create table element
-                    const table = document.createElement("table");
-                    table.classList.add("dynamicTable");
-                    
-                    // Create Table Headers
-                    let thead = document.createElement("thead");
-                    let headerRow = document.createElement("tr");
-                    sheet[0].forEach((header, index) => {
-                        let th = document.createElement("th");
-                        th.textContent = header;
-                        th.onclick = () => sortTable(table, index);
-                        headerRow.appendChild(th);
-                    });
-                    thead.appendChild(headerRow);
-                    table.appendChild(thead);
-                    
-                    // Create Table Body
-                    let tbody = document.createElement("tbody");
-                    sheet.slice(1).forEach(row => {
-                        let tr = document.createElement("tr");
-                        row.forEach(cell => {
-                            let td = document.createElement("td");
-                            td.textContent = cell;
-                            tr.appendChild(td);
-                        });
-                        tbody.appendChild(tr);
-                    });
-                    table.appendChild(tbody);
-                    
-                    // Assemble all elements
-                    wrapperDiv.appendChild(title);
-                    wrapperDiv.appendChild(fileInfo);
-                    wrapperDiv.appendChild(table);
-                    tablesContainer.appendChild(wrapperDiv);
+                    // (Keep your existing table creation code here)
+                    // Just update it to use the full path if needed
                 });
                 
-                // Apply updated row spacing and column width
                 updateRowSpacing();
                 updateColumnWidth();
                 
@@ -297,42 +206,8 @@
             }
         }
 
-        function updateRowSpacing() {
-            let spacing = document.getElementById("rowSpacing").value + "px";
-            document.querySelectorAll(".dynamicTable tr").forEach(row => {
-                row.style.lineHeight = spacing;
-                row.style.paddingTop = spacing;
-                row.style.paddingBottom = spacing;
-            });
-        }
-
-        function updateColumnWidth() {
-            let colWidth = document.getElementById("colWidth").value + "px";
-            document.querySelectorAll(".dynamicTable td, .dynamicTable th").forEach(cell => {
-                cell.style.minWidth = colWidth;
-                cell.style.maxWidth = colWidth;
-            });
-        }
-
-        function sortTable(table, columnIndex) {
-            let rows = Array.from(table.querySelector("tbody").rows);
-            let isAscending = table.dataset.sortOrder !== "asc";
-
-            rows.sort((rowA, rowB) => {
-                let cellA = rowA.cells[columnIndex].textContent.trim();
-                let cellB = rowB.cells[columnIndex].textContent.trim();
-
-                return isAscending 
-                    ? cellA.localeCompare(cellB, undefined, { numeric: true })
-                    : cellB.localeCompare(cellA, undefined, { numeric: true });
-            });
-
-            table.dataset.sortOrder = isAscending ? "asc" : "desc";
-            rows.forEach(row => table.querySelector("tbody").appendChild(row));
-        }
-
-        // Initialize with default repo if desired
-        // fetchFileList();
+        // Initialize with your repository
+        document.getElementById('repoUrl').value = 'https://api.github.com/repos/ZBZFirst/file/contents';
     </script>
 </body>
 </html>
