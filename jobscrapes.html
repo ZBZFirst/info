@@ -3,88 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Scrapes</title>
+    <title>Job Scrapes Browser</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         th, td {
-            border: 1px solid black;
-            padding: 5px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
         th {
             cursor: pointer;
             background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9e9e9;
+            border-radius: 5px;
+        }
+        .file-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .claremont-file {
+            border-left: 4px solid #4CAF50;
+        }
+        .dignity-file {
+            border-left: 4px solid #2196F3;
+        }
+        .kpjobs-file {
+            border-left: 4px solid #FF9800;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #f44336;
         }
     </style>
 </head>
 <body>
-    <h1>Job Scrapes</h1>
+    <div class="container">
+        <h1>Job Scrapes Browser</h1>
+        
+        <div class="controls">
+            <div>
+                <label for="repoUrl">GitHub Repository URL:</label>
+                <input type="text" id="repoUrl" value="https://api.github.com/repos/ZBZFirst/info/contents/jobpostings" style="width: 400px;">
+                <button onclick="fetchFileList()">Load Files</button>
+                <span id="loadingStatus" class="loading"></span>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label for="fileSelect">Select a job posting file:</label>
+                <select id="fileSelect" style="min-width: 300px;">
+                    <option value="">-- Select a file --</option>
+                </select>
+                <button onclick="loadSelectedFile()">Load Selected File</button>
+                <button onclick="loadAllFiles()">Load All Files</button>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <h3>Adjust Row Spacing: <input type="number" id="rowSpacing" value="15" min="5" max="50" onchange="updateRowSpacing()"> px</h3>
+                <h3>Adjust Column Width: <input type="number" id="colWidth" value="150" min="50" max="500" onchange="updateColumnWidth()"> px</h3>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label for="filterText">Filter files:</label>
+                <input type="text" id="filterText" placeholder="Enter part of filename" oninput="filterFileList()">
+                <button onclick="document.getElementById('filterText').value = ''; filterFileList()">Clear</button>
+            </div>
+        </div>
 
-    <label for="fileSelect">Select a job posting file:</label>
-    <select id="fileSelect">
-        <option value="">-- Select a file --</option>
-    </select>
-    <button onclick="loadSelectedFile()">Load Selected File</button>
-
-    <h3>Adjust Row Spacing: <input type="number" id="rowSpacing" value="15" min="5" max="50" onchange="updateRowSpacing()"> px</h3>
-    <h3>Adjust Column Width: <input type="number" id="colWidth" value="150" min="50" max="500" onchange="updateColumnWidth()"> px</h3>
-
-    <div id="tables"></div>
+        <div id="tables"></div>
+    </div>
 
     <script>
-        const files = [
-            "ClaremontCollegesJobs_032525_description_parsed.xlsx",
-            "ClaremontCollegesJobs_032625_description_parsed.xlsx",
-            "ClaremontCollegesJobs_032725_description_parsed.xlsx",
-            "ClaremontCollegesJobs_032825_description_parsed.xlsx",
-            "DignityHospitals_03252025_description_parsed.xlsx",
-            "DignityHospitals_03262025_description_parsed.xlsx",
-            "DignityHospitals_03272025_description_parsed.xlsx",
-            "DignityHospitals_03282025_description_parsed.xlsx",
-            "kpjobs_03252025_description_parsed.xlsx",
-            "kpjobs_03262025_description_parsed.xlsx",
-            "kpjobs_03272025_description_parsed.xlsx"
-        ];
-
-        // Populate dropdown menu
+        let allFiles = [];
         const fileSelect = document.getElementById("fileSelect");
-        files.forEach(file => {
-            let option = document.createElement("option");
-            option.value = file;
-            option.textContent = file;
-            fileSelect.appendChild(option);
-        });
+        const loadingStatus = document.getElementById("loadingStatus");
+        const tablesContainer = document.getElementById("tables");
 
+        // Fetch list of files from GitHub API
+        async function fetchFileList() {
+            const repoUrl = document.getElementById("repoUrl").value;
+            if (!repoUrl) {
+                alert("Please enter a GitHub repository URL");
+                return;
+            }
+
+            loadingStatus.textContent = "Loading file list...";
+            fileSelect.disabled = true;
+            
+            try {
+                const response = await fetch(repoUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // Filter for Excel files and extract names
+                allFiles = data
+                    .filter(item => item.name.endsWith('.xlsx'))
+                    .map(item => item.name);
+                
+                populateFileDropdown(allFiles);
+                loadingStatus.textContent = `Loaded ${allFiles.length} files`;
+            } catch (error) {
+                console.error("Error fetching file list:", error);
+                loadingStatus.textContent = "Error loading file list";
+                loadingStatus.className = "error";
+            } finally {
+                fileSelect.disabled = false;
+            }
+        }
+
+        // Populate dropdown with files
+        function populateFileDropdown(files) {
+            fileSelect.innerHTML = '<option value="">-- Select a file --</option>';
+            files.forEach(file => {
+                let option = document.createElement("option");
+                option.value = file;
+                option.textContent = file;
+                fileSelect.appendChild(option);
+            });
+        }
+
+        // Filter file list based on input
+        function filterFileList() {
+            const filterText = document.getElementById("filterText").value.toLowerCase();
+            const filteredFiles = allFiles.filter(file => 
+                file.toLowerCase().includes(filterText)
+            );
+            populateFileDropdown(filteredFiles);
+        }
+
+        // Load the selected file
         async function loadSelectedFile() {
             const selectedFile = fileSelect.value;
             if (!selectedFile) {
                 alert("Please select a file to load.");
                 return;
             }
+            
+            await loadFile(selectedFile);
+        }
 
-            const container = document.getElementById("tables");
-            container.innerHTML = ""; // Clear previous content
-            const url = `https://raw.githubusercontent.com/ZBZFirst/info/main/jobpostings/${selectedFile}`;
+        // Load all files (with a small delay between each to avoid rate limiting)
+        async function loadAllFiles() {
+            tablesContainer.innerHTML = "<p>Loading all files...</p>";
+            
+            for (const file of allFiles) {
+                await loadFile(file);
+                // Small delay to avoid hitting rate limits
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
 
+        // Main function to load and display a file
+        async function loadFile(filename) {
+            // Check if this file is already loaded
+            if (document.getElementById(`table-${filename}`)) {
+                console.log(`${filename} already loaded`);
+                return;
+            }
+            
+            const loadingIndicator = document.createElement("div");
+            loadingIndicator.id = `loading-${filename}`;
+            loadingIndicator.textContent = `Loading ${filename}...`;
+            tablesContainer.appendChild(loadingIndicator);
+            
             try {
-                const response = await fetch(url);
+                // Construct raw GitHub URL
+                const repoUrl = document.getElementById("repoUrl").value;
+                const baseUrl = repoUrl.replace(
+                    'api.github.com/repos', 
+                    'raw.githubusercontent.com'
+                ).replace(
+                    '/contents/jobpostings', 
+                    '/main/jobpostings'
+                );
+                
+                const fileUrl = `${baseUrl}/${filename}`;
+                const response = await fetch(fileUrl);
+                
                 if (!response.ok) {
-                    alert(`Failed to load ${selectedFile}`);
-                    return;
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
                 const arrayBuffer = await response.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: "array" });
 
+                // Remove loading indicator
+                tablesContainer.removeChild(loadingIndicator);
+                
+                // Process each sheet in the workbook
                 workbook.SheetNames.forEach(sheetName => {
+                    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                    if (sheet.length === 0) return;
+                    
+                    // Create wrapper div with class based on filename
+                    const wrapperDiv = document.createElement("div");
+                    wrapperDiv.id = `table-${filename}-${sheetName}`;
+                    
+                    // Apply filename-based styling
+                    if (filename.includes("ClaremontCollegesJobs")) {
+                        wrapperDiv.classList.add("claremont-file");
+                    } else if (filename.includes("DignityHospitals")) {
+                        wrapperDiv.classList.add("dignity-file");
+                    } else if (filename.includes("kpjobs")) {
+                        wrapperDiv.classList.add("kpjobs-file");
+                    }
+                    
+                    // Create title with filename and sheetname
+                    const title = document.createElement("h3");
+                    title.textContent = `${filename} - ${sheetName}`;
+                    
+                    // Add file metadata
+                    const fileInfo = document.createElement("div");
+                    fileInfo.className = "file-info";
+                    fileInfo.textContent = `Rows: ${sheet.length - 1} | Columns: ${sheet[0].length}`;
+                    
+                    // Create table element
                     const table = document.createElement("table");
                     table.classList.add("dynamicTable");
-
-                    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-
+                    
                     // Create Table Headers
                     let thead = document.createElement("thead");
                     let headerRow = document.createElement("tr");
@@ -96,7 +265,7 @@
                     });
                     thead.appendChild(headerRow);
                     table.appendChild(thead);
-
+                    
                     // Create Table Body
                     let tbody = document.createElement("tbody");
                     sheet.slice(1).forEach(row => {
@@ -109,21 +278,22 @@
                         tbody.appendChild(tr);
                     });
                     table.appendChild(tbody);
-
-                    // Append to container
-                    const tableDiv = document.createElement("div");
-                    tableDiv.innerHTML = `<h3>${selectedFile} - ${sheetName}</h3>`;
-                    tableDiv.appendChild(table);
-                    container.appendChild(tableDiv);
+                    
+                    // Assemble all elements
+                    wrapperDiv.appendChild(title);
+                    wrapperDiv.appendChild(fileInfo);
+                    wrapperDiv.appendChild(table);
+                    tablesContainer.appendChild(wrapperDiv);
                 });
-
+                
                 // Apply updated row spacing and column width
                 updateRowSpacing();
                 updateColumnWidth();
-
+                
             } catch (error) {
-                console.error(`Error loading ${selectedFile}:`, error);
-                alert(`Error loading ${selectedFile}`);
+                console.error(`Error loading ${filename}:`, error);
+                loadingIndicator.textContent = `Error loading ${filename}: ${error.message}`;
+                loadingIndicator.className = "error";
             }
         }
 
@@ -160,6 +330,9 @@
             table.dataset.sortOrder = isAscending ? "asc" : "desc";
             rows.forEach(row => table.querySelector("tbody").appendChild(row));
         }
+
+        // Initialize with default repo if desired
+        // fetchFileList();
     </script>
 </body>
 </html>
