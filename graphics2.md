@@ -171,12 +171,12 @@ title: Interactive Draggable Graphics
 
     document.addEventListener('DOMContentLoaded', () => {
         // Initialize with some default shapes if needed
-        addShape('circle', {label: "Peak Pressure", top: "100px", left: "50px", width: "80px", height: "80px"});
-        addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "80px", height: "80px"});
-        addShape('circle', {label: "HE", top: "100px", left: "350px", width: "80px", height: "80px"});
-        addShape('square', {label: "Minute Ventilation", top: "250px", left: "50px", width: "100px", height: "80px"});
-        addShape('square', {label: "Waveforms", top: "250px", left: "200px", width: "100px", height: "80px"});
-        addShape('square', {label: "HAXI", top: "250px", left: "350px", width: "100px", height: "80px"});
+        addShape('circle', {label: "Peak Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
+        addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
+        addShape('circle', {label: "HE", top: "100px", left: "350px", width: "40px", height: "40px"});
+        addShape('square', {label: "Minute Ventilation", top: "250px", left: "50px", width: "50px", height: "30px"});
+        addShape('square', {label: "Waveforms", top: "250px", left: "200px", width: "50px", height: "30px"});
+        addShape('square', {label: "HAXI", top: "250px", left: "350px", width: "50px", height: "30px"});
     });
 
     // Add a new shape (circle or square)
@@ -189,8 +189,8 @@ title: Interactive Draggable Graphics
             label: `New ${type}`,
             top: '100px',
             left: '100px',
-            width: type === 'circle' ? '80px' : '100px',
-            height: type === 'circle' ? '80px' : '80px'
+            width: type === 'circle' ? '50px' : '50px',
+            height: type === 'circle' ? '30px' : '30px'
         };
         
         const shapeConfig = {...defaults, ...config};
