@@ -279,8 +279,8 @@ title: Interactive Draggable Graphics
             sizeInput.type = 'range';
             sizeInput.id = `${id}-size`;
             sizeInput.min = '20';
-            sizeInput.max = '200';
-            sizeInput.value = '80';
+            sizeInput.max = '400';
+            sizeInput.value = '50';
             sizeInput.oninput = () => updateCircleSize(id);
             
             sizeRow.appendChild(sizeLabel);
@@ -294,8 +294,8 @@ title: Interactive Draggable Graphics
             widthInput.type = 'range';
             widthInput.id = `${id}-width`;
             widthInput.min = '20';
-            widthInput.max = '300';
-            widthInput.value = '100';
+            widthInput.max = '600';
+            widthInput.value = '50';
             widthInput.oninput = () => updateSquareSize(id);
             
             const heightLabel = document.createElement('label');
@@ -307,7 +307,7 @@ title: Interactive Draggable Graphics
             heightInput.id = `${id}-height`;
             heightInput.min = '20';
             heightInput.max = '300';
-            heightInput.value = '80';
+            heightInput.value = '30';
             heightInput.oninput = () => updateSquareSize(id);
             
             sizeRow.appendChild(widthLabel);
