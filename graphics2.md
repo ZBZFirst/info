@@ -105,112 +105,51 @@ title: Interactive Draggable Graphics
         margin-top: 10px;
         font-family: monospace;
     }
+    
+    .shape-actions {
+        grid-column: span 2;
+        padding: 15px;
+        background: #f0f0f0;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .shape-actions h3 {
+        margin-top: 0;
+    }
+    
+    .delete-btn {
+        background: #FF6B6B;
+        color: white;
+        margin-left: 10px;
+    }
 </style>
 
-<div class="shape-container">
-    <!-- Circles -->
-    <div id="circle1" class="shape circle" style="top: 100px; left: 50px; width: 80px; height: 80px;">
-        <div class="shape-label">Peak Pressure</div>
-    </div>
-    <div id="circle2" class="shape circle" style="top: 100px; left: 200px; width: 80px; height: 80px;">
-        <div class="shape-label">PEEP</div>
-    </div>
-    <div id="circle3" class="shape circle" style="top: 100px; left: 350px; width: 80px; height: 80px;">
-        <div class="shape-label">HE</div>
-    </div>
-    
-    <!-- Squares -->
-    <div id="square1" class="shape square" style="top: 250px; left: 50px; width: 100px; height: 80px;">
-        <div class="shape-label">Minute Ventilation</div>
-    </div>
-    <div id="square2" class="shape square" style="top: 250px; left: 200px; width: 100px; height: 80px;">
-        <div class="shape-label">Waveforms</div>
-    </div>
-    <div id="square3" class="shape square" style="top: 250px; left: 350px; width: 100px; height: 80px;">
-        <div class="shape-label">HAXI</div>
-    </div>
+<div class="shape-container" id="shapeContainer">
+    <!-- Initial shapes will be added here dynamically -->
 </div>
 
 <div class="controls-panel">
-    <!-- Circle Controls -->
-    <div class="shape-control-group">
+    <!-- Shape Actions -->
+    <div class="shape-actions">
+        <h3>Add New Shapes</h3>
+        <button onclick="addShape('circle')">Add Circle</button>
+        <button onclick="addShape('square')">Add Square</button>
+        <button onclick="deleteSelectedShape()" class="delete-btn">Delete Selected</button>
+    </div>
+
+    <!-- Shape Controls (will be populated dynamically) -->
+    <div class="shape-control-group" id="circleControls">
         <h3>Circle Controls</h3>
-        
-        <div class="control-row">
-            <label for="circle1-label">Peak Pressure:</label>
-            <input type="text" id="circle1-label" value="Peak Pressure">
-            <button onclick="updateLabel('circle1')">Update</button>
-        </div>
-        <div class="control-row">
-            <label for="circle1-size">Size:</label>
-            <input type="range" id="circle1-size" min="40" max="150" value="80" oninput="updateCircleSize('circle1')">
-        </div>
-        
-        <div class="control-row">
-            <label for="circle2-label">PEEP:</label>
-            <input type="text" id="circle2-label" value="PEEP">
-            <button onclick="updateLabel('circle2')">Update</button>
-        </div>
-        <div class="control-row">
-            <label for="circle2-size">Size:</label>
-            <input type="range" id="circle2-size" min="40" max="150" value="80" oninput="updateCircleSize('circle2')">
-        </div>
-        
-        <div class="control-row">
-            <label for="circle3-label">HE:</label>
-            <input type="text" id="circle3-label" value="HE">
-            <button onclick="updateLabel('circle3')">Update</button>
-        </div>
-        <div class="control-row">
-            <label for="circle3-size">Size:</label>
-            <input type="range" id="circle3-size" min="40" max="150" value="80" oninput="updateCircleSize('circle3')">
+        <div id="circleControlsContainer">
+            <!-- Circle controls will be added here dynamically -->
         </div>
     </div>
 
-    <!-- Square Controls -->
-    <div class="shape-control-group">
+    <div class="shape-control-group" id="squareControls">
         <h3>Square Controls</h3>
-        
-        <div class="control-row">
-            <label for="square1-label">Minute Ventilation:</label>
-            <input type="text" id="square1-label" value="Minute Ventilation">
-            <button onclick="updateLabel('square1')">Update</button>
-        </div>
-        <div class="control-row">
-            <label for="square1-width">Width:</label>
-            <input type="range" id="square1-width" min="40" max="800" value="100" oninput="updateSquareSize('square1')">
-        </div>
-        <div class="control-row">
-            <label for="square1-height">Height:</label>
-            <input type="range" id="square1-height" min="40" max="800" value="80" oninput="updateSquareSize('square1')">
-        </div>
-        
-        <div class="control-row">
-            <label for="square2-label">Waveforms:</label>
-            <input type="text" id="square2-label" value="Waveforms">
-            <button onclick="updateLabel('square2')">Update</button>
-        </div>
-        <div class="control-row">
-            <label for="square2-width">Width:</label>
-            <input type="range" id="square2-width" min="40" max="800" value="100" oninput="updateSquareSize('square2')">
-        </div>
-        <div class="control-row">
-            <label for="square2-height">Height:</label>
-            <input type="range" id="square2-height" min="40" max="800" value="80" oninput="updateSquareSize('square2')">
-        </div>
-        
-        <div class="control-row">
-            <label for="square3-label">HAXI:</label>
-            <input type="text" id="square3-label" value="HAXI">
-            <button onclick="updateLabel('square3')">Update</button>
-        </div>
-        <div class="control-row">
-            <label for="square3-width">Width:</label>
-            <input type="range" id="square3-width" min="40" max="800" value="100" oninput="updateSquareSize('square3')">
-        </div>
-        <div class="control-row">
-            <label for="square3-height">Height:</label>
-            <input type="range" id="square3-height" min="40" max="800" value="80" oninput="updateSquareSize('square3')">
+        <div id="squareControlsContainer">
+            <!-- Square controls will be added here dynamically -->
         </div>
     </div>
 
@@ -225,114 +164,282 @@ title: Interactive Draggable Graphics
 </div>
 
 <script>
-    // Initialize with medical-themed labels
-    const medicalLabels = {
-        circle1: "Peak Pressure",
-        circle2: "PEEP",
-        circle3: "HE",
-        square1: "Minute Ventilation",
-        square2: "Waveforms",
-        square3: "HAXI"
-    };
+    // Track all shapes and their controls
+    let shapes = [];
+    let selectedShape = null;
+    let nextId = 1;
 
     document.addEventListener('DOMContentLoaded', () => {
-        const shapes = document.querySelectorAll('.shape');
-        let activeShape = null;
-        let offsetX, offsetY;
+        // Initialize with some default shapes if needed
+        addShape('circle', {label: "Peak Pressure", top: "100px", left: "50px", width: "80px", height: "80px"});
+        addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "80px", height: "80px"});
+        addShape('circle', {label: "HE", top: "100px", left: "350px", width: "80px", height: "80px"});
+        addShape('square', {label: "Minute Ventilation", top: "250px", left: "50px", width: "100px", height: "80px"});
+        addShape('square', {label: "Waveforms", top: "250px", left: "200px", width: "100px", height: "80px"});
+        addShape('square', {label: "HAXI", top: "250px", left: "350px", width: "100px", height: "80px"});
+    });
 
-        // Initialize labels
-        Object.entries(medicalLabels).forEach(([id, label]) => {
-            document.getElementById(`${id}-label`).value = label;
-            updateLabel(id);
+    // Add a new shape (circle or square)
+    function addShape(type, config = {}) {
+        const id = `shape-${nextId++}`;
+        const container = document.getElementById('shapeContainer');
+        
+        // Default configuration
+        const defaults = {
+            label: `New ${type}`,
+            top: '100px',
+            left: '100px',
+            width: type === 'circle' ? '80px' : '100px',
+            height: type === 'circle' ? '80px' : '80px'
+        };
+        
+        const shapeConfig = {...defaults, ...config};
+        
+        // Create the shape element
+        const shape = document.createElement('div');
+        shape.id = id;
+        shape.className = `shape ${type}`;
+        shape.style.top = shapeConfig.top;
+        shape.style.left = shapeConfig.left;
+        shape.style.width = shapeConfig.width;
+        shape.style.height = shapeConfig.height;
+        
+        // Add label
+        const label = document.createElement('div');
+        label.className = 'shape-label';
+        label.textContent = shapeConfig.label;
+        shape.appendChild(label);
+        
+        // Add to container
+        container.appendChild(shape);
+        
+        // Make draggable
+        shape.addEventListener('mousedown', startDrag);
+        shape.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectShape(id);
         });
-
-        // Make all shapes draggable
+        
+        // Add to shapes array
+        shapes.push({
+            id,
+            type,
+            element: shape,
+            labelElement: label
+        });
+        
+        // Create controls for this shape
+        createShapeControls(id, type, shapeConfig.label);
+        
+        // Select this new shape
+        selectShape(id);
+    }
+    
+    // Create controls for a shape
+    function createShapeControls(id, type, label) {
+        const controlsContainer = type === 'circle' ? 
+            document.getElementById('circleControlsContainer') : 
+            document.getElementById('squareControlsContainer');
+        
+        const controlGroup = document.createElement('div');
+        controlGroup.className = 'control-group';
+        controlGroup.id = `${id}-controls`;
+        
+        // Label control
+        const labelRow = document.createElement('div');
+        labelRow.className = 'control-row';
+        
+        const labelLabel = document.createElement('label');
+        labelLabel.htmlFor = `${id}-label`;
+        labelLabel.textContent = `${type} ${id.split('-')[1]}:`;
+        
+        const labelInput = document.createElement('input');
+        labelInput.type = 'text';
+        labelInput.id = `${id}-label`;
+        labelInput.value = label;
+        
+        const updateBtn = document.createElement('button');
+        updateBtn.textContent = 'Update';
+        updateBtn.onclick = () => updateLabel(id);
+        
+        labelRow.appendChild(labelLabel);
+        labelRow.appendChild(labelInput);
+        labelRow.appendChild(updateBtn);
+        
+        // Size controls
+        const sizeRow = document.createElement('div');
+        sizeRow.className = 'control-row';
+        
+        if (type === 'circle') {
+            const sizeLabel = document.createElement('label');
+            sizeLabel.htmlFor = `${id}-size`;
+            sizeLabel.textContent = 'Size:';
+            
+            const sizeInput = document.createElement('input');
+            sizeInput.type = 'range';
+            sizeInput.id = `${id}-size`;
+            sizeInput.min = '20';
+            sizeInput.max = '200';
+            sizeInput.value = '80';
+            sizeInput.oninput = () => updateCircleSize(id);
+            
+            sizeRow.appendChild(sizeLabel);
+            sizeRow.appendChild(sizeInput);
+        } else {
+            const widthLabel = document.createElement('label');
+            widthLabel.htmlFor = `${id}-width`;
+            widthLabel.textContent = 'Width:';
+            
+            const widthInput = document.createElement('input');
+            widthInput.type = 'range';
+            widthInput.id = `${id}-width`;
+            widthInput.min = '20';
+            widthInput.max = '300';
+            widthInput.value = '100';
+            widthInput.oninput = () => updateSquareSize(id);
+            
+            const heightLabel = document.createElement('label');
+            heightLabel.htmlFor = `${id}-height`;
+            heightLabel.textContent = 'Height:';
+            
+            const heightInput = document.createElement('input');
+            heightInput.type = 'range';
+            heightInput.id = `${id}-height`;
+            heightInput.min = '20';
+            heightInput.max = '300';
+            heightInput.value = '80';
+            heightInput.oninput = () => updateSquareSize(id);
+            
+            sizeRow.appendChild(widthLabel);
+            sizeRow.appendChild(widthInput);
+            sizeRow.appendChild(heightLabel);
+            sizeRow.appendChild(heightInput);
+        }
+        
+        controlGroup.appendChild(labelRow);
+        controlGroup.appendChild(sizeRow);
+        controlsContainer.appendChild(controlGroup);
+    }
+    
+    // Select a shape
+    function selectShape(id) {
+        // Deselect all shapes first
         shapes.forEach(shape => {
-            shape.addEventListener('mousedown', startDrag);
+            shape.element.style.borderColor = shape.type === 'circle' ? '#FF6B6B' : '#4ECDC4';
         });
-
-        function startDrag(e) {
-            if (e.target.classList.contains('shape-label')) return;
-            
-            activeShape = e.target.closest('.shape');
-            if (!activeShape) return;
-            
-            const rect = activeShape.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
-            
-            activeShape.style.cursor = 'grabbing';
-            document.addEventListener('mousemove', dragShape);
-            document.addEventListener('mouseup', stopDrag);
-            e.preventDefault();
+        
+        // Select the new shape
+        const shape = shapes.find(s => s.id === id);
+        if (shape) {
+            shape.element.style.borderColor = '#FFD700'; // Gold color for selection
+            selectedShape = shape;
         }
+    }
+    
+    // Delete the selected shape
+    function deleteSelectedShape() {
+        if (!selectedShape) {
+            alert('Please select a shape to delete');
+            return;
+        }
+        
+        if (confirm('Are you sure you want to delete this shape?')) {
+            // Remove from DOM
+            selectedShape.element.remove();
+            
+            // Remove controls
+            const controls = document.getElementById(`${selectedShape.id}-controls`);
+            if (controls) controls.remove();
+            
+            // Remove from shapes array
+            shapes = shapes.filter(s => s.id !== selectedShape.id);
+            
+            selectedShape = null;
+        }
+    }
 
+    // Drag and drop functionality
+    function startDrag(e) {
+        if (e.target.classList.contains('shape-label')) return;
+        
+        const shape = e.target.closest('.shape');
+        if (!shape) return;
+        
+        const rect = shape.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+        
+        shape.style.cursor = 'grabbing';
+        selectShape(shape.id);
+        
         function dragShape(e) {
-            if (!activeShape) return;
-            
-            activeShape.style.left = `${e.clientX - offsetX}px`;
-            activeShape.style.top = `${e.clientY - offsetY}px`;
+            shape.style.left = `${e.clientX - offsetX}px`;
+            shape.style.top = `${e.clientY - offsetY}px`;
         }
-
+        
         function stopDrag() {
-            if (activeShape) {
-                activeShape.style.cursor = 'grab';
-                activeShape = null;
-            }
+            shape.style.cursor = 'grab';
             document.removeEventListener('mousemove', dragShape);
             document.removeEventListener('mouseup', stopDrag);
         }
-    });
+        
+        document.addEventListener('mousemove', dragShape);
+        document.addEventListener('mouseup', stopDrag);
+        e.preventDefault();
+    }
 
     // Label update function
     function updateLabel(shapeId) {
         const input = document.getElementById(`${shapeId}-label`);
-        const label = document.querySelector(`#${shapeId} .shape-label`);
-        label.textContent = input.value;
-        medicalLabels[shapeId] = input.value; // Update our labels object
+        const shape = shapes.find(s => s.id === shapeId);
+        if (shape) {
+            shape.labelElement.textContent = input.value;
+        }
     }
 
     // Circle size update function
     function updateCircleSize(shapeId) {
         const size = document.getElementById(`${shapeId}-size`).value;
-        const shape = document.getElementById(shapeId);
-        shape.style.width = `${size}px`;
-        shape.style.height = `${size}px`;
+        const shape = shapes.find(s => s.id === shapeId);
+        if (shape) {
+            shape.element.style.width = `${size}px`;
+            shape.element.style.height = `${size}px`;
+        }
     }
 
     // Square size update function
     function updateSquareSize(shapeId) {
         const width = document.getElementById(`${shapeId}-width`).value;
         const height = document.getElementById(`${shapeId}-height`).value;
-        const shape = document.getElementById(shapeId);
-        shape.style.width = `${width}px`;
-        shape.style.height = `${height}px`;
+        const shape = shapes.find(s => s.id === shapeId);
+        if (shape) {
+            shape.element.style.width = `${width}px`;
+            shape.element.style.height = `${height}px`;
+        }
     }
 
     // Save current configuration to localStorage
     function saveConfiguration() {
-        const shapes = document.querySelectorAll('.shape');
-        const config = {};
+        const config = {
+            shapes: shapes.map(shape => ({
+                id: shape.id,
+                type: shape.type,
+                label: shape.labelElement.textContent,
+                top: shape.element.style.top,
+                left: shape.element.style.left,
+                width: shape.element.style.width,
+                height: shape.element.style.height
+            })),
+            nextId: nextId
+        };
         
-        shapes.forEach(shape => {
-            const id = shape.id;
-            config[id] = {
-                type: shape.classList.contains('circle') ? 'circle' : 'square',
-                label: document.querySelector(`#${id} .shape-label`).textContent,
-                top: shape.style.top,
-                left: shape.style.left,
-                width: shape.style.width,
-                height: shape.style.height
-            };
-        });
-        
-        localStorage.setItem('shapeConfig', JSON.stringify(config));
+        localStorage.setItem('ventilatorLabelerConfig', JSON.stringify(config));
         alert('Configuration saved!');
     }
 
     // Load configuration from localStorage
     function loadConfiguration() {
-        const savedConfig = localStorage.getItem('shapeConfig');
+        const savedConfig = localStorage.getItem('ventilatorLabelerConfig');
         if (!savedConfig) {
             alert('No saved configuration found!');
             return;
@@ -340,71 +447,84 @@ title: Interactive Draggable Graphics
         
         const config = JSON.parse(savedConfig);
         
-        Object.entries(config).forEach(([id, shapeConfig]) => {
-            const shape = document.getElementById(id);
-            if (shape) {
-                shape.style.top = shapeConfig.top;
-                shape.style.left = shapeConfig.left;
-                shape.style.width = shapeConfig.width;
-                shape.style.height = shapeConfig.height;
-                
-                // Update label and input field
-                document.querySelector(`#${id} .shape-label`).textContent = shapeConfig.label;
-                document.getElementById(`${id}-label`).value = shapeConfig.label;
-                
-                // Update sliders
-                if (shapeConfig.type === 'circle') {
-                    const size = parseInt(shapeConfig.width);
-                    document.getElementById(`${id}-size`).value = size;
-                } else {
-                    const width = parseInt(shapeConfig.width);
-                    const height = parseInt(shapeConfig.height);
-                    document.getElementById(`${id}-width`).value = width;
-                    document.getElementById(`${id}-height`).value = height;
-                }
-            }
+        // Clear existing shapes
+        shapes.forEach(shape => {
+            shape.element.remove();
+            const controls = document.getElementById(`${shape.id}-controls`);
+            if (controls) controls.remove();
         });
+        shapes = [];
+        
+        // Clear controls containers
+        document.getElementById('circleControlsContainer').innerHTML = '';
+        document.getElementById('squareControlsContainer').innerHTML = '';
+        
+        // Recreate shapes from config
+        config.shapes.forEach(shapeConfig => {
+            addShape(shapeConfig.type, {
+                label: shapeConfig.label,
+                top: shapeConfig.top,
+                left: shapeConfig.left,
+                width: shapeConfig.width,
+                height: shapeConfig.height
+            });
+        });
+        
+        // Restore nextId to prevent ID collisions
+        nextId = config.nextId || shapes.length + 1;
     }
 
     // Export configuration as JSON
     function exportConfiguration() {
-        const shapes = document.querySelectorAll('.shape');
-        const config = {
-            backgroundImage: 'image.png',
-            shapes: {}
-        };
+        const container = document.getElementById('shapeContainer');
+        const containerRect = container.getBoundingClientRect();
+        const imageWidth = containerRect.width;
+        const imageHeight = containerRect.height;
         
-        shapes.forEach(shape => {
-            const id = shape.id;
-            const rect = shape.getBoundingClientRect();
-            
-            config.shapes[id] = {
-                type: shape.classList.contains('circle') ? 'circle' : 'square',
-                label: document.querySelector(`#${id} .shape-label`).textContent,
-                position: {
-                    x: parseInt(shape.style.left),
-                    y: parseInt(shape.style.top)
-                },
-                size: {
-                    width: parseInt(shape.style.width),
-                    height: parseInt(shape.style.height)
-                },
-                screenPosition: {
-                    x: rect.left,
-                    y: rect.top,
-                    right: rect.right,
-                    bottom: rect.bottom
-                },
-                color: shape.classList.contains('circle') ? '#FF6B6B' : '#4ECDC4'
-            };
-        });
+        const config = {
+            image: 'image.png',
+            imageDimensions: {
+                width: imageWidth,
+                height: imageHeight
+            },
+            labels: shapes.map(shape => {
+                const rect = shape.element.getBoundingClientRect();
+                const normalizedX = (rect.left - containerRect.left) / imageWidth;
+                const normalizedY = (rect.top - containerRect.top) / imageHeight;
+                const normalizedWidth = rect.width / imageWidth;
+                const normalizedHeight = rect.height / imageHeight;
+                
+                return {
+                    id: shape.id,
+                    type: shape.type,
+                    label: shape.labelElement.textContent,
+                    position: {
+                        x: parseInt(shape.element.style.left),
+                        y: parseInt(shape.element.style.top)
+                    },
+                    normalizedPosition: {
+                        x: normalizedX,
+                        y: normalizedY
+                    },
+                    size: {
+                        width: parseInt(shape.element.style.width),
+                        height: parseInt(shape.element.style.height)
+                    },
+                    normalizedSize: {
+                        width: normalizedWidth,
+                        height: normalizedHeight
+                    },
+                    screenPosition: {
+                        left: rect.left,
+                        top: rect.top,
+                        right: rect.right,
+                        bottom: rect.bottom
+                    }
+                };
+            })
+        };
         
         const jsonString = JSON.stringify(config, null, 2);
         document.getElementById('configuration-data').value = jsonString;
-        
-        // For potential ML use, you might want to:
-        // 1. Normalize coordinates relative to image size
-        // 2. Add additional features like proximity to other shapes
-        // 3. Include relationships between shapes
     }
 </script>
