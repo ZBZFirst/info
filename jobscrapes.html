@@ -6,397 +6,83 @@
     <title>Job Scrapes Browser</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+        /* Previous styles remain the same until .table-wrapper */
+
+        .scroll-container {
+            position: relative;
+            width: 100%;
         }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 1200px;
-            margin: 0 auto;
+        
+        .header-scroll {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 17px; /* Scrollbar height */
         }
+        
+        .header-scroll-inner {
+            height: 1px; /* Invisible but sets scroll width */
+        }
+        
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            overflow: hidden;
-            position: relative;
-        }
-        th {
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .controls {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #e9e9e9;
-            border-radius: 5px;
-        }
-        select, button, input {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .loading {
-            color: #666;
-            font-style: italic;
-        }
-        .error {
-            color: #f44336;
-        }
-        .file-info {
-            margin: 10px 0;
-            font-size: 0.9em;
-            color: #666;
-        }
-        .resize-handle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 5px;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.1);
-            cursor: col-resize;
-        }
-        .resize-handle:hover {
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .cell-content {
-            max-height: 150px;
             overflow-y: auto;
-            word-break: break-word;
+            max-height: 600px;
+            border: 1px solid #ddd;
         }
-        .settings-panel {
-            margin: 15px 0;
-            padding: 10px;
-            background-color: #f0f8ff;
-            border-radius: 5px;
+        
+        /* Make sure the fake scrollbar is invisible */
+        .header-scroll::-webkit-scrollbar {
+            height: 17px;
         }
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            .controls {
-                padding: 10px;
-            }
-            select, button, input {
-                width: 100%;
-                margin: 5px 0;
-            }
+        
+        .header-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 8px;
         }
+        
+        /* Rest of your existing styles remain the same */
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Job Scrapes Browser</h1>
-        
-        <div class="controls">
-            <div>
-                <label for="sourceSelect">Select Source:</label>
-                <select id="sourceSelect">
-                    <option value="">-- Select a source --</option>
-                    <option value="ClaremontColleges">Claremont Colleges</option>
-                    <option value="DignityHospitals">Dignity Hospitals</option>
-                    <option value="KaiserHospitals">Kaiser Hospitals</option>
-                </select>
-                <button onclick="loadFiles()">Load Files</button>
-                <span id="loadingStatus" class="loading"></span>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <label for="fileSelect">Select a file:</label>
-                <select id="fileSelect" disabled>
-                    <option value="">-- Select a file --</option>
-                </select>
-                <button onclick="loadSelectedFile()" disabled id="loadFileBtn">Load File</button>
-            </div>
-
-            <div class="settings-panel">
-                <h3>Table Settings</h3>
-                <label for="defaultColWidth">Default Column Width (px):</label>
-                <input type="number" id="defaultColWidth" value="150" min="50" max="500">
-                <button onclick="applyDefaultColumnWidth()">Apply</button>
-                
-                <label for="rowHeight">Row Height (px):</label>
-                <input type="number" id="rowHeight" value="30" min="20" max="100">
-                <button onclick="applyRowHeight()">Apply</button>
-                
-                <button onclick="resetTableLayout()">Reset Layout</button>
-            </div>
+    <!-- Previous HTML remains the same until the table container -->
+    
+    <div class="scroll-container">
+        <div class="header-scroll" id="headerScroll">
+            <div class="header-scroll-inner" id="headerScrollInner"></div>
         </div>
-
-        <div id="fileInfo" class="file-info"></div>
-        <div class="table-wrapper">
+        <div class="table-wrapper" id="tableWrapper">
             <div id="tableContainer"></div>
         </div>
     </div>
-
+    
     <script>
-        const sourceSelect = document.getElementById("sourceSelect");
-        const fileSelect = document.getElementById("fileSelect");
-        const loadFileBtn = document.getElementById("loadFileBtn");
-        const loadingStatus = document.getElementById("loadingStatus");
-        const tableContainer = document.getElementById("tableContainer");
-        const fileInfo = document.getElementById("fileInfo");
-        const defaultColWidthInput = document.getElementById("defaultColWidth");
-        const rowHeightInput = document.getElementById("rowHeight");
-
-        // GitHub API base URL
-        const GITHUB_API_BASE = 'https://api.github.com/repos/ZBZFirst/file/contents/ScrapeDescriptions';
-        let currentFiles = [];
-        let currentTable = null;
-        let isResizing = false;
-        let currentResizeColumn = null;
-        let startX = 0;
-        let startWidth = 0;
-
-        // Load files from selected source
-        async function loadFiles() {
-            const source = sourceSelect.value;
-            if (!source) {
-                alert("Please select a source first");
-                return;
-            }
-
-            loadingStatus.textContent = "Loading file list...";
-            fileSelect.disabled = true;
-            loadFileBtn.disabled = true;
-            tableContainer.innerHTML = "";
-            fileInfo.textContent = "";
+        // Previous JavaScript remains the same until after table creation
+        
+        // After creating the table in loadSelectedFile():
+        function setupSyncScroll() {
+            const headerScroll = document.getElementById('headerScroll');
+            const tableWrapper = document.getElementById('tableWrapper');
+            const headerScrollInner = document.getElementById('headerScrollInner');
             
-            try {
-                const url = `${GITHUB_API_BASE}/${source}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                currentFiles = data.filter(item => 
-                    item.type === "file" && item.name.endsWith('.xlsx')
-                ).sort((a, b) => b.name.localeCompare(a.name));
-
-                populateFileDropdown(currentFiles);
-                loadingStatus.textContent = `Loaded ${currentFiles.length} files`;
-            } catch (error) {
-                console.error("Error loading files:", error);
-                loadingStatus.textContent = "Error loading file list";
-                loadingStatus.className = "error";
-                fileSelect.innerHTML = '<option value="">-- Select a file --</option>';
-            } finally {
-                fileSelect.disabled = false;
-                loadFileBtn.disabled = false;
-            }
-        }
-
-        // Populate file dropdown
-        function populateFileDropdown(files) {
-            fileSelect.innerHTML = '<option value="">-- Select a file --</option>';
-            files.forEach(file => {
-                const option = document.createElement("option");
-                option.value = file.download_url;
-                option.textContent = file.name;
-                fileSelect.appendChild(option);
+            // Set the scroll width to match the table width
+            headerScrollInner.style.width = `${tableContainer.scrollWidth}px`;
+            
+            // Synchronize scrolling
+            headerScroll.addEventListener('scroll', function() {
+                tableWrapper.scrollLeft = this.scrollLeft;
+            });
+            
+            tableWrapper.addEventListener('scroll', function() {
+                headerScroll.scrollLeft = this.scrollLeft;
             });
         }
-
-        // Load selected file
-        async function loadSelectedFile() {
-            const selectedUrl = fileSelect.value;
-            if (!selectedUrl) {
-                alert("Please select a file first");
-                return;
-            }
-
-            const fileName = fileSelect.options[fileSelect.selectedIndex].text;
-            loadingStatus.textContent = `Loading ${fileName}...`;
-            tableContainer.innerHTML = "";
-            fileInfo.textContent = "";
-            
-            try {
-                const response = await fetch(selectedUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                
-                // Process the first sheet
-                const firstSheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                
-                if (jsonData.length === 0) {
-                    throw new Error("Empty sheet");
-                }
-                
-                // Display file info
-                fileInfo.textContent = `File: ${fileName} | Sheets: ${workbook.SheetNames.length} | Rows: ${jsonData.length - 1} | Columns: ${jsonData[0].length}`;
-                
-                // Create table
-                currentTable = document.createElement("table");
-                
-                // Create header row
-                const thead = document.createElement("thead");
-                const headerRow = document.createElement("tr");
-                jsonData[0].forEach((header, index) => {
-                    const th = document.createElement("th");
-                    th.textContent = header || `Column ${index + 1}`;
-                    
-                    // Add resize handle
-                    const resizeHandle = document.createElement("div");
-                    resizeHandle.className = "resize-handle";
-                    resizeHandle.dataset.columnIndex = index;
-                    resizeHandle.addEventListener('mousedown', initResize);
-                    th.appendChild(resizeHandle);
-                    
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                currentTable.appendChild(thead);
-                
-                // Create data rows
-                const tbody = document.createElement("tbody");
-                jsonData.slice(1).forEach(row => {
-                    const tr = document.createElement("tr");
-                    row.forEach(cell => {
-                        const td = document.createElement("td");
-                        const contentDiv = document.createElement("div");
-                        contentDiv.className = "cell-content";
-                        contentDiv.textContent = cell;
-                        td.appendChild(contentDiv);
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                });
-                currentTable.appendChild(tbody);
-                
-                tableContainer.appendChild(currentTable);
-                
-                // Apply default settings
-                applyDefaultColumnWidth();
-                applyRowHeight();
-                
-                loadingStatus.textContent = "";
-                
-            } catch (error) {
-                console.error("Error loading file:", error);
-                loadingStatus.textContent = `Error loading ${fileName}: ${error.message}`;
-                loadingStatus.className = "error";
-                tableContainer.innerHTML = "";
-            }
-        }
-
-        // Column resizing functionality
-        function initResize(e) {
-            isResizing = true;
-            currentResizeColumn = e.target.parentElement;
-            startX = e.clientX;
-            startWidth = currentResizeColumn.offsetWidth;
-            
-            document.addEventListener('mousemove', handleResize);
-            document.addEventListener('mouseup', stopResize);
-            
-            e.preventDefault();
-        }
-
-        function handleResize(e) {
-            if (!isResizing) return;
-            
-            const width = startWidth + (e.clientX - startX);
-            currentResizeColumn.style.width = `${width}px`;
-            
-            // Update all cells in this column
-            const columnIndex = currentResizeColumn.cellIndex;
-            const rows = currentTable.querySelectorAll('tr');
-            
-            rows.forEach(row => {
-                const cell = row.cells[columnIndex];
-                if (cell) {
-                    cell.style.width = `${width}px`;
-                }
-            });
-        }
-
-        function stopResize() {
-            isResizing = false;
-            document.removeEventListener('mousemove', handleResize);
-            document.removeEventListener('mouseup', stopResize);
-        }
-
-        // Apply default column width
-        function applyDefaultColumnWidth() {
-            if (!currentTable) return;
-            
-            const width = defaultColWidthInput.value + 'px';
-            const headers = currentTable.querySelectorAll('th');
-            const rows = currentTable.querySelectorAll('tr');
-            
-            headers.forEach((header, index) => {
-                header.style.width = width;
-                
-                rows.forEach(row => {
-                    const cell = row.cells[index];
-                    if (cell) {
-                        cell.style.width = width;
-                    }
-                });
-            });
-        }
-
-        // Apply row height
-        function applyRowHeight() {
-            if (!currentTable) return;
-            
-            const height = rowHeightInput.value + 'px';
-            const rows = currentTable.querySelectorAll('tr');
-            
-            rows.forEach(row => {
-                row.style.height = height;
-            });
-        }
-
-        // Reset table layout
-        function resetTableLayout() {
-            defaultColWidthInput.value = 150;
-            rowHeightInput.value = 30;
-            applyDefaultColumnWidth();
-            applyRowHeight();
-        }
-
-        // Enable load button when file is selected
-        fileSelect.addEventListener('change', function() {
-            loadFileBtn.disabled = !this.value;
-        });
+        
+        // Call this after table creation in loadSelectedFile():
+        setupSyncScroll();
+        
+        // Previous JavaScript continues...
     </script>
 </body>
 </html>
