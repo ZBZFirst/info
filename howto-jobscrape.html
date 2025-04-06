@@ -77,17 +77,17 @@
     </style>
 </head>
 <body>
-    <h1>Automated Job Search System for California Healthcare Organizations</h1>
+    <h1>How to Automate looking for a Job.</h1>
     
     <div class="note">
-        <p>This guide documents our automated job search system that scans three of California's largest healthcare organizations for job postings and compiles them into an Excel spreadsheet. We then utilize this spreadsheet to go to each individual jobs posting. The HTML from each job is saved and then parsed offline in what is considered "considerate web scraping". This tool is designed to help you efficiently find and sort through the mess of finding jobs at employers who hire entirely by web postings.</p>
+        <p>This guide documents the process that is used to make the html page at "https://zbzfirst.github.io/info/jobscrapes.html"./ This page loads a folder containing a set of files from the specified organizations. These files are the collection of job postings for the date in the filename. There are two versions provided, the "parsed" and "non-parsed" files. You can tell if it is parsed due to the inclusion of the word "parsed" in the filename. The parsed version contains columns that are specific to the jobs from each organization. This would be the area where you would find "Qualifications" or "Pay" for the job posted. A URL is included for each job posting. </p>
     </div>
     
-    <h2>How the System Works - Use the time you save to focus on preparing and understanding.</h2>
+    <h2>How the System Works</h2>
     
     <div class="step">
         <h3>1. Target Organizations</h3>
-        <p>Our system scans job postings from two major healthcare organizations and one major academic group in California:</p>
+        <p>This system scans job postings from two major healthcare organizations and one major academic group in California as of 4/6/2025:</p>
         <ul>
             <li>Kaiser Permanente</li>
             <li>The Claremont Colleges</li>
@@ -97,39 +97,41 @@
     </div>
     
     <div class="step">
-        <h3>2. Automated Web Scraping Part 1</h3>
-        <p>Python scripts automatically:</p>
+        <h3>2. Navigating to the List of Jobs and Scraping the List</h3>
+        <p>Upon loading the job list URL, the Python script "ScrapeOrganizationLinks.py" will automatically:</p>
         <ul>
-            <li>Navigate to each organization's career page</li>
-            <li>Filter the job posting list by State of California</li>
+            <li>Navigate to each organization's career posting page</li>
+            <li>Filter the job posting list by State of California if applicable</li>
             <li>Extract the Job Title and URL along with any other information from each posting</li>
-            <li>Advance through the list until all postings are retrieved</li>
+            <li>Paginate through the job posting list until all postings are retrieved</li>
             <li>Save the postings as a list in the Excel format (.xlsx)</li>
         </ul>
         
         <div class="note">
-            <p>The scripts use libraries like <code>requests</code>, <code>BeautifulSoup</code>, and <code>selenium</code> to interact with websites and extract data. The goal is to retrieve URLs at this point.</p>
+            <p>The outcome from these python scripts is a collection of URL's and additional information that is publicly available from each organizations web page in an excel file. Since we are paginating through the list, we are not directly stressing the servers in any way that is different from a normal user who manages to go through the entire job posting list.</p>
         </div>
     </div>
 
     <div class="step">
-        <h3>2. Automated Web Scraping Part 2</h3>
-        <p>Python scripts automatically:</p>
+        <h3>2. Navigating to Each Job Posting</h3>
+        <p>Upon loading the job url list, this Python script "ScrapeOrganizationLinks.py" will automatically:</p>
         <ul>
             <li>Load the excel list into Python as a Dataframe</li>
             <li>Access the URL Column in the dataframe</li>
             <li>Navigate to the URL for the job posting and save the html from the page into a new column in the dataframe</li>
             <li>Advance through the list until all postings are retrieved</li>
+            <li>Save the final list as a new file affixed with the "descriptions" suffix in the filename to specify the new file.</li>
+
         </ul>
         
         <div class="note">
-            <p>This second script will then go the URLs from the previous script and save the HTML of the page into a new column for usage in the next script.</p>
+            <p>This second script will then go the URLs from the previous script and save the HTML of the page into a new column for usage in the next script. Since we are saving the HTML into a new column in the dataframe and resaving as a new file, we are minimizing unnecessary returns to the web page to recheck the listing.</p>
         </div>
     </div>
 
     <div class="step">
-        <h3>2. Automated Web Scraping Part 3</h3>
-        <p>Python scripts automatically:</p>
+        <h3>2. Parsing the HTML Column</h3>
+        <p>Upon loading the HTML column from the new file at the end of step 2, this Python scripts automatically:</p>
         <ul>
             <li>Access the HTML Column that we created in the previous script</li>
             <li>Parse the HTML from this column based on the organizations formatting for job postings, there may be multiple templates per organization.</li>
@@ -138,118 +140,30 @@
         </ul>
         
         <div class="note">
-            <p>This final script makes the html readable and as a result, makes it possible to go through and make rapid comparisons in an organization based on certain elements like pay. Example: Certified Regisertered Nurse Anesthesiologists make up to 200,000k per year but a staff RN will have wages posted in 50$/hour format. This last file converts everything to hourly so that 200,000k per year becomes 110$/hour.</p>
-        </div>
-    </div>
-    
-    <div class="step">
-        <h3>3. Data Compilation</h3>
-        <p>All collected job information is compiled into a structured format with these fields:</p>
-        
-        <table>
-            <tr>
-                <th>Field</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Job Title</td>
-                <td>The official title of the position</td>
-            </tr>
-            <tr>
-                <td>Department</td>
-                <td>Which department the job is with</td>
-            </tr>
-            <tr>
-                <td>Location</td>
-                <td>City and facility where the job is based</td>
-            </tr>
-            <tr>
-                <td>Pay Range</td>
-                <td>California requires pay ranges to be disclosed</td>
-            </tr>
-            <tr>
-                <td>Job ID</td>
-                <td>The organization's internal job reference number</td>
-            </tr>
-            <tr>
-                <td>Scrape Date</td>
-                <td>When the job was scraped</td>
-            </tr>
-            <tr>
-                <td>Responsibilities</td>
-                <td>Job responsibilities (if available)</td>
-            </tr>
-            <tr>
-                <td>Job URL</td>
-                <td>Direct link to the full job posting</td>
-            </tr>
-            <tr>
-                <td>Remote or On Site</td>
-                <td>If available, this is stated</td>
-            </tr>
-            <tr>
-                <td>Job Type</td>
-                <td>Full-time, Part-time, Per Diem, etc.</td>
-            </tr>
-            <tr>
-                <td>Shift</td>
-                <td>Day, Evening, Night, Rotating, etc.</td>
-            </tr>
-        </table>
-    </div>
-    
-    <div class="step">
-        <h3>4. Excel File Generation</h3>
-        <p>The final output is an Excel spreadsheet (<code>.xlsx</code>) with:</p>
-        <ul>
-            <li>One file per organization</li>
-            <li>All filenames timestamped by MMDDYYYY</li>
-            <li>Hyperlinks to each job posting</li>
-            <li>Useful information for comparing jobs</li>
-        </ul>
-        
-        <div class="note">
-            <p>The script uses the <code>openpyxl</code> or <code>pandas</code> library to create professional-looking Excel files with proper formatting.</p>
+            <p>This final script makes the html readable and then transforms the HTML into new columns based on class and tag information from the HTML code, as a result, this makes it possible to go through the data The data is saved with a suffic of "parsed" added to the filename to specify the files at this state of data processing. It also unlocks rapid comparisons in an organization based on certain elements like pay. Data Transofmrations with Example: Certified Regisertered Nurse Anesthesiologists have pay reported as "200,000k per year" but a Staff RN III will have wages posted in a format such as "50$/hour" format. Some choices were made to standardize everything when needed but work is needed to perfect the logic and equations. Example: Wages have a new column for hourly format. Some errors may be found, if not sure, please go to the webpage URL to verify the at the organizations webpage.</p>
         </div>
     </div>
     
     <h2>How to Use the System</h2>
     
     <div class="step">
-        <h3>1. Prerequisites</h3>
-        <p>Before running the scripts, you'll need:</p>
-        <ul>
-            <li>Python 3.x installed</li>
-            <li>Required Python libraries (install with pip)</li>
-        </ul>
-        
-        <pre><code>pip install requests beautifulsoup4 selenium openpyxl pandas</code></pre>
-        
-        <div class="warning">
-            <p>For Selenium, you'll also need the appropriate web driver (ChromeDriver for Chrome, GeckoDriver for Firefox) installed and in your system PATH.</p>
-        </div>
+        <h3>1. Load the HTML Page</h3>
+        <p>Proceed to "https://zbzfirst.github.io/info/jobscrapes.html".</p>
+    
+    <div class="step">
+        <h3>2. Select Source</h3>
+        <p>Select an Organization from the list to view data from and click "Load Files"</p>
     </div>
     
     <div class="step">
-        <h3>2. Running the Scripts</h3>
-        <p>The main script is run from the command line:</p>
-        
-        <pre><code>python healthcare_job_scraper.py</code></pre>
-
-    </div>
-    
-    <div class="step">
-        <h3>3. Reviewing Results</h3>
-        <p>After running the script:</p>
+        <h3>3. Select a File to view Results</h3>
+        <p>After loading the files:</p>
         <ol>
-            <li>Open the generated Excel file</li>
-            <li>Review jobs in each organization's tab</li>
-            <li>Use Excel's filter and sort functions to narrow down</li>
-            <li>Click on job titles or URLs to view full postings</li>
+            <li>Select a file from the dropdown box and click "Load File"</li>
         </ol>
         
         <div class="note">
-            <p>The spreadsheet includes a scraped date timestamp. Further manipulation with a database will allow for comparing new entires that were not present on previous runs by Requisition ID or Job ID</p>
+            <p>The filenames start with the name or abbreviation of the organization followed by the timestamp in the MMDDYYYY format. Finally they will end with the "description" or "parsed" keyword to indicate which step in the process the file comes from. Both files are present for validation, education and research purposes. Please select the "parsed" versions.</p>
         </div>
     </div>
     
@@ -259,19 +173,9 @@
         <h3>Time Efficiency</h3>
         <p>Manually checking multiple career sites is time-consuming. This system:</p>
         <ul>
-            <li>Checks all three organizations simultaneously</li>
-            <li>Processes results in about an hour while the user attends to other tasks such as bathing or cooking</li>
-            <li>Ensures you always have the latest postings. Job hunting is a daily task where you apply as jobs show up.</li>
-        </ul>
-    </div>
-    
-    <div class="step">
-        <h3>Comprehensive Coverage</h3>
-        <p>The automated search:</p>
-        <ul>
-            <li>Finds jobs you might miss in manual searches by reviewing your filtering and keywords instead of just clicking around</li>
-            <li>Captures all relevant details in one place making it easy to compare</li>
-            <li>Can be expanded to include more organizations, this also improves your familiarity with the organization (e.g. who uses workday vs. custom solutions)</li>
+            <li>Checks organizations simultaneously when executed concurrently</li>
+            <li>Processes results in about an hour while the user attends to other tasks such as bathing, cooking, or preparing other items in the pipeline.</li>
+            <li>When combined with mobile devices. Reviewing Job Postings becomes a simplified process when performed with sorting Software.</li>
         </ul>
     </div>
     
@@ -279,12 +183,12 @@
     
     <div class="note">
         <h3>1. Check Regularly</h3>
-        <p>Run the script daily to catch new postings every morning or evening. Many healthcare organizations hire on a rolling basis and posting of jobs is sporadic but keeping your work consistent will allow you to see how their data flows.</p>
+        <p>Run the script daily to catch new postings every morning or evening.</p>
     </div>
     
     <div class="note">
         <h3>2. Tailor Your Search</h3>
-        <p>Modify the script parameters to focus on:</p>
+        <p>Modify the files to focus on:</p>
         <ul>
             <li>Specific roles you're qualified for</li>
             <li>Locations you can commute to</li>
@@ -293,7 +197,7 @@
     </div>
     
     <div class="note">
-        <h3>3. Track Applications</h3>
+        <h3>3. Develop more Applications</h3>
         <p>Create a new file with columns to track:</p>
         <ul>
             <li>When you applied</li>
@@ -305,7 +209,7 @@
     
     <h2>Sample Python Code Structure</h2>
     
-    <p>Here's a simplified version of what the main script might look like:</p>
+    <p>Here's a simplified version of what the main script might look like but hard versions are available for each organization:</p>
     
     <pre><code>import requests
 from bs4 import BeautifulSoup
@@ -376,7 +280,7 @@ if __name__ == '__main__':
         <li>Preparation for interviews specific to healthcare roles</li>
     </ul>
     
-    <p>This automated search is just the first step in a successful job search strategy.</p>
+    <p>This automated search is just the first step in a successful job search strategy but is also key for maintaining a strong sense of what is happening in the job market.</p>
     
     <footer>
         <p>Last updated: <span id="current-date"></span></p>
