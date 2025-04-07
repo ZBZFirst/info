@@ -50,14 +50,6 @@ title: "Minute Ventilation Quiz"
     </div>
 </div>
 
-<!-- Certificate Gallery -->
-<div id="cert-gallery">
-    <h2><i class="fas fa-trophy"></i> Your Certificates</h2>
-    <div id="cert-list">
-        <p id="no-certs">No certificates yet. Complete the quiz to earn one!</p>
-    </div>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
