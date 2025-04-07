@@ -1,10 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
-    const mathQuiz = document.getElementById('math-quiz');
-    const recallQuiz = document.getElementById('recall-quiz');
-    const mathComplete = document.getElementById('math-complete');
-    const recallComplete = document.getElementById('recall-complete');
     const mathStatus = document.getElementById('math-status');
+    const mathComplete = document.getElementById('math-complete');
     
     // Math question elements
     const questionCards = {
@@ -34,31 +31,28 @@ document.addEventListener('DOMContentLoaded', function() {
             scoreEl: document.getElementById('y-score'),
             progressEl: document.getElementById('y-progress'),
             cardEl: document.getElementById('y-card')
+        },
+        recall: {
+            questionEl: document.getElementById('recall-question'),
+            optionsEl: document.getElementById('recall-options'),
+            feedbackEl: document.getElementById('recall-feedback'),
+            scoreEl: document.getElementById('recall-score'),
+            progressEl: document.getElementById('recall-progress'),
+            cardEl: document.getElementById('recall-card'),
+            nextBtn: document.getElementById('next-recall')
         }
     };
-    
-    // Recall question elements
-    const recallQuestionEl = document.getElementById('recall-question');
-    const recallOptionsEl = document.getElementById('recall-options');
-    const recallFeedbackEl = document.getElementById('recall-feedback');
-    const nextRecallBtn = document.getElementById('next-recall');
-    const recallStatus = document.getElementById('recall-status');
-    const finalScoreEl = document.getElementById('final-score');
 
     // Quiz state
     const quizState = {
         z: { score: 0, currentQuestion: null, completed: false },
         x: { score: 0, currentQuestion: null, completed: false },
-        y: { score: 0, currentQuestion: null, completed: false }
+        y: { score: 0, currentQuestion: null, completed: false },
+        recall: { score: 0, currentIndex: 0, questions: [] }
     };
-    
-    let recallQuestions = [];
-    let currentRecallIndex = 0;
-    let recallScore = 0;
 
     // Initialize the quiz
     initMathQuiz();
-    initRecallQuiz();
 
     // Event listeners
     questionCards.z.submitBtn.addEventListener('click', () => checkAnswer('z'));
@@ -75,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') checkAnswer('y');
     });
     
-    nextRecallBtn.addEventListener('click', showNextRecallQuestion);
+    questionCards.recall.nextBtn.addEventListener('click', showNextRecallQuestion);
 
     // Functions
     function initMathQuiz() {
@@ -84,14 +78,13 @@ document.addEventListener('DOMContentLoaded', function() {
         generateNewQuestion('x');
         generateNewQuestion('y');
         
+        // Initialize recall questions
+        quizState.recall.questions = generateRecallQuestions();
+        
         // Update all progress displays
         updateProgress('z');
         updateProgress('x');
         updateProgress('y');
-    }
-    
-    function initRecallQuiz() {
-        recallQuestions = generateRecallQuestions();
     }
 
     function generateNewQuestion(type) {
@@ -117,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generateZQuestion() {
-        // First choose X (0.005-1.000 in 0.005 steps)
+        // X is between 0.005 and 1 in steps of 0.005 (3 decimal places)
         const x = Math.round((Math.random() * 0.995 + 0.005) * 200) / 200;
         
         // Calculate maximum Y that keeps Z ≤ 20
@@ -139,10 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function generateXQuestion() {
-        // First choose Z (0.1-20)
+        // Z is between 0.1 and 20
         const z = Math.round((Math.random() * 19.9 + 0.1) * 100) / 100;
         
-        // Calculate maximum Y that keeps X ≤ 1
+        // Calculate minimum Y that keeps X ≤ 1
         const minY = Math.ceil(z / 1);
         const y = Math.floor(Math.random() * (60 - minY + 1)) + minY;
         
@@ -159,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function generateYQuestion() {
-        // First choose Z (0.1-20)
+        // Z is between 0.1 and 20
         const z = Math.round((Math.random() * 19.9 + 0.1) * 100) / 100;
         
         // Calculate minimum X that keeps Y ≤ 60
@@ -199,21 +192,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (state.score >= 10) {
                 state.completed = true;
-                card.cardEl.style.opacity = '0.7';
-                card.cardEl.style.pointerEvents = 'none';
-                card.submitBtn.disabled = true;
-                card.answerEl.disabled = true;
+                card.cardEl.classList.add('disabled-card');
                 
                 // Check if all formats are completed
                 if (quizState.z.completed && quizState.x.completed && quizState.y.completed) {
                     mathComplete.classList.remove('hidden');
                     mathStatus.textContent = 'Completed';
                     mathStatus.classList.add('completed');
-                    setTimeout(() => {
-                        mathQuiz.classList.add('hidden');
-                        recallQuiz.classList.remove('hidden');
-                        showRecallQuestion(0);
-                    }, 2000);
+                    
+                    // Show recall card
+                    questionCards.recall.cardEl.classList.remove('hidden');
+                    showRecallQuestion(0);
                 }
             }
             
@@ -241,8 +230,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const state = quizState[type];
         const card = questionCards[type];
         
-        card.scoreEl.textContent = `${state.score}/10`;
-        card.progressEl.style.width = `${(state.score/10)*100}%`;
+        if (type === 'recall') {
+            card.scoreEl.textContent = `${state.score}/${state.questions.length}`;
+            card.progressEl.style.width = `${(state.score/state.questions.length)*100}%`;
+        } else {
+            card.scoreEl.textContent = `${state.score}/10`;
+            card.progressEl.style.width = `${(state.score/10)*100}%`;
+        }
     }
 
     function generateRecallQuestions() {
@@ -277,9 +271,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showRecallQuestion(index) {
-        const question = recallQuestions[index];
-        recallQuestionEl.textContent = question.question;
-        recallOptionsEl.innerHTML = '';
+        const question = quizState.recall.questions[index];
+        questionCards.recall.questionEl.textContent = question.question;
+        questionCards.recall.optionsEl.innerHTML = '';
         
         question.options.forEach((option, i) => {
             const optionDiv = document.createElement('div');
@@ -288,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="radio" name="recall-answer" id="option-${i}" value="${i}">
                 <label for="option-${i}">${option}</label>
             `;
-            recallOptionsEl.appendChild(optionDiv);
+            questionCards.recall.optionsEl.appendChild(optionDiv);
             
             // Add click handler to the entire option div
             optionDiv.addEventListener('click', function() {
@@ -297,45 +291,43 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        recallFeedbackEl.textContent = '';
-        recallFeedbackEl.className = 'feedback';
-        nextRecallBtn.classList.add('hidden');
-        recallStatus.textContent = `${index + 1}/${recallQuestions.length}`;
+        questionCards.recall.feedbackEl.textContent = '';
+        questionCards.recall.feedbackEl.className = 'feedback';
+        questionCards.recall.nextBtn.classList.add('hidden');
+        updateProgress('recall');
     }
     
     function checkRecallAnswer() {
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
         if (selectedOption) {
-            const correctAnswer = recallQuestions[currentRecallIndex].answer;
-            const isCorrect = parseInt(selectedOption.value) === correctAnswer;
+            const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
+            const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
             
             if (isCorrect) {
-                recallFeedbackEl.textContent = 'Correct!';
-                recallFeedbackEl.className = 'feedback correct';
-                recallScore++;
+                questionCards.recall.feedbackEl.textContent = 'Correct!';
+                questionCards.recall.feedbackEl.className = 'feedback correct';
+                quizState.recall.score++;
             } else {
-                recallFeedbackEl.textContent = `Incorrect. The correct answer is: ${recallQuestions[currentRecallIndex].options[correctAnswer]}`;
-                recallFeedbackEl.className = 'feedback incorrect';
+                questionCards.recall.feedbackEl.textContent = `Incorrect. The correct answer is: ${currentQuestion.options[currentQuestion.answer]}`;
+                questionCards.recall.feedbackEl.className = 'feedback incorrect';
             }
             
-            nextRecallBtn.classList.remove('hidden');
+            updateProgress('recall');
+            questionCards.recall.nextBtn.classList.remove('hidden');
         }
     }
 
     function showNextRecallQuestion() {
-        currentRecallIndex++;
-        if (currentRecallIndex < recallQuestions.length) {
-            showRecallQuestion(currentRecallIndex);
+        quizState.recall.currentIndex++;
+        if (quizState.recall.currentIndex < quizState.recall.questions.length) {
+            showRecallQuestion(quizState.recall.currentIndex);
         } else {
             // Quiz completed
-            recallQuestionEl.textContent = 'Quiz Completed!';
-            recallOptionsEl.innerHTML = '';
-            recallFeedbackEl.textContent = '';
-            nextRecallBtn.classList.add('hidden');
-            recallComplete.classList.remove('hidden');
-            finalScoreEl.textContent = recallScore;
-            recallStatus.textContent = 'Completed';
-            recallStatus.classList.add('completed');
+            questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
+            questionCards.recall.optionsEl.innerHTML = '';
+            questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
+            questionCards.recall.feedbackEl.className = 'feedback correct';
+            questionCards.recall.nextBtn.classList.add('hidden');
         }
     }
 });
