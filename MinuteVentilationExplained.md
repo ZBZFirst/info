@@ -5,6 +5,8 @@ title: "What Is Minute Ventilation?"
 
 # What is Minute Ventilation?
 
+<a href="MinuteVentilationQuiz.html" title="Minute Ventilation Quiz">Minute Ventilation Quiz</a>
+
 <div class="resource">
     <h2>The Base Equation</h2>
     <p>This short video just shows the variables involved with the equation. The Units of Measurement are provided.</p>
