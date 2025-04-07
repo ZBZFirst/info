@@ -10,9 +10,9 @@ title: "Minute Ventilation Quiz"
 <form id="MV-Quiz">
     <div class="question">
         <h3>Question 1: What is the equation for minute ventilation (V<sub>E</sub>)?</h3>
-        <input type="radio" name="q1" value="a" id="q1a"> <label for="q1a">V<sub>E</sub> = Tidal Volume × Respiratory Rate</label>
-        <input type="radio" name="q1" value="b" id="q1b"> <label for="q1b">V<sub>E</sub> = Heart Rate × Stroke Volume</label>
-        <input type="radio" name="q1" value="c" id="q1c"> <label for="q1c">V<sub>E</sub> = Blood Pressure × Cardiac Output</label>
+        <input type="radio" name="q1" value="a" id="q1a"> <label for="q1a">V<sub>E</sub> = Tidal Volume × Respiratory Rate</label><br>
+        <input type="radio" name="q1" value="b" id="q1b"> <label for="q1b">V<sub>E</sub> = Heart Rate × Stroke Volume</label><br>
+        <input type="radio" name="q1" value="c" id="q1c"> <label for="q1c">V<sub>E</sub> = Blood Pressure × Cardiac Output</label><br>
     </div>
 
     <div class="question">
