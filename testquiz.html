@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .quiz-container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .progress {
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .recall-option {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="math-quiz" class="quiz-container">
+        <h2>Math Quiz</h2>
+        <div class="progress">
+            <p>Current Score: <span id="score">0</span>/10</p>
+            <p>Current Format: <span id="current-format">Solve for Z</span></p>
+        </div>
+        <div class="question" id="question"></div>
+        <div id="input-section">
+            <input type="number" step="0.001" id="answer" placeholder="Enter your answer">
+            <button id="submit">Submit</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div id="recall-quiz" class="quiz-container hidden">
+        <h2>Recall Questions</h2>
+        <div class="question" id="recall-question"></div>
+        <div id="recall-options"></div>
+        <div class="feedback" id="recall-feedback"></div>
+        <button id="next-recall" class="hidden">Next Question</button>
+    </div>
+
+    <script src="quiz.js"></script>
+</body>
+</html>
