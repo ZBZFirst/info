@@ -1,9 +1,9 @@
-<script src="certificate-manager.js"></script>
-
 ---
 layout: default
 title: "Minute Ventilation Quiz"
 ---
+
+<script src="certificate-manager.js"></script>
 
 # Minute Ventilation Quiz
 
