@@ -298,9 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <label for="option-${i}">${option}</label>
             `;
             questionCards.recall.optionsEl.appendChild(optionDiv);
-            
-            });
-        });
+        }); // <-- This is the only closing brace and parenthesis needed for the forEach
         
         questionCards.recall.feedbackEl.textContent = '';
         questionCards.recall.feedbackEl.className = 'feedback';
