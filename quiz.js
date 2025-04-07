@@ -85,12 +85,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Initialize recall questions
         quizState.recall.questions = generateRecallQuestions();
-        quizState.recall.remainingQuestions = [...quizState.recall.questions];
+        quizState.recall.remainingQuestions = [];
         
         // Update all progress displays
         updateProgress('z');
         updateProgress('x');
         updateProgress('y');
+        updateProgress('recall');
+    
+    // Set initial recall message
+    questionCards.recall.questionEl.textContent = "Complete any math section to unlock recall questions";
     }
 
     function generateNewQuestion(type) {
@@ -201,13 +205,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.cardEl.classList.add('disabled-card');
                 
                 // Check if all formats are completed
-                if (quizState.z.completed && quizState.x.completed && quizState.y.completed) {
-                    mathComplete.classList.remove('hidden');
-                    mathStatus.textContent = 'Completed';
-                    mathStatus.classList.add('completed');
-                    
-                    // Show recall card
-                    questionCards.recall.cardEl.classList.remove('hidden');
+                if (quizState.recall.remainingQuestions.length === 0 && 
+                    (quizState.z.completed || quizState.x.completed || quizState.y.completed)) {
+                    quizState.recall.remainingQuestions = [...quizState.recall.questions];
                     showRandomRecallQuestion();
                 }
             }
@@ -277,6 +277,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showRandomRecallQuestion() {
+        // If recall questions haven't been unlocked yet
+        if (quizState.recall.remainingQuestions.length === 0 && 
+            !(quizState.z.completed || quizState.x.completed || quizState.y.completed)) {
+            questionCards.recall.questionEl.textContent = "Complete any math section to unlock recall questions";
+            questionCards.recall.optionsEl.innerHTML = '';
+            questionCards.recall.feedbackEl.textContent = '';
+            questionCards.recall.nextBtn.classList.add('hidden');
+            return;
+        }
+    
         // If no questions left, show completion
         if (quizState.recall.remainingQuestions.length === 0) {
             questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
