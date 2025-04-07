@@ -59,7 +59,8 @@ title: "Minute Ventilation Quiz"
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 <script>
 // Triple storage system for maximum persistence
 const CERT_STORAGE_KEYS = {
@@ -198,7 +199,70 @@ class CertificateManager {
 // Initialize
 const certManager = new CertificateManager();
 
-// Quiz logic (unchanged except for certificate generation)
+// Quiz Validation Function
+function checkQuiz() {
+    // Correct answers
+    const answers = {
+        q1: "a",
+        q2: 6000,
+        q3: ["a", "b"],
+        q4: 6.3
+    };
+
+    let score = 0;
+    let feedback = [];
+
+    // Validate Q1
+    const q1 = document.querySelector('input[name="q1"]:checked');
+    if (q1 && q1.value === answers.q1) {
+        score++;
+        feedback.push("<p>✓ Q1: Correct! V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>");
+    } else {
+        feedback.push("<p>✗ Q1: The correct equation is V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>");
+    }
+
+    // Validate Q2
+    const q2 = parseFloat(document.getElementById('q2').value);
+    if (q2 === answers.q2) {
+        score++;
+        feedback.push("<p>✓ Q2: Correct! 500 mL × 12 = 6000 mL/min</p>");
+    } else {
+        feedback.push(`<p>✗ Q2: Should be 6000 mL/min (500 × 12)</p>`);
+    }
+
+    // Validate Q3
+    const q3a = document.getElementById('q3a').checked;
+    const q3b = document.getElementById('q3b').checked;
+    const q3c = document.getElementById('q3c').checked;
+    if (q3a && q3b && !q3c) {
+        score++;
+        feedback.push("<p>✓ Q3: Correct! Both 4-5 L/min and 6-8 L/min are normal</p>");
+    } else {
+        feedback.push("<p>✗ Q3: Both 4-5 L/min and 6-8 L/min can be normal</p>");
+    }
+
+    // Validate Q4
+    const q4 = parseFloat(document.getElementById('q4').value);
+    if (q4 === answers.q4) {
+        score++;
+        feedback.push("<p>✓ Q4: Correct! 450 mL × 14 = 6.3 L/min</p>");
+    } else {
+        feedback.push("<p>✗ Q4: Should be 6.3 L/min (450 × 14 = 6300 mL = 6.3 L)</p>");
+    }
+
+    // Display results
+    document.getElementById('score').textContent = score;
+    document.getElementById('feedback').innerHTML = feedback.join('');
+    document.getElementById('results').style.display = 'block';
+    
+    // Show certificate button if passed (3/4 or better)
+    document.getElementById('certificate-btn').style.display = score >= 3 ? 'block' : 'none';
+    
+    // Scroll to results
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Certificate Generation
 function generateCertificate() {
     const name = prompt("Enter your name for the certificate:");
     if (!name) return;
@@ -211,7 +275,8 @@ function generateCertificate() {
             month: 'long', 
             day: 'numeric' 
         }),
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        score: document.getElementById('score').textContent + "/4"
     };
 
     certManager.saveCertificate(certData);
@@ -220,68 +285,239 @@ function generateCertificate() {
 }
 </script>
 
+
 <style>
-/* Modern styling */
+/* ====== Main Quiz Container ====== */
+#quiz-form {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+}
+
+/* ====== Questions & Inputs ====== */
+.question {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.question h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.question label {
+    display: block;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.question label:hover {
+    color: #3498db;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    margin-right: 0.75rem;
+}
+
+input[type="number"] {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 120px;
+    margin-top: 0.5rem;
+}
+
+/* ====== Buttons ====== */
+#submit-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+    display: block;
+    margin: 2rem auto 0;
+}
+
+#submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+#certificate-btn {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+#certificate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+}
+
+/* ====== Results Section ====== */
+#results {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    max-width: 800px;
+    border: 1px solid #eaeaea;
+}
+
+#results h2 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+#feedback p {
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+}
+
+#feedback p:first-child {
+    margin-top: 0;
+}
+
+/* ====== Certificate Gallery ====== */
 #cert-gallery {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 40px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 3rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+}
+
+#cert-gallery h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#cert-gallery h2 i {
+    color: #f39c12;
+}
+
+#cert-list {
+    margin-top: 1.5rem;
 }
 
 .cert-card {
     background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #eaeaea;
 }
 
 .cert-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    border-color: #3498db;
 }
 
 .cert-preview h3 {
-    margin: 0;
+    margin: 0 0 0.25rem;
     color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.cert-preview p {
+    margin: 0.25rem 0;
+    color: #7f8c8d;
+    font-size: 0.9rem;
 }
 
 .cert-id {
-    font-family: monospace;
-    color: #7f8c8d;
-    font-size: 0.9em;
-    margin: 5px 0 0;
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.cert-actions {
+    display: flex;
+    gap: 0.75rem;
 }
 
 .cert-actions button {
-    background: #3498db;
+    background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
     border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    margin-left: 10px;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cert-actions button:last-child {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
 }
 
 .cert-actions button:hover {
-    background: #2980b9;
-}
-
-.cert-actions button i {
-    margin-right: 5px;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 #no-certs {
-    color: #7f8c8d;
+    color: #95a5a6;
     font-style: italic;
     text-align: center;
-    padding: 20px;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* ====== Responsive Design ====== */
+@media (max-width: 768px) {
+    .cert-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .cert-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    #quiz-form,
+    #results,
+    #cert-gallery {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+    }
 }
 </style>
