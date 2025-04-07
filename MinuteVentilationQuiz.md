@@ -65,6 +65,7 @@ class CertificateManager {
     constructor() {
         this.migrateLegacyCerts();
         this.loadCertificates();
+        
     }
 
     getAllCerts() {
@@ -186,6 +187,13 @@ class CertificateManager {
             prompt('Copy this link to share:', `${window.location.href}?cert=${certId}`);
         }
     }
+
+    hasCertificateForAttempt(name, score) {
+        return this.getAllCerts().some(cert => 
+            cert.name === name && 
+            cert.score === score
+        );
+    }
 }
 
 // Initialize
@@ -254,10 +262,24 @@ function checkQuiz() {
     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Certificate Generation
+// Certificate Generation - Updated to prevent duplicates
 function generateCertificate() {
     const name = prompt("Enter your name for the certificate:");
     if (!name) return;
+
+    // Check if certificate already exists for this session
+    const existingCerts = certManager.getAllCerts();
+    const existingCert = existingCerts.find(cert => 
+        cert.name === name && 
+        cert.score === document.getElementById('score').textContent
+    );
+
+    if (existingCert) {
+        if (confirm("You already have a certificate for this attempt. Download it again?")) {
+            certManager.downloadCert(existingCert.id);
+        }
+        return;
+    }
 
     const certData = {
         id: 'mv-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
@@ -268,7 +290,8 @@ function generateCertificate() {
             day: 'numeric' 
         }),
         timestamp: Date.now(),
-        score: document.getElementById('score').textContent + "/4"
+        score: document.getElementById('score').textContent + "/4",
+        quizId: window.location.href + '-attempt-' + Date.now()
     };
 
     certManager.saveCertificate(certData);
