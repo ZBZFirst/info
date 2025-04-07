@@ -270,44 +270,44 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     }
 
-function showRandomRecallQuestion() {
-    // If no questions left, show completion
-    if (quizState.recall.remainingQuestions.length === 0) {
-        questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
-        questionCards.recall.optionsEl.innerHTML = '';
-        questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
-        questionCards.recall.feedbackEl.className = 'feedback correct';
-        questionCards.recall.nextBtn.classList.add('hidden');
-        questionCards.recall.submitBtn.classList.add('hidden');
-        return;
-    }
-    
-    // Select random question from remaining
-    const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
-    const question = quizState.recall.remainingQuestions[randomIndex];
-    quizState.recall.currentIndex = quizState.recall.questions.indexOf(question);
-    
-    questionCards.recall.questionEl.textContent = question.question;
-    questionCards.recall.optionsEl.innerHTML = '';
-    
-    question.options.forEach((option, i) => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'recall-option';
-        optionDiv.innerHTML = `
-            <input type="radio" name="recall-answer" id="option-${i}" value="${i}">
-            <label for="option-${i}">${option}</label>
-        `;
-        questionCards.recall.optionsEl.appendChild(optionDiv);
+    function showRandomRecallQuestion() {
+        // If no questions left, show completion
+        if (quizState.recall.remainingQuestions.length === 0) {
+            questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
+            questionCards.recall.optionsEl.innerHTML = '';
+            questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
+            questionCards.recall.feedbackEl.className = 'feedback correct';
+            questionCards.recall.nextBtn.classList.add('hidden');
+            questionCards.recall.submitBtn.classList.add('hidden');
+            return;
+        }
         
+        // Select random question from remaining
+        const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
+        const question = quizState.recall.remainingQuestions[randomIndex];
+        quizState.recall.currentIndex = quizState.recall.questions.indexOf(question);
+        
+        questionCards.recall.questionEl.textContent = question.question;
+        questionCards.recall.optionsEl.innerHTML = '';
+        
+        question.options.forEach((option, i) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'recall-option';
+            optionDiv.innerHTML = `
+                <input type="radio" name="recall-answer" id="option-${i}" value="${i}">
+                <label for="option-${i}">${option}</label>
+            `;
+            questionCards.recall.optionsEl.appendChild(optionDiv);
+            
+            });
         });
-    });
-    
-    questionCards.recall.feedbackEl.textContent = '';
-    questionCards.recall.feedbackEl.className = 'feedback';
-    questionCards.recall.nextBtn.classList.add('hidden');
-    questionCards.recall.submitBtn.classList.remove('hidden');
-    updateProgress('recall');
-}
+        
+        questionCards.recall.feedbackEl.textContent = '';
+        questionCards.recall.feedbackEl.className = 'feedback';
+        questionCards.recall.nextBtn.classList.add('hidden');
+        questionCards.recall.submitBtn.classList.remove('hidden');
+        updateProgress('recall');
+    }
     
     function checkRecallAnswer() {
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
