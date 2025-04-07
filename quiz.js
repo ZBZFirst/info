@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 q => q.question !== currentQuestion.question
             );
         } else {
-            questionCards.recall.feedbackEl.textContent = `Incorrect. The correct answer is: ${currentQuestion.options[currentQuestion.answer]}`;
+            questionCards.recall.feedbackEl.textContent = `Incorrect.`;
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
         
