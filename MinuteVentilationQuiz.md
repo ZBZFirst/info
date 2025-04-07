@@ -122,8 +122,6 @@ class CertificateManager {
         // Get from storage once
         const fromPrimary = this.getCertsFromStorage(CERT_STORAGE_KEYS.primary);
         const fromBackup = this.getCertsFromStorage(CERT_STORAGE_KEYS.backup);
-        
-        // Deduplicate by ID
         const certMap = new Map();
         [...fromPrimary, ...fromBackup].forEach(cert => {
             if (cert.id && !certMap.has(cert.id)) {
@@ -133,7 +131,6 @@ class CertificateManager {
         
         this.loadedCertificates = Array.from(certMap.values())
             .sort((a, b) => b.timestamp - a.timestamp);
-        
         this.renderCertificates();
     }
     
@@ -159,9 +156,7 @@ class CertificateManager {
     downloadCert(certId) {
         const cert = this.getAllCerts().find(c => c.id === certId) || 
                     JSON.parse(localStorage.getItem(`cert_${certId}`));
-        
         if (!cert) return;
-
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
@@ -232,7 +227,6 @@ function checkQuiz() {
     const q1 = document.querySelector('input[name="q1"]:checked');
     if (q1 && q1.value === answers.q1) {
         score++;
-        feedback.push("<p>✓ Q1: Correct! V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>");
     } else {
         feedback.push("<p>✗ Q1: The correct equation is V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>");
     }
@@ -241,7 +235,6 @@ function checkQuiz() {
     const q2 = parseFloat(document.getElementById('q2').value);
     if (q2 === answers.q2) {
         score++;
-        feedback.push("<p>✓ Q2: Correct! 500 mL × 12 = 6000 mL/min</p>");
     } else {
         feedback.push(`<p>✗ Q2: Should be 6000 mL/min (500 × 12)</p>`);
     }
@@ -252,7 +245,6 @@ function checkQuiz() {
     const q3c = document.getElementById('q3c').checked;
     if (q3a && q3b && !q3c) {
         score++;
-        feedback.push("<p>✓ Q3: Correct! Both 4-5 L/min and 6-8 L/min are normal</p>");
     } else {
         feedback.push("<p>✗ Q3: Both 4-5 L/min and 6-8 L/min can be normal</p>");
     }
@@ -261,22 +253,34 @@ function checkQuiz() {
     const q4 = parseFloat(document.getElementById('q4').value);
     if (q4 === answers.q4) {
         score++;
-        feedback.push("<p>✓ Q4: Correct! 450 mL × 14 = 6.3 L/min</p>");
     } else {
         feedback.push("<p>✗ Q4: Should be 6.3 L/min (450 × 14 = 6300 mL = 6.3 L)</p>");
     }
 
-    // Display results
-    document.getElementById('score').textContent = score;
-    document.getElementById('feedback').innerHTML = feedback.join('');
+    // Check if the score is perfect (100%)
+    if (score === 4) {
+        // If correct, display feedback
+        document.getElementById('score').textContent = score;
+        document.getElementById('feedback').innerHTML = `
+            <p>✓ Q1: Correct! V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>
+            <p>✓ Q2: Correct! 500 mL × 12 = 6000 mL/min</p>
+            <p>✓ Q3: Correct! Both 4-5 L/min and 6-8 L/min are normal</p>
+            <p>✓ Q4: Correct! 450 mL × 14 = 6.3 L/min</p>
+        `;
+        document.getElementById('certificate-btn').style.display = 'block'; // Show certificate button
+    } else {
+        // Otherwise, just show the feedback for incorrect answers
+        document.getElementById('score').textContent = score;
+        document.getElementById('feedback').innerHTML = feedback.join('');
+    }
+
+    // Show the results section regardless of the score
     document.getElementById('results').style.display = 'block';
-    
-    // Show certificate button if passed (3/4 or better)
-    document.getElementById('certificate-btn').style.display = score >= 3 ? 'block' : 'none';
-    
+
     // Scroll to results
     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
 }
+
 
 // Certificate Generation - Updated to prevent duplicates
 function generateCertificate() {
