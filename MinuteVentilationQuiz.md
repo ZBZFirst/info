@@ -54,29 +54,24 @@ title: "Minute Ventilation Quiz"
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
-// Triple storage system for maximum persistence
+
+
 const CERT_STORAGE_KEYS = {
     primary: 'mv_certs_v3',
     backup: 'mv_certs_backup',
-    legacy: 'mv_certificates' // For migration from old versions
+    legacy: 'mv_certificates' 
 };
 
 class CertificateManager {
     constructor() {
+        this.loadedCertificates = [];
         this.migrateLegacyCerts();
         this.loadCertificates();
         
     }
 
     getAllCerts() {
-        // Check all storage locations
-        const fromPrimary = this.getCertsFromStorage(CERT_STORAGE_KEYS.primary);
-        const fromBackup = this.getCertsFromStorage(CERT_STORAGE_KEYS.backup);
-        
-        // Merge and deduplicate
-        return [...new Set([...fromPrimary, ...fromBackup])]
-            .filter(cert => cert.id)
-            .sort((a, b) => b.timestamp - a.timestamp);
+        return this.loadedCertificates;
     }
 
     getCertsFromStorage(key) {
@@ -87,17 +82,32 @@ class CertificateManager {
         }
     }
 
+    renderCertificates() {
+        const container = document.getElementById('cert-list');
+        
+        if (this.loadedCertificates.length === 0) {
+            document.getElementById('no-certs').style.display = 'block';
+            container.innerHTML = '';
+            return;
+        }
+
+        document.getElementById('no-certs').style.display = 'none';
+        container.innerHTML = this.loadedCertificates
+            .map(cert => this.createCertCard(cert))
+            .join('');
+    }
+    
     saveCertificate(cert) {
-        const allCerts = this.getAllCerts();
-        allCerts.unshift(cert); // Add new cert to beginning
+        if (!this.loadedCertificates.some(c => c.id === cert.id)) {
+            this.loadedCertificates.unshift(cert);
+        }
         
-        // Save to multiple locations
-        localStorage.setItem(CERT_STORAGE_KEYS.primary, JSON.stringify(allCerts));
-        localStorage.setItem(CERT_STORAGE_KEYS.backup, JSON.stringify(allCerts));
+        localStorage.setItem(CERT_STORAGE_KEYS.primary, 
+            JSON.stringify(this.loadedCertificates));
+        localStorage.setItem(CERT_STORAGE_KEYS.backup, 
+            JSON.stringify(this.loadedCertificates));
         
-        // Additional per-certificate storage
-        localStorage.setItem(`cert_${cert.id}`, JSON.stringify(cert));
-        sessionStorage.setItem(`cert_${cert.id}`, JSON.stringify(cert));
+        this.renderCertificates();
     }
 
     migrateLegacyCerts() {
@@ -109,18 +119,24 @@ class CertificateManager {
     }
 
     loadCertificates() {
-        const certs = this.getAllCerts();
-        const container = document.getElementById('cert-list');
+        // Get from storage once
+        const fromPrimary = this.getCertsFromStorage(CERT_STORAGE_KEYS.primary);
+        const fromBackup = this.getCertsFromStorage(CERT_STORAGE_KEYS.backup);
         
-        if (certs.length === 0) {
-            document.getElementById('no-certs').style.display = 'block';
-            return;
-        }
-
-        document.getElementById('no-certs').style.display = 'none';
-        container.innerHTML = certs.map(cert => this.createCertCard(cert)).join('');
+        // Deduplicate by ID
+        const certMap = new Map();
+        [...fromPrimary, ...fromBackup].forEach(cert => {
+            if (cert.id && !certMap.has(cert.id)) {
+                certMap.set(cert.id, cert);
+            }
+        });
+        
+        this.loadedCertificates = Array.from(certMap.values())
+            .sort((a, b) => b.timestamp - a.timestamp);
+        
+        this.renderCertificates();
     }
-
+    
     createCertCard(cert) {
         return `
         <div class="cert-card" data-id="${cert.id}">
