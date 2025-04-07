@@ -83,20 +83,19 @@ document.addEventListener('DOMContentLoaded', function() {
         generateNewQuestion('x');
         generateNewQuestion('y');
         
-        // Initialize recall questions
+        // Initialize recall questions and make them active immediately
         quizState.recall.questions = generateRecallQuestions();
-        quizState.recall.remainingQuestions = [];
+        quizState.recall.remainingQuestions = [...quizState.recall.questions];
         
         // Update all progress displays
         updateProgress('z');
         updateProgress('x');
         updateProgress('y');
         updateProgress('recall');
-    
-    // Set initial recall message
-    questionCards.recall.questionEl.textContent = "Complete any math section to unlock recall questions";
+        
+        // Show first recall question
+        showRandomRecallQuestion();
     }
-
     function generateNewQuestion(type) {
         let question;
         switch(type) {
@@ -186,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = questionCards[type];
         const userAnswer = parseFloat(card.answerEl.value);
         const correctAnswer = state.currentQuestion.answer;
-        const tolerance = 0.001; // Allow for floating point rounding
+        const tolerance = 0.001;
 
         if (isNaN(userAnswer)) {
             card.feedbackEl.textContent = 'Please enter a valid number';
@@ -203,13 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.score >= 5) {
                 state.completed = true;
                 card.cardEl.classList.add('disabled-card');
-                
-                // Check if all formats are completed
-                if (quizState.recall.remainingQuestions.length === 0 && 
-                    (quizState.z.completed || quizState.x.completed || quizState.y.completed)) {
-                    quizState.recall.remainingQuestions = [...quizState.recall.questions];
-                    showRandomRecallQuestion();
-                }
             }
             
             setTimeout(() => {
@@ -276,56 +268,45 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     }
 
-    function showRandomRecallQuestion() {
-        // If recall questions haven't been unlocked yet
-        if (quizState.recall.remainingQuestions.length === 0 && 
-            !(quizState.z.completed || quizState.x.completed || quizState.y.completed)) {
-            questionCards.recall.questionEl.textContent = "Complete any math section to unlock recall questions";
-            questionCards.recall.optionsEl.innerHTML = '';
-            questionCards.recall.feedbackEl.textContent = '';
-            questionCards.recall.nextBtn.classList.add('hidden');
-            return;
-        }
-    
-        // If no questions left, show completion
-        if (quizState.recall.remainingQuestions.length === 0) {
-            questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
-            questionCards.recall.optionsEl.innerHTML = '';
-            questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
-            questionCards.recall.feedbackEl.className = 'feedback correct';
-            questionCards.recall.nextBtn.classList.add('hidden');
-            return;
-        }
-        
-        // Select random question from remaining
-        const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
-        const question = quizState.recall.remainingQuestions[randomIndex];
-        quizState.recall.currentIndex = quizState.recall.questions.indexOf(question);
-        
-        questionCards.recall.questionEl.textContent = question.question;
+function showRandomRecallQuestion() {
+    // If no questions left, show completion
+    if (quizState.recall.remainingQuestions.length === 0) {
+        questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
         questionCards.recall.optionsEl.innerHTML = '';
-        
-        question.options.forEach((option, i) => {
-            const optionDiv = document.createElement('div');
-            optionDiv.className = 'recall-option';
-            optionDiv.innerHTML = `
-                <input type="radio" name="recall-answer" id="option-${i}" value="${i}">
-                <label for="option-${i}">${option}</label>
-            `;
-            questionCards.recall.optionsEl.appendChild(optionDiv);
-            
-            // Add click handler to the entire option div
-            optionDiv.addEventListener('click', function() {
-                document.getElementById(`option-${i}`).checked = true;
-                checkRecallAnswer();
-            });
-        });
-        
-        questionCards.recall.feedbackEl.textContent = '';
-        questionCards.recall.feedbackEl.className = 'feedback';
+        questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
+        questionCards.recall.feedbackEl.className = 'feedback correct';
         questionCards.recall.nextBtn.classList.add('hidden');
-        updateProgress('recall');
+        return;
     }
+    
+    // Select random question from remaining
+    const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
+    const question = quizState.recall.remainingQuestions[randomIndex];
+    quizState.recall.currentIndex = quizState.recall.questions.indexOf(question);
+    
+    questionCards.recall.questionEl.textContent = question.question;
+    questionCards.recall.optionsEl.innerHTML = '';
+    
+    question.options.forEach((option, i) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'recall-option';
+        optionDiv.innerHTML = `
+            <input type="radio" name="recall-answer" id="option-${i}" value="${i}">
+            <label for="option-${i}">${option}</label>
+        `;
+        questionCards.recall.optionsEl.appendChild(optionDiv);
+        
+        optionDiv.addEventListener('click', function() {
+            document.getElementById(`option-${i}`).checked = true;
+            checkRecallAnswer();
+        });
+    });
+    
+    questionCards.recall.feedbackEl.textContent = '';
+    questionCards.recall.feedbackEl.className = 'feedback';
+    questionCards.recall.nextBtn.classList.add('hidden');
+    updateProgress('recall');
+}
     
     function checkRecallAnswer() {
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
