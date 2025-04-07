@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
             x: x,
             y: y,
             z: z,
-            text: `If X = ${x.toFixed(2)} and Y = ${y}, what is Z? (X × Y = Z)`,
+            text: `If Vt = ${x.toFixed(2)} and RR = ${y}, what is MV? (X × Y = Z)`,
             answer: z,
             type: 'z'
         };
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
             x: x,
             y: y,
             z: z,
-            text: `If Z = ${z.toFixed(2)} and Y = ${y}, what is X? (Z ÷ Y = X)`,
+            text: `If MV = ${z.toFixed(2)} and RR = ${y}, what is VT? (Z ÷ Y = X)`,
             answer: x,
             type: 'x'
         };
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             x: x,
             y: y,
             z: z,
-            text: `If Z = ${z.toFixed(2)} and X = ${x.toFixed(2)}, what is Y? (Z ÷ X = Y)`,
+            text: `If MV = ${z.toFixed(2)} and VT = ${x.toFixed(2)}, what is RR? (Z ÷ X = Y)`,
             answer: y,
             type: 'y'
         };
