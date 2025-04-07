@@ -223,20 +223,28 @@ function checkQuiz() {
     let score = 0;
     let feedback = [];
 
+    // Hide feedback initially
+    document.getElementById('feedback').innerHTML = '';
+    document.querySelectorAll('.question').forEach(q => q.classList.remove('correct', 'incorrect'));
+
     // Validate Q1
     const q1 = document.querySelector('input[name="q1"]:checked');
     if (q1 && q1.value === answers.q1) {
         score++;
+        feedback.push("<p>✓ Q1: Correct! V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>");
+        document.querySelector('.question:nth-child(1)').classList.add('correct');
     } else {
-        feedback.push("<p>✗ Q1: The correct equation is V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>");
+        document.querySelector('.question:nth-child(1)').classList.add('incorrect');
     }
 
     // Validate Q2
     const q2 = parseFloat(document.getElementById('q2').value);
     if (q2 === answers.q2) {
         score++;
+        feedback.push("<p>✓ Q2: Correct! 500 mL × 12 = 6000 mL/min</p>");
+        document.querySelector('.question:nth-child(2)').classList.add('correct');
     } else {
-        feedback.push(`<p>✗ Q2: Should be 6000 mL/min (500 × 12)</p>`);
+        document.querySelector('.question:nth-child(2)').classList.add('incorrect');
     }
 
     // Validate Q3
@@ -245,42 +253,35 @@ function checkQuiz() {
     const q3c = document.getElementById('q3c').checked;
     if (q3a && q3b && !q3c) {
         score++;
+        feedback.push("<p>✓ Q3: Correct! Both 4-5 L/min and 6-8 L/min are normal</p>");
+        document.querySelector('.question:nth-child(3)').classList.add('correct');
     } else {
-        feedback.push("<p>✗ Q3: Both 4-5 L/min and 6-8 L/min can be normal</p>");
+        document.querySelector('.question:nth-child(3)').classList.add('incorrect');
     }
 
     // Validate Q4
     const q4 = parseFloat(document.getElementById('q4').value);
     if (q4 === answers.q4) {
         score++;
+        feedback.push("<p>✓ Q4: Correct! 450 mL × 14 = 6.3 L/min</p>");
+        document.querySelector('.question:nth-child(4)').classList.add('correct');
     } else {
-        feedback.push("<p>✗ Q4: Should be 6.3 L/min (450 × 14 = 6300 mL = 6.3 L)</p>");
+        document.querySelector('.question:nth-child(4)').classList.add('incorrect');
     }
 
-    // Check if the score is perfect (100%)
+    // If all answers are correct (score 4/4), show feedback
     if (score === 4) {
-        // If correct, display feedback
-        document.getElementById('score').textContent = score;
-        document.getElementById('feedback').innerHTML = `
-            <p>✓ Q1: Correct! V<sub>E</sub> = Tidal Volume × Respiratory Rate</p>
-            <p>✓ Q2: Correct! 500 mL × 12 = 6000 mL/min</p>
-            <p>✓ Q3: Correct! Both 4-5 L/min and 6-8 L/min are normal</p>
-            <p>✓ Q4: Correct! 450 mL × 14 = 6.3 L/min</p>
-        `;
-        document.getElementById('certificate-btn').style.display = 'block'; // Show certificate button
-    } else {
-        // Otherwise, just show the feedback for incorrect answers
-        document.getElementById('score').textContent = score;
         document.getElementById('feedback').innerHTML = feedback.join('');
+        document.getElementById('results').style.display = 'block';
+
+        // Show certificate button if passed (3/4 or better)
+        document.getElementById('certificate-btn').style.display = 'block';
     }
 
-    // Show the results section regardless of the score
-    document.getElementById('results').style.display = 'block';
-
-    // Scroll to results
+    // Update score and display results
+    document.getElementById('score').textContent = score;
     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
 }
-
 
 // Certificate Generation - Updated to prevent duplicates
 function generateCertificate() {
@@ -331,7 +332,16 @@ function generateCertificate() {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     max-width: 800px;
 }
-
+    
+.correct {
+    background-color: #d4edda; /* Green for correct */
+    border-left: 4px solid #28a745;
+}
+    
+.incorrect {
+    background-color: #f8d7da; /* Red for incorrect */
+    border-left: 4px solid #dc3545;
+}
 /* ====== Questions & Inputs ====== */
 .question {
     margin-bottom: 2rem;
