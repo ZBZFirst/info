@@ -53,51 +53,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generateZQuestion() {
-        // X is between 0.005 and 1 in steps of 0.005 (3 decimal places)
-        const x = Math.round((Math.random() * 0.995 + 0.005) * 200) / 200;
-        // Y is integer between 1 and 60
-        const y = Math.floor(Math.random() * 60) + 1;
-        const z = x * y;
+        let x, y, z;
+        do {
+            // X is between 0.005 and 1 in steps of 0.005 (3 decimal places)
+            x = Math.round((Math.random() * 0.995 + 0.005) * 200) / 200;
+            // Y is integer between 1 and 60
+            y = Math.floor(Math.random() * 60) + 1;
+            z = x * y;
+        } while (z > 20); // Keep trying until we get Z ≤ 20
         
         return {
             x: x,
             y: y,
             z: z,
-            text: `If X = ${x} and Y = ${y}, what is Z? (X × Y = Z)`,
+            text: `If X = ${x.toFixed(3)} and Y = ${y}, what is Z? (X × Y = Z)`,
             answer: z,
             type: 'z'
         };
     }
-
+    
     function generateXQuestion() {
-        // Z is between 0.1 and 60
-        const z = Math.round((Math.random() * 59.9 + 0.1) * 100) / 100;
-        // Y is integer between 1 and 60
-        const y = Math.floor(Math.random() * 60) + 1;
-        const x = z / y;
+        let z, y, x;
+        do {
+            // Z is between 0.1 and 20
+            z = Math.round((Math.random() * 19.9 + 0.1) * 100) / 100;
+            // Y is integer between 1 and 60
+            y = Math.floor(Math.random() * 60) + 1;
+            x = z / y;
+        } while (x > 1); // Ensure X ≤ 1
         
         return {
             x: x,
             y: y,
             z: z,
-            text: `If Z = ${z} and Y = ${y}, what is X? (Z ÷ Y = X)`,
+            text: `If Z = ${z.toFixed(3)} and Y = ${y}, what is X? (Z ÷ Y = X)`,
             answer: x,
             type: 'x'
         };
     }
-
+    
     function generateYQuestion() {
-        // Z is between 0.1 and 60
-        const z = Math.round((Math.random() * 59.9 + 0.1) * 100) / 100;
-        // X is between 0.005 and 1 in steps of 0.005
-        const x = Math.round((Math.random() * 0.995 + 0.005) * 200) / 200;
-        const y = z / x;
+        let z, x, y;
+        do {
+            // Z is between 0.1 and 20
+            z = Math.round((Math.random() * 19.9 + 0.1) * 100) / 100;
+            // X is between 0.005 and 1 in steps of 0.005
+            x = Math.round((Math.random() * 0.995 + 0.005) * 200) / 200;
+            y = z / x;
+        } while (y > 60); // Ensure Y ≤ 60
         
         return {
             x: x,
             y: y,
             z: z,
-            text: `If Z = ${z} and X = ${x}, what is Y? (Z ÷ X = Y)`,
+            text: `If Z = ${z.toFixed(3)} and X = ${x.toFixed(3)}, what is Y? (Z ÷ X = Y)`,
             answer: y,
             type: 'y'
         };
