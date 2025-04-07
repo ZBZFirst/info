@@ -6,7 +6,6 @@ title: "Minute Ventilation Quiz"
 # Minute Ventilation Quiz
 
 <form id="quiz-form">
-    <!-- Questions remain unchanged from your original -->
     <div class="question">
         <h3>Question 1: What is the equation for minute ventilation (V<sub>E</sub>)?</h3>
         <input type="radio" name="q1" value="a" id="q1a"> <label for="q1a">V<sub>E</sub> = Tidal Volume × Respiratory Rate</label><br>
@@ -14,10 +13,42 @@ title: "Minute Ventilation Quiz"
         <input type="radio" name="q1" value="c" id="q1c"> <label for="q1c">V<sub>E</sub> = Blood Pressure × Cardiac Output</label><br>
     </div>
 
-    <!-- Other questions... -->
+    <div class="question">
+        <h3>Question 2: If a patient has a tidal volume of 500 mL and respiratory rate of 12 breaths/min, what is their minute ventilation?</h3>
+        <input type="number" name="q2" id="q2" placeholder="Answer in mL/min"> mL/min
+    </div>
+
+    <div class="question">
+        <h3>Question 3: Which of these would classify as "normal" minute ventilation in an adult?</h3>
+        <input type="checkbox" name="q3a" id="q3a"> <label for="q3a">4-5 L/min</label><br>
+        <input type="checkbox" name="q3b" id="q3b"> <label for="q3b">6-8 L/min</label><br>
+        <input type="checkbox" name="q3c" id="q3c"> <label for="q3c">10-12 L/min</label><br>
+    </div>
+
+    <div class="question">
+        <h3>Question 4: Calculate minute ventilation for these parameters:<br>
+        Tidal Volume: 450 mL, Respiratory Rate: 14 breaths/min</h3>
+        <input type="number" name="q4" id="q4" placeholder="Answer in L/min"> L/min
+    </div>
+
+    <!-- SUBMIT BUTTON (now properly included) -->
+    <button type="button" id="submit-btn" onclick="checkQuiz()">Submit Quiz</button>
 </form>
 
-<div id="results"></div>
+<div id="results" style="display:none;">
+    <h2>Quiz Results</h2>
+    <p>Your score: <span id="score">0</span>/4</p>
+    <div id="feedback"></div>
+    <button id="certificate-btn" onclick="generateCertificate()">Generate Certificate</button>
+</div>
+
+<!-- Certificate Gallery -->
+<div id="cert-gallery">
+    <h2><i class="fas fa-trophy"></i> Your Certificates</h2>
+    <div id="cert-list">
+        <p id="no-certs">No certificates yet. Complete the quiz to earn one!</p>
+    </div>
+</div>
 
 <!-- Certificate Gallery -->
 <div id="cert-gallery">
