@@ -51,6 +51,40 @@
         .recall-option {
             margin: 5px 0;
         }
+        /* Add to your existing styles */
+        #answer {
+            padding: 8px;
+            margin-right: 10px;
+            width: 150px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #answer:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .format-progress {
+            margin-top: 15px;
+            font-style: italic;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +94,10 @@
             <p>Current Score: <span id="score">0</span>/10</p>
             <p>Current Format: <span id="current-format">Solve for Z</span></p>
         </div>
+        <div class="progress-bar">
+        <div class="progress" id="progress-bar"></div>
+    </div>
+<div class="format-progress" id="format-progress"></div>
         <div class="question" id="question"></div>
         <div id="input-section">
             <input type="number" step="0.001" id="answer" placeholder="Enter your answer">
@@ -68,12 +106,12 @@
         <div class="feedback" id="feedback"></div>
     </div>
 
-    <div id="recall-quiz" class="quiz-container hidden">
+    <div id="recall-quiz" class="quiz-container">
         <h2>Recall Questions</h2>
         <div class="question" id="recall-question"></div>
         <div id="recall-options"></div>
         <div class="feedback" id="recall-feedback"></div>
-        <button id="next-recall" class="hidden">Next Question</button>
+        <button id="next-recall"">Next Question</button>
     </div>
 
     <script src="quiz.js"></script>
