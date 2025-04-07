@@ -39,7 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
             scoreEl: document.getElementById('recall-score'),
             progressEl: document.getElementById('recall-progress'),
             cardEl: document.getElementById('recall-card'),
-            nextBtn: document.getElementById('next-recall')
+            nextBtn: document.getElementById('next-recall'),
+            submitBtn: document.getElementById('recall-submit')
         }
     };
 
@@ -74,8 +75,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') checkAnswer('y');
     });
     
+    questionCards.recall.submitBtn.addEventListener('click', checkRecallAnswer);
     questionCards.recall.nextBtn.addEventListener('click', showNextRecallQuestion);
-
+    
     // Functions
     function initMathQuiz() {
         // Generate initial questions for all types
@@ -276,6 +278,7 @@ function showRandomRecallQuestion() {
         questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
         questionCards.recall.feedbackEl.className = 'feedback correct';
         questionCards.recall.nextBtn.classList.add('hidden');
+        questionCards.recall.submitBtn.classList.add('hidden');
         return;
     }
     
@@ -296,41 +299,45 @@ function showRandomRecallQuestion() {
         `;
         questionCards.recall.optionsEl.appendChild(optionDiv);
         
-        optionDiv.addEventListener('click', function() {
-            document.getElementById(`option-${i}`).checked = true;
-            checkRecallAnswer();
         });
     });
     
     questionCards.recall.feedbackEl.textContent = '';
     questionCards.recall.feedbackEl.className = 'feedback';
     questionCards.recall.nextBtn.classList.add('hidden');
+    questionCards.recall.submitBtn.classList.remove('hidden');
     updateProgress('recall');
 }
     
     function checkRecallAnswer() {
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
-        if (selectedOption) {
-            const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
-            const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
-            
-            if (isCorrect) {
-                questionCards.recall.feedbackEl.textContent = 'Correct!';
-                questionCards.recall.feedbackEl.className = 'feedback correct';
-                quizState.recall.score++;
-                
-                // Remove this question from remaining questions
-                quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
-                    q => q.question !== currentQuestion.question
-                );
-            } else {
-                questionCards.recall.feedbackEl.textContent = `Incorrect. The correct answer is: ${currentQuestion.options[currentQuestion.answer]}`;
-                questionCards.recall.feedbackEl.className = 'feedback incorrect';
-            }
-            
-            updateProgress('recall');
-            questionCards.recall.nextBtn.classList.remove('hidden');
+        if (!selectedOption) {
+            questionCards.recall.feedbackEl.textContent = 'Please select an answer';
+            questionCards.recall.feedbackEl.className = 'feedback incorrect';
+            return;
         }
+
+        const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
+        const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
+        
+        if (isCorrect) {
+            questionCards.recall.feedbackEl.textContent = 'Correct!';
+            questionCards.recall.feedbackEl.className = 'feedback correct';
+            quizState.recall.score++;
+            
+            // Remove this question from remaining questions
+            quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
+                q => q.question !== currentQuestion.question
+            );
+        } else {
+            questionCards.recall.feedbackEl.textContent = `Incorrect. The correct answer is: ${currentQuestion.options[currentQuestion.answer]}`;
+            questionCards.recall.feedbackEl.className = 'feedback incorrect';
+        }
+        
+        // Hide submit button and show next button
+        questionCards.recall.submitBtn.classList.add('hidden');
+        questionCards.recall.nextBtn.classList.remove('hidden');
+        updateProgress('recall');
     }
 
     function showNextRecallQuestion() {
