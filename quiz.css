@@ -1,0 +1,242 @@
+/* ====== Main Quiz Container ====== */
+#quiz-form {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+}
+    
+.correct {
+    background-color: #d4edda; /* Green for correct */
+    border-left: 4px solid #28a745;
+}
+    
+.incorrect {
+    background-color: #f8d7da; /* Red for incorrect */
+    border-left: 4px solid #dc3545;
+}
+/* ====== Questions & Inputs ====== */
+.question {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.question h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.question label {
+    display: block;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.question label:hover {
+    color: #3498db;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    margin-right: 0.75rem;
+}
+
+input[type="number"] {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 120px;
+    margin-top: 0.5rem;
+}
+
+/* ====== Buttons ====== */
+#submit-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+    display: block;
+    margin: 2rem auto 0;
+}
+
+#submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+#certificate-btn {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+#certificate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+}
+
+/* ====== Results Section ====== */
+#results {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    max-width: 800px;
+    border: 1px solid #eaeaea;
+}
+
+#results h2 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+#feedback p {
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+}
+
+#feedback p:first-child {
+    margin-top: 0;
+}
+
+/* ====== Certificate Gallery ====== */
+#cert-gallery {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 3rem auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+}
+
+#cert-gallery h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#cert-gallery h2 i {
+    color: #f39c12;
+}
+
+#cert-list {
+    margin-top: 1.5rem;
+}
+
+.cert-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #eaeaea;
+}
+
+.cert-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    border-color: #3498db;
+}
+
+.cert-preview h3 {
+    margin: 0 0 0.25rem;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.cert-preview p {
+    margin: 0.25rem 0;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.cert-id {
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.cert-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.cert-actions button {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cert-actions button:last-child {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.cert-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#no-certs {
+    color: #95a5a6;
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* ====== Responsive Design ====== */
+@media (max-width: 768px) {
+    .cert-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .cert-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    #quiz-form,
+    #results,
+    #cert-gallery {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+    }
+}
