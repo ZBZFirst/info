@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.title | default: site.title }}</title>
-    <link rel="stylesheet" href="{{ '/info/_css/quiz.css' | relative_url }}">
+    <link rel="stylesheet" href="/info/_css/quiz.css">
     <style>
-      /* Debug test - should make title red if CSS loads */
-      body { color: red !important; }
-      .debug-test { 
+      /* Debug test - remove after verification */
+      body::after {
+        content: "CSS FILE IS LOADING! Path: {{ '/info/_css/quiz.css' | relative_url }}";
         display: block;
         padding: 20px;
         background: lime;
         color: black;
-        margin: 20px 0;
+        text-align: center;
+        font-weight: bold;
+        margin: 20px;
+        border: 2px solid red;
+        position: fixed;
+        bottom: 0;
+        z-index: 9999;
       }
     </style>
 </head>
