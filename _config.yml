@@ -5,8 +5,7 @@ url: ""
 theme: minima
 
 include:
-  - info/_css  # Explicitly include your CSS folder
-  - info/_layouts
+  - _css  # Explicitly include your CSS folder
 
 plugins:
   - jekyll-feed
