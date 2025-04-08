@@ -1,6 +1,6 @@
 ---
 layout: quizlayout
-title: Math Quiz
+title: Minute Ventilation Quiz
 ---
 
 <div id="math-quiz" class="math-quiz-container">
@@ -8,12 +8,12 @@ title: Math Quiz
         <h2>Math Quiz</h2>
         <span id="math-status" class="section-status">In Progress</span>
     </div>
-    <p>Complete all cards to complete the worksheet.</p>
+    <h1>Complete all sections to complete the worksheet to obtain a certificate of completion.</h1>
     
     <div class="question-section">
         <!-- Solve for Z Card -->
         <div class="question-card" id="z-card">
-            <h3>Solve for Z</h3>
+            <h2>Solve for Z</h2>
             <div class="question" id="z-question"></div>
             <div class="input-group">
                 <input type="number" step="0.001" id="z-answer" placeholder="Enter Z">
@@ -33,7 +33,7 @@ title: Math Quiz
         
         <!-- Solve for X Card -->
         <div class="question-card" id="x-card">
-            <h3>Solve for X</h3>
+            <h2>Solve for X</h2>
             <div class="question" id="x-question"></div>
             <div class="input-group">
                 <input type="number" step="0.001" id="x-answer" placeholder="Enter X">
@@ -53,7 +53,7 @@ title: Math Quiz
         
         <!-- Solve for Y Card -->
         <div class="question-card" id="y-card">
-            <h3>Solve for Y</h3>
+            <h2>Solve for Y</h2>
             <div class="question" id="y-question"></div>
             <div class="input-group">
                 <input type="number" step="0.001" id="y-answer" placeholder="Enter Y">
@@ -73,7 +73,7 @@ title: Math Quiz
         
         <!-- Recall Card -->
         <div class="question-card recall-card" id="recall-card">
-            <h3>Recall Questions</h3>
+            <h1>Recall Questions</h1>
             <div class="question" id="recall-question"></div>
             <div id="recall-options"></div>
             <div class="feedback" id="recall-feedback"></div>
