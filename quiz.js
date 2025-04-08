@@ -253,9 +253,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 answer: 1
             },
             {
-                question: "What is 2 + 2?",
-                options: ["3", "4", "5", "6"],
-                answer: 1
+                question: "What is Ben + Ben?",
+                options: ["Double Ben", "Ben Squared", "42", "Big Chungus"],
+                answer: 0
             },
             {
                 question: "Who painted the Mona Lisa?",
