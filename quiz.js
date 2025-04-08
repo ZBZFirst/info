@@ -296,6 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkRecallAnswer() {
+        // Prevent multiple submissions
         questionCards.recall.submitBtn.disabled = true;
         
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
@@ -309,20 +310,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
         const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
         
-        // Show feedback immediately
+        // Show feedback
         if (isCorrect) {
             questionCards.recall.feedbackEl.textContent = 'Correct!';
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
+            
+            // Only remove from pool if correct
+            quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
+                q => q.question !== currentQuestion.question
+            );
         } else {
-            questionCards.recall.feedbackEl.textContent = 'Incorrect';
+            questionCards.recall.feedbackEl.textContent = 'Incorrect - Try again';
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
+            
+            // Keep question in pool by not filtering it out
         }
-    
-        // Remove question from pool (regardless of correctness)
-        quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
-            q => q.question !== currentQuestion.question
-        );
     
         // Advance after 1 second
         setTimeout(() => {
@@ -331,9 +334,31 @@ document.addEventListener('DOMContentLoaded', function() {
             options.forEach(option => option.checked = false);
             questionCards.recall.submitBtn.disabled = false;
             
-            showRandomRecallQuestion();
+            // Check if all questions are complete
+            if (quizState.recall.remainingQuestions.length === 0) {
+                if (quizState.recall.score === quizState.recall.questions.length) {
+                    // All correct - show completion
+                    showRecallCompletion();
+                } else {
+                    // Not all correct - reset remaining questions
+                    quizState.recall.remainingQuestions = [...quizState.recall.questions];
+                    quizState.recall.score = 0; // Reset score for retry
+                    showRandomRecallQuestion();
+                }
+            } else {
+                showRandomRecallQuestion();
+            }
+            
             updateProgress('recall');
         }, 1000);
+    }
+
+    function showRecallCompletion() {
+        questionCards.recall.questionEl.textContent = 'Quiz Completed!';
+        questionCards.recall.optionsEl.innerHTML = '';
+        questionCards.recall.feedbackEl.textContent = `Perfect! You got all ${quizState.recall.questions.length} questions correct!`;
+        questionCards.recall.feedbackEl.className = 'feedback correct';
+        questionCards.recall.submitBtn.classList.add('hidden');
     }
 
     function showNextRecallQuestion() {
