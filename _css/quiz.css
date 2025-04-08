@@ -1,5 +1,18 @@
-/* ====== Math Quiz Specific Styles ====== */
-/* These styles are for the card-based math quiz interface */
+/* Reset debug styles */
+body {
+  color: initial !important;
+}
+
+/* Force important styles for debugging */
+.math-quiz-container {
+  background: white !important;
+  border: 2px solid red !important; /* Temporary debug */
+}
+
+.question-card {
+  background: #f8fafc !important;
+  border: 2px solid blue !important; /* Temporary debug */
+}
 
 /* Base Container Styles */
 .math-quiz-container {
