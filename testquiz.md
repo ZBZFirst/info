@@ -100,4 +100,4 @@ title: Math Quiz
     </div>
 </div>
 
-<script src="{{ 'quiz.js' | relative_url }}"></script>
+<script src="quiz.js"></script>
