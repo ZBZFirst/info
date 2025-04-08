@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateZQuestion() {
         // X is between 0.05 and 1 in steps of 0.05 (2 decimal places)
-        const x = Math.round((Math.random() * 0.95 + 0.05) * 20) / 20;
+        const x = Math.round((Math.random() * 0.55 + 0.05) * 20) / 20;
         
         // Calculate maximum Y that keeps Z ≤ 20
         const maxY = Math.min(60, Math.floor(20 / x));
@@ -143,11 +143,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function generateXQuestion() {
-        // First choose X (0.05 to 1.00 in steps of 0.05)
-        const x = Math.round((Math.random() * 0.95 + 0.05) * 20) / 20;
+        // First choose X (0.05 to .60 in steps of 0.05)
+        const x = Math.round((Math.random() * 0.55 + 0.05) * 20) / 20;
         
-        // Y is integer between 1 and 60
-        const y = Math.floor(Math.random() * 60) + 1;
+        // Y is integer between 1 and 20
+        const y = Math.floor(Math.random() * 20) + 1;
         
         // Calculate Z
         const z = x * y;
@@ -163,11 +163,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function generateYQuestion() {
-        // First choose Y (integer between 1 and 60)
-        const y = Math.floor(Math.random() * 60) + 1;
+        // First choose Y (integer between 1 and 30)
+        const y = Math.floor(Math.random() * 30) + 1;
         
         // X is between 0.05 and 1 in steps of 0.05
-        const x = Math.round((Math.random() * 0.95 + 0.05) * 20) / 20;
+        const x = Math.round((Math.random() * 0.55 + 0.05) * 20) / 20;
         
         // Calculate Z
         const z = x * y;
