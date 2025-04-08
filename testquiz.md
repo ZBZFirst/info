@@ -5,10 +5,10 @@ title: Minute Ventilation Quiz
 
 <div id="math-quiz" class="math-quiz-container">
     <div class="section-title">
-        <h2>Math Quiz</h2>
+        <h1>Minute Ventilation Quiz</h1>
         <span id="math-status" class="section-status">In Progress</span>
     </div>
-    <h1>Complete all sections to complete the worksheet to obtain a certificate of completion.</h1>
+    <h2>Complete all sections to complete the worksheet to obtain a certificate of completion.</h2>
     
     <div class="question-section">
         <!-- Solve for Z Card -->
