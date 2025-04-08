@@ -5,7 +5,7 @@ title: Minute Ventilation Quiz
 
 <div id="math-quiz" class="math-quiz-container">
     <div class="section-title">
-        <h1>Minute Ventilation Quiz</h1>
+        <h1>Minute Ventilation Worksheet</h1>
         <span id="math-status" class="section-status">In Progress</span>
     </div>
     <h2>Complete all sections to complete the worksheet to obtain a certificate of completion.</h2>
@@ -13,7 +13,7 @@ title: Minute Ventilation Quiz
     <div class="question-section">
         <!-- Solve for Z Card -->
         <div class="question-card" id="z-card">
-            <h2>Solve for Z</h2>
+            <h2>Solve for Minute Ventilation (MV)</h2>
             <div class="question" id="z-question"></div>
             <div class="input-group">
                 <input type="number" step="0.001" id="z-answer" placeholder="Enter Z">
@@ -33,7 +33,7 @@ title: Minute Ventilation Quiz
         
         <!-- Solve for X Card -->
         <div class="question-card" id="x-card">
-            <h2>Solve for X</h2>
+            <h2>Solve for Tidal Volume (Vt)</h2>
             <div class="question" id="x-question"></div>
             <div class="input-group">
                 <input type="number" step="0.001" id="x-answer" placeholder="Enter X">
@@ -53,7 +53,7 @@ title: Minute Ventilation Quiz
         
         <!-- Solve for Y Card -->
         <div class="question-card" id="y-card">
-            <h2>Solve for Y</h2>
+            <h2>Solve for Respiratory Rate (RR)</h2>
             <div class="question" id="y-question"></div>
             <div class="input-group">
                 <input type="number" step="0.001" id="y-answer" placeholder="Enter Y">
@@ -73,7 +73,7 @@ title: Minute Ventilation Quiz
         
         <!-- Recall Card -->
         <div class="question-card recall-card" id="recall-card">
-            <h1>Recall Questions</h1>
+            <h1>Recall Questions on Minute Ventilation</h1>
             <div class="question" id="recall-question"></div>
             <div id="recall-options"></div>
             <div class="feedback" id="recall-feedback"></div>
@@ -96,7 +96,7 @@ title: Minute Ventilation Quiz
         </div>
     </div>
     <div id="math-complete" class="completion-message hidden">
-        All math questions completed!
+        All application and recall questions completed!
     </div>
 </div>
 
