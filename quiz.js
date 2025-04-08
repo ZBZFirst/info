@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM elements
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
-    
-    // Math question elements
     const questionCards = {
         z: {
             questionEl: document.getElementById('z-question'),
@@ -44,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Quiz state
     const quizState = {
         z: { score: 0, currentQuestion: null, completed: false },
         x: { score: 0, currentQuestion: null, completed: false },
@@ -57,14 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Initialize the quiz
     initMathQuiz();
 
-    // Event listeners
     questionCards.z.submitBtn.addEventListener('click', () => checkAnswer('z'));
     questionCards.x.submitBtn.addEventListener('click', () => checkAnswer('x'));
     questionCards.y.submitBtn.addEventListener('click', () => checkAnswer('y'));
-    
     questionCards.z.answerEl.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkAnswer('z');
     });
@@ -74,13 +67,11 @@ document.addEventListener('DOMContentLoaded', function() {
     questionCards.y.answerEl.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkAnswer('y');
     });
-    
     questionCards.recall.submitBtn.addEventListener('click', checkRecallAnswer);
     questionCards.recall.nextBtn.addEventListener('click', showNextRecallQuestion);
     
     // Functions
     function initMathQuiz() {
-        // Generate initial questions for all types
         generateNewQuestion('z');
         generateNewQuestion('x');
         generateNewQuestion('y');
@@ -166,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // First choose Y (integer between 1 and 30)
         const y = Math.floor(Math.random() * 30) + 1;
         
-        // X is between 0.05 and 1 in steps of 0.05
+        // X is between 0.05 and 1 in steps of 0.25
         const x = Math.round((Math.random() * 0.55 + 0.25) * 20) / 20;
         
         // Calculate Z
@@ -240,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generateRecallQuestions() {
-        // Placeholder recall questions - replace with your actual questions
         return [
             {
                 question: "What was the unit of measurement for Respiratory Rate?",
@@ -263,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 answer: 2
             },
             {
-                question: ""MV" is the only way Minute Ventilation can be reported as a variable.",
+                question: "MV is the only way Minute Ventilation can be reported as a variable.",
                 options: ["True", "False"],
                 answer: 3
             }
@@ -282,14 +272,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Select random question from remaining
         const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
         const question = quizState.recall.remainingQuestions[randomIndex];
         quizState.recall.currentIndex = quizState.recall.questions.indexOf(question);
-        
         questionCards.recall.questionEl.textContent = question.question;
         questionCards.recall.optionsEl.innerHTML = '';
-        
         question.options.forEach((option, i) => {
             const optionDiv = document.createElement('div');
             optionDiv.className = 'recall-option';
@@ -298,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <label for="option-${i}">${option}</label>
             `;
             questionCards.recall.optionsEl.appendChild(optionDiv);
-        }); // <-- This is the only closing brace and parenthesis needed for the forEach
+        });
         
         questionCards.recall.feedbackEl.textContent = '';
         questionCards.recall.feedbackEl.className = 'feedback';
@@ -322,8 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.textContent = 'Correct!';
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
-            
-            // Remove this question from remaining questions
             quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
                 q => q.question !== currentQuestion.question
             );
@@ -332,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
         
-        // Hide submit button and show next button
         questionCards.recall.submitBtn.classList.add('hidden');
         questionCards.recall.nextBtn.classList.remove('hidden');
         updateProgress('recall');
