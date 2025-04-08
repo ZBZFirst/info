@@ -50,7 +50,9 @@ document.addEventListener('DOMContentLoaded', function() {
             currentIndex: 0, 
             questions: [],
             remainingQuestions: []
+            completed: false 
         }
+        allComplete: false
     };
 
     initMathQuiz();
@@ -195,7 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.score >= 5) {
                 state.completed = true;
                 card.cardEl.classList.add('disabled-card');
-                card.submitBtn.disabled = true;  // JUST ADD THIS LINE
+                card.submitBtn.disabled = true;
+                checkAllComplete();  // Add this line to trigger completion check
+
             }
             
             setTimeout(() => {
@@ -359,6 +363,45 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.feedbackEl.textContent = `Perfect! You got all ${quizState.recall.questions.length} questions correct!`;
         questionCards.recall.feedbackEl.className = 'feedback correct';
         questionCards.recall.submitBtn.classList.add('hidden');
+        checkAllComplete();
+    }
+
+    function checkAllComplete() {
+        const mathComplete = quizState.z.completed && 
+                           quizState.x.completed && 
+                           quizState.y.completed;
+        const recallComplete = quizState.recall.completed;
+        
+        if (mathComplete && recallComplete) {
+            quizState.allComplete = true;
+            showFinalCompletion();
+        }
+    }
+
+    // Add this new function to show final completion:
+    function showFinalCompletion() {
+        // Create completion overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'completion-overlay';
+        overlay.innerHTML = `
+            <div class="completion-container">
+                <h2>Congratulations!</h2>
+                <p>You've completed all sections of the quiz!</p>
+                <div class="results">
+                    <h3>Your Results:</h3>
+                    <p>Math Equations: Perfect scores in all categories</p>
+                    <p>Recall Questions: ${quizState.recall.score}/${quizState.recall.questions.length} correct</p>
+                </div>
+                <button id="restart-quiz">Restart Quiz</button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // Add restart functionality
+        document.getElementById('restart-quiz').addEventListener('click', () => {
+            location.reload(); // Simple reload for now
+        });
     }
 
     function showNextRecallQuestion() {
