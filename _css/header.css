@@ -1,0 +1,58 @@
+/* ===================== */
+/* === Header Styles === */
+/* ===================== */
+
+.site-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.site-title {
+  font-size: 2.2rem;
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.nav-link {
+  padding: 0.75rem 1.25rem;
+  margin: 0 0.25rem;
+  color: #4361ee;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: #f0f4ff;
+  color: #3a0ca3;
+}
+
+.current-page {
+  background-color: #4361ee;
+  color: white !important;
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    flex-wrap: wrap;
+  }
+  .nav-link {
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem;
+    font-size: 0.9rem;
+  }
+}
