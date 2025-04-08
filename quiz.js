@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 question: "MV is the only way Minute Ventilation can be reported as a variable.",
                 options: ["True", "False"],
-                answer: 3
+                answer: 1
             }
         ];
     }
