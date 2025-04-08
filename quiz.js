@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 question: "What is Ben + Ben?",
                 options: ["Double Ben", "Ben Squared", "42", "Big Chungus"],
-                answer: 0
+                answer: 1
             },
             {
                 question: "Who painted the Mona Lisa?",
