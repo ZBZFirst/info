@@ -296,33 +296,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkRecallAnswer() {
+        questionCards.recall.submitBtn.disabled = true;
+        
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
         if (!selectedOption) {
             questionCards.recall.feedbackEl.textContent = 'Please select an answer';
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
+            questionCards.recall.submitBtn.disabled = false;
             return;
         }
     
         const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
         const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
         
+        // Show feedback immediately
         if (isCorrect) {
             questionCards.recall.feedbackEl.textContent = 'Correct!';
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
-            // Remove the question from remaining questions IMMEDIATELY
-            quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
-                q => q.question !== currentQuestion.question
-            );
         } else {
-            questionCards.recall.feedbackEl.textContent = `Incorrect.`;
+            questionCards.recall.feedbackEl.textContent = 'Incorrect';
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
     
-        // Auto-advance to next question after 1 milli (optional delay for feedback)
+        // Remove question from pool (regardless of correctness)
+        quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
+            q => q.question !== currentQuestion.question
+        );
+    
+        // Advance after 1 second
         setTimeout(() => {
+            // Clear selection and re-enable button
+            const options = document.querySelectorAll('input[name="recall-answer"]');
+            options.forEach(option => option.checked = false);
+            questionCards.recall.submitBtn.disabled = false;
+            
             showRandomRecallQuestion();
-        }, 1);
+            updateProgress('recall');
+        }, 1000);
     }
 
     function showNextRecallQuestion() {
