@@ -93,8 +93,12 @@ body {
 /* Input and Button Styles */
 .input-group {
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     margin-bottom: 1rem;
+    align-items: center;
 }
+
 
 input[type="number"] {
     padding: 0.75rem;
