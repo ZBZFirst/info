@@ -319,10 +319,10 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
     
-        // Auto-advance to next question after 1 second (optional delay for feedback)
+        // Auto-advance to next question after 1 milli (optional delay for feedback)
         setTimeout(() => {
             showRandomRecallQuestion();
-        }, 1000);
+        }, 1);
     }
 
     function showNextRecallQuestion() {
