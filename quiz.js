@@ -179,13 +179,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const userAnswer = parseFloat(card.answerEl.value);
         const correctAnswer = state.currentQuestion.answer;
         const tolerance = 0.001;
-
+    
         if (isNaN(userAnswer)) {
             card.feedbackEl.textContent = 'Please enter a valid number';
             card.feedbackEl.className = 'feedback incorrect';
             return;
         }
-
+    
         if (Math.abs(userAnswer - correctAnswer) < tolerance) {
             // Correct answer
             state.score++;
@@ -195,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state.score >= 5) {
                 state.completed = true;
                 card.cardEl.classList.add('disabled-card');
+                card.submitBtn.disabled = true;  // JUST ADD THIS LINE
             }
             
             setTimeout(() => {
@@ -301,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
             return;
         }
-
+    
         const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
         const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
         
@@ -309,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.textContent = 'Correct!';
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
+            // Remove the question from remaining questions IMMEDIATELY
             quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
                 q => q.question !== currentQuestion.question
             );
@@ -316,10 +318,11 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.textContent = `Incorrect.`;
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
-        
-        questionCards.recall.submitBtn.classList.add('hidden');
-        questionCards.recall.nextBtn.classList.remove('hidden');
-        updateProgress('recall');
+    
+        // Auto-advance to next question after 1 second (optional delay for feedback)
+        setTimeout(() => {
+            showRandomRecallQuestion();
+        }, 1000);
     }
 
     function showNextRecallQuestion() {
