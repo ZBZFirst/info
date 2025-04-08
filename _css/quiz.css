@@ -62,7 +62,7 @@
     transform: translateY(-2px);
 }
 
-.question-card h3 {
+.question-card h2 {
     color: #3498db;
     margin-top: 0;
     margin-bottom: 1rem;
@@ -317,4 +317,20 @@ button:hover {
 #restart-quiz:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Add missing styles for elements in your HTML */
+#math-quiz {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+#recall-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hidden {
+  display: none !important;
 }
