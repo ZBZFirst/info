@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
             score: 0, 
             currentIndex: 0, 
             questions: [],
-            remainingQuestions: []
+            remainingQuestions: [],
             completed: false 
         }
         allComplete: false
