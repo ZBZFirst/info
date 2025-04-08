@@ -1,0 +1,50 @@
+/* ===================== */
+/* === Footer Styles === */
+/* ===================== */
+
+.site-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-top: 3rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eaeaea;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.footer-link {
+  color: #495057;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: 0.25rem 0;
+}
+
+.footer-link:hover {
+  color: #4361ee;
+  text-decoration: underline;
+}
+
+.copyright {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.copyright a {
+  color: #4361ee;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .footer-links {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
