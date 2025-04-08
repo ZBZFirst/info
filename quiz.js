@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
             questions: [],
             remainingQuestions: [],
             completed: false 
-        }
+        },
         allComplete: false
     };
 
