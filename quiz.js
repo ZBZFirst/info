@@ -243,28 +243,28 @@ document.addEventListener('DOMContentLoaded', function() {
         // Placeholder recall questions - replace with your actual questions
         return [
             {
-                question: "What is the capital of France?",
-                options: ["London", "Paris", "Berlin", "Madrid"],
+                question: "What was the unit of measurement for Respiratory Rate?",
+                options: ["Breaks Per Minute", "Breaths Per Minute", "Beats Per Minute", "Burps Per Minute"],
                 answer: 1
             },
             {
-                question: "Which planet is known as the Red Planet?",
-                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                question: "What was the unit of measurement for Tidal Volume?",
+                options: ["Ounces", "Liters", "Grams", "Cups"],
                 answer: 1
             },
             {
-                question: "What is Ben + Ben?",
-                options: ["Double Ben", "Ben Squared", "42", "Big Chungus"],
+                question: "What was the unit of measurement for Minute Ventilation?",
+                options: ["Breaths Per Minute", "Liters per Minute", "42", "Big Chungus"],
                 answer: 1
             },
             {
-                question: "Who painted the Mona Lisa?",
-                options: ["Van Gogh", "Picasso", "Da Vinci", "Michelangelo"],
+                question: "Why is the Minute Ventilation important?",
+                options: ["It determines the amount of oxygen dissolved in the blood plasma.", "It indicates the strength of the diaphragm muscle alone.", "It reflects the total air movement in the lungs per minute, ensuring proper gas exchange.", "It is used to diagnose specific heart rhythm abnormalities."],
                 answer: 2
             },
             {
-                question: "What is the largest ocean on Earth?",
-                options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+                question: ""MV" is the only way Minute Ventilation can be reported as a variable.",
+                options: ["True", "False"],
                 answer: 3
             }
         ];
