@@ -1,11 +1,15 @@
-<h1><center>{{ site.title }}</center></h1>
-
-<table style="width:100%; border-collapse: collapse;">
-    <tr>
-        {% for item in site.data.navigation %}
-        <td style="border:1px solid #ddd; padding:8px; text-align:center;">
-            <a href="{{ item.url }}">{{ item.name }}</a>
-        </td>
-        {% endfor %}
-    </tr>
-</table>
+<header class="site-header">
+  <h1 class="site-title">{{ site.title }}</h1>
+  
+  <nav class="nav-container">
+    <div class="nav-table">
+      {% for item in site.data.navigation %}
+        <a href="{{ item.url }}" 
+           class="nav-link {% if page.url == item.url %}current-page{% endif %}">
+          {{ item.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </nav>
+</header>
+<link rel="stylesheet" href="{{ '/_css/header.css' | relative_url }}">
