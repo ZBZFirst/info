@@ -1,6 +1,3 @@
-
-
-{% raw %}
 <script>
 // Initialize the graph
 let graphData = {
@@ -327,4 +324,3 @@ function update() {
     });
 }
 </script>
-{% endraw %}
