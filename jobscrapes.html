@@ -208,113 +208,6 @@
             }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Job Scrapes Browser</h1>
-        <h2>Select an organizations and then pick a day.</h2>
-        <h3>It is preferred to use the "parsed" file for each day due to the html not sorted in the other file for the day.</h3>
-
-        <div class="controls">
-            <div>
-                <label for="sourceSelect">Select Source:</label>
-                <select id="sourceSelect">
-                    <option value="">-- Select a source --</option>
-                    <option value="ClaremontColleges">Claremont Colleges</option>
-                    <option value="DignityHospitals">Dignity Hospitals</option>
-                    <option value="KaiserHospitals">Kaiser Hospitals</option>
-                </select>
-                <button onclick="loadFiles()">Load Files</button>
-                <span id="loadingStatus" class="loading"></span>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <label for="fileSelect">Select a file:</label>
-                <select id="fileSelect" disabled>
-                    <option value="">-- Select a file --</option>
-                </select>
-                <button onclick="loadSelectedFile()" disabled id="loadFileBtn">Load File</button>
-            </div>
-
-            <div class="settings-panel">
-                <h3>Table Settings</h3>
-                <label for="defaultColWidth">Default Column Width (px):</label>
-                <input type="number" id="defaultColWidth" value="150" min="50" max="500">
-                <button onclick="applyDefaultColumnWidth()">Apply</button>
-                
-                <label for="rowHeight">Row Height (px):</label>
-                <input type="number" id="rowHeight" value="30" min="20" max="100">
-                <button onclick="applyRowHeight()">Apply</button>
-                
-                <button onclick="resetTableLayout()">Reset Layout</button>
-            </div>
-        </div>
-
-        <!-- Enhanced Table Controls -->
-        <div class="table-controls" id="tableControls" style="display: none;">
-            <!-- Sorting Controls -->
-            <div class="control-group">
-                <h3>Sorting</h3>
-                <label>Primary Sort:
-                    <select id="primarySort">
-                        <option value="">-- None --</option>
-                    </select>
-                    <select id="primaryOrder">
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
-                </label>
-                <label>Secondary Sort:
-                    <select id="secondarySort">
-                        <option value="">-- None --</option>
-                    </select>
-                    <select id="secondaryOrder">
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
-                </label>
-                <button id="applySort">Apply Sorting</button>
-            </div>
-
-            <!-- Column Visibility -->
-            <div class="control-group">
-                <h3>Column Visibility</h3>
-                <label>Hide Column:
-                    <select id="columnToHide">
-                        <option value="">-- Select to Hide --</option>
-                    </select>
-                </label>
-                <button id="hideColumn">Hide</button>
-                <button id="showAllColumns">Show All</button>
-            </div>
-
-            <!-- Row Filtering -->
-            <div class="control-group">
-                <h3>Filter Rows</h3>
-                <label>Filter by Column:
-                    <select id="filterColumn">
-                        <option value="">-- Select Column --</option>
-                    </select>
-                </label>
-                <label>Filter Value:
-                    <input type="text" id="filterValue" placeholder="Enter value...">
-                </label>
-                <button id="applyFilter">Apply Filter</button>
-                <button id="clearFilter">Clear Filter</button>
-            </div>
-        </div>
-
-        <div id="fileInfo" class="file-info"></div>
-        <div class="scroll-container">
-            <div class="header-scroll" id="headerScroll">
-                <div class="header-scroll-inner" id="headerScrollInner"></div>
-            </div>
-            <div class="table-wrapper" id="tableWrapper">
-                <div id="tableContainer"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
         const sourceSelect = document.getElementById("sourceSelect");
         const fileSelect = document.getElementById("fileSelect");
@@ -789,5 +682,111 @@
             loadFileBtn.disabled = !this.value;
         });
     </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Job Scrapes Browser</h1>
+        <h2>Select an organizations and then pick a day.</h2>
+        <h3>It is preferred to use the "parsed" file for each day due to the html not sorted in the other file for the day.</h3>
+
+        <div class="controls">
+            <div>
+                <label for="sourceSelect">Select Source:</label>
+                <select id="sourceSelect">
+                    <option value="">-- Select a source --</option>
+                    <option value="ClaremontColleges">Claremont Colleges</option>
+                    <option value="DignityHospitals">Dignity Hospitals</option>
+                    <option value="KaiserHospitals">Kaiser Hospitals</option>
+                </select>
+                <button onclick="loadFiles()">Load Files</button>
+                <span id="loadingStatus" class="loading"></span>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label for="fileSelect">Select a file:</label>
+                <select id="fileSelect" disabled>
+                    <option value="">-- Select a file --</option>
+                </select>
+                <button onclick="loadSelectedFile()" disabled id="loadFileBtn">Load File</button>
+            </div>
+
+            <div class="settings-panel">
+                <h3>Table Settings</h3>
+                <label for="defaultColWidth">Default Column Width (px):</label>
+                <input type="number" id="defaultColWidth" value="150" min="50" max="500">
+                <button onclick="applyDefaultColumnWidth()">Apply</button>
+                
+                <label for="rowHeight">Row Height (px):</label>
+                <input type="number" id="rowHeight" value="30" min="20" max="100">
+                <button onclick="applyRowHeight()">Apply</button>
+                
+                <button onclick="resetTableLayout()">Reset Layout</button>
+            </div>
+        </div>
+
+        <!-- Enhanced Table Controls -->
+        <div class="table-controls" id="tableControls" style="display: none;">
+            <!-- Sorting Controls -->
+            <div class="control-group">
+                <h3>Sorting</h3>
+                <label>Primary Sort:
+                    <select id="primarySort">
+                        <option value="">-- None --</option>
+                    </select>
+                    <select id="primaryOrder">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </label>
+                <label>Secondary Sort:
+                    <select id="secondarySort">
+                        <option value="">-- None --</option>
+                    </select>
+                    <select id="secondaryOrder">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </label>
+                <button id="applySort">Apply Sorting</button>
+            </div>
+
+            <!-- Column Visibility -->
+            <div class="control-group">
+                <h3>Column Visibility</h3>
+                <label>Hide Column:
+                    <select id="columnToHide">
+                        <option value="">-- Select to Hide --</option>
+                    </select>
+                </label>
+                <button id="hideColumn">Hide</button>
+                <button id="showAllColumns">Show All</button>
+            </div>
+
+            <!-- Row Filtering -->
+            <div class="control-group">
+                <h3>Filter Rows</h3>
+                <label>Filter by Column:
+                    <select id="filterColumn">
+                        <option value="">-- Select Column --</option>
+                    </select>
+                </label>
+                <label>Filter Value:
+                    <input type="text" id="filterValue" placeholder="Enter value...">
+                </label>
+                <button id="applyFilter">Apply Filter</button>
+                <button id="clearFilter">Clear Filter</button>
+            </div>
+        </div>
+
+        <div id="fileInfo" class="file-info"></div>
+        <div class="scroll-container">
+            <div class="header-scroll" id="headerScroll">
+                <div class="header-scroll-inner" id="headerScrollInner"></div>
+            </div>
+            <div class="table-wrapper" id="tableWrapper">
+                <div id="tableContainer"></div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
