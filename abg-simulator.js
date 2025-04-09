@@ -1,3 +1,6 @@
+
+
+{% raw %}
 <script>
 // Initialize the graph
 let graphData = {
@@ -320,3 +323,13 @@ function update() {
         layout: {
             xaxis: { range: [6.2, 8.4] },
             yaxis: { range: [5, 50] }
+        }
+    });
+}
+</script>
+{% endraw %}
+
+
+I am working on this page called ABGpHCalculator.md
+
+This script could safely be removed and encapsulated in a .is file no?
