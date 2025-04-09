@@ -1,4 +1,3 @@
-<script>
 // Initialize the graph
 let graphData = {
     pCO2Lines: [],
@@ -323,4 +322,3 @@ function update() {
         }
     });
 }
-</script>
