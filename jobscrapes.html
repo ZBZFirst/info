@@ -132,6 +132,69 @@
             background: #888;
             border-radius: 6px;
         }
+        
+        /* Enhanced Table Controls Styling */
+        .table-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .control-group {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .control-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .control-group h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .control-group select, .control-group input[type="text"] {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 200px;
+            margin-right: 10px;
+        }
+        .control-group button {
+            padding: 6px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+        .control-group button:hover {
+            background-color: #0056b3;
+        }
+        #showAllColumns {
+            background-color: #28a745;
+        }
+        #showAllColumns:hover {
+            background-color: #218838;
+        }
+        #clearFilter {
+            background-color: #dc3545;
+        }
+        #clearFilter:hover {
+            background-color: #c82333;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -187,6 +250,60 @@
             </div>
         </div>
 
+        <!-- Enhanced Table Controls -->
+        <div class="table-controls" id="tableControls" style="display: none;">
+            <!-- Sorting Controls -->
+            <div class="control-group">
+                <h3>Sorting</h3>
+                <label>Primary Sort:
+                    <select id="primarySort">
+                        <option value="">-- None --</option>
+                    </select>
+                    <select id="primaryOrder">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </label>
+                <label>Secondary Sort:
+                    <select id="secondarySort">
+                        <option value="">-- None --</option>
+                    </select>
+                    <select id="secondaryOrder">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </label>
+                <button id="applySort">Apply Sorting</button>
+            </div>
+
+            <!-- Column Visibility -->
+            <div class="control-group">
+                <h3>Column Visibility</h3>
+                <label>Hide Column:
+                    <select id="columnToHide">
+                        <option value="">-- Select to Hide --</option>
+                    </select>
+                </label>
+                <button id="hideColumn">Hide</button>
+                <button id="showAllColumns">Show All</button>
+            </div>
+
+            <!-- Row Filtering -->
+            <div class="control-group">
+                <h3>Filter Rows</h3>
+                <label>Filter by Column:
+                    <select id="filterColumn">
+                        <option value="">-- Select Column --</option>
+                    </select>
+                </label>
+                <label>Filter Value:
+                    <input type="text" id="filterValue" placeholder="Enter value...">
+                </label>
+                <button id="applyFilter">Apply Filter</button>
+                <button id="clearFilter">Clear Filter</button>
+            </div>
+        </div>
+
         <div id="fileInfo" class="file-info"></div>
         <div class="scroll-container">
             <div class="header-scroll" id="headerScroll">
@@ -210,6 +327,7 @@
         const headerScroll = document.getElementById('headerScroll');
         const tableWrapper = document.getElementById('tableWrapper');
         const headerScrollInner = document.getElementById('headerScrollInner');
+        const tableControls = document.getElementById('tableControls');
 
         // GitHub API base URL
         const GITHUB_API_BASE = 'https://api.github.com/repos/ZBZFirst/file/contents/ScrapeDescriptions';
@@ -219,6 +337,16 @@
         let currentResizeColumn = null;
         let startX = 0;
         let startWidth = 0;
+        
+        // Table data state
+        let tableState = {
+            hiddenColumns: [],
+            sortPrimary: { column: '', order: 'asc' },
+            sortSecondary: { column: '', order: 'asc' },
+            currentFilter: { column: '', value: '' },
+            originalData: [],
+            headers: []
+        };
 
         // Load files from selected source
         async function loadFiles() {
@@ -233,6 +361,7 @@
             loadFileBtn.disabled = true;
             tableContainer.innerHTML = "";
             fileInfo.textContent = "";
+            tableControls.style.display = 'none';
             
             try {
                 const url = `${GITHUB_API_BASE}/${source}`;
@@ -300,55 +429,33 @@
                     throw new Error("Empty sheet");
                 }
                 
+                // Store original data and headers
+                tableState.headers = jsonData[0].map((header, index) => header || `Column ${index + 1}`);
+                tableState.originalData = jsonData.slice(1).map(row => {
+                    const obj = {};
+                    tableState.headers.forEach((header, i) => {
+                        obj[header] = row[i] || '';
+                    });
+                    return obj;
+                });
+                
+                // Reset table state
+                tableState.hiddenColumns = [];
+                tableState.sortPrimary = { column: '', order: 'asc' };
+                tableState.sortSecondary = { column: '', order: 'asc' };
+                tableState.currentFilter = { column: '', value: '' };
+                
                 // Display file info
                 fileInfo.textContent = `File: ${fileName} | Sheets: ${workbook.SheetNames.length} | Rows: ${jsonData.length - 1} | Columns: ${jsonData[0].length}`;
                 
-                // Create table
-                currentTable = document.createElement("table");
+                // Show table controls
+                tableControls.style.display = 'block';
                 
-                // Create header row
-                const thead = document.createElement("thead");
-                const headerRow = document.createElement("tr");
-                jsonData[0].forEach((header, index) => {
-                    const th = document.createElement("th");
-                    th.textContent = header || `Column ${index + 1}`;
-                    
-                    // Add resize handle
-                    const resizeHandle = document.createElement("div");
-                    resizeHandle.className = "resize-handle";
-                    resizeHandle.dataset.columnIndex = index;
-                    resizeHandle.addEventListener('mousedown', initResize);
-                    th.appendChild(resizeHandle);
-                    
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                currentTable.appendChild(thead);
+                // Initialize controls
+                initializeTableControls();
                 
-                // Create data rows
-                const tbody = document.createElement("tbody");
-                jsonData.slice(1).forEach(row => {
-                    const tr = document.createElement("tr");
-                    row.forEach(cell => {
-                        const td = document.createElement("td");
-                        const contentDiv = document.createElement("div");
-                        contentDiv.className = "cell-content";
-                        contentDiv.textContent = cell;
-                        td.appendChild(contentDiv);
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                });
-                currentTable.appendChild(tbody);
-                
-                tableContainer.appendChild(currentTable);
-                
-                // Apply default settings
-                applyDefaultColumnWidth();
-                applyRowHeight();
-                
-                // Setup synchronized scrolling
-                setupSyncScroll();
+                // Render the table
+                renderTable();
                 
                 loadingStatus.textContent = "";
                 
@@ -357,7 +464,215 @@
                 loadingStatus.textContent = `Error loading ${fileName}: ${error.message}`;
                 loadingStatus.className = "error";
                 tableContainer.innerHTML = "";
+                tableControls.style.display = 'none';
             }
+        }
+
+        // Initialize table controls
+        function initializeTableControls() {
+            // Populate sort dropdowns
+            populateDropdown('primarySort', tableState.headers);
+            populateDropdown('secondarySort', tableState.headers);
+            
+            // Populate hide dropdown
+            updateHideDropdown();
+            
+            // Populate filter column dropdown
+            populateDropdown('filterColumn', tableState.headers);
+            
+            // Set up event listeners
+            document.getElementById('applySort').addEventListener('click', applySorting);
+            document.getElementById('hideColumn').addEventListener('click', hideColumn);
+            document.getElementById('showAllColumns').addEventListener('click', showAllColumns);
+            document.getElementById('applyFilter').addEventListener('click', applyFilter);
+            document.getElementById('clearFilter').addEventListener('click', clearFilter);
+        }
+
+        // Helper function to populate dropdowns
+        function populateDropdown(id, options) {
+            const dropdown = document.getElementById(id);
+            dropdown.innerHTML = `<option value="">-- ${id.includes('Sort') ? 'None' : 'Select'} --</option>`;
+            
+            options.forEach(option => {
+                if (!tableState.hiddenColumns.includes(option) {
+                    const optElement = document.createElement('option');
+                    optElement.value = option;
+                    optElement.textContent = option;
+                    dropdown.appendChild(optElement);
+                }
+            });
+        }
+
+        // Update hide dropdown with only visible columns
+        function updateHideDropdown() {
+            const visibleColumns = tableState.headers.filter(
+                col => !tableState.hiddenColumns.includes(col)
+            );
+            populateDropdown('columnToHide', visibleColumns);
+        }
+
+        // Sorting functionality
+        function applySorting() {
+            tableState.sortPrimary = {
+                column: document.getElementById('primarySort').value,
+                order: document.getElementById('primaryOrder').value
+            };
+            
+            tableState.sortSecondary = {
+                column: document.getElementById('secondarySort').value,
+                order: document.getElementById('secondaryOrder').value
+            };
+            
+            renderTable();
+        }
+
+        function sortData(data) {
+            return data.sort((a, b) => {
+                // Primary sort
+                if (tableState.sortPrimary.column) {
+                    const primaryCompare = compareValues(
+                        a[tableState.sortPrimary.column],
+                        b[tableState.sortPrimary.column],
+                        tableState.sortPrimary.order
+                    );
+                    if (primaryCompare !== 0) return primaryCompare;
+                }
+                
+                // Secondary sort (only if primary is equal)
+                if (tableState.sortSecondary.column) {
+                    return compareValues(
+                        a[tableState.sortSecondary.column],
+                        b[tableState.sortSecondary.column],
+                        tableState.sortSecondary.order
+                    );
+                }
+                
+                return 0;
+            });
+        }
+
+        function compareValues(a, b, order) {
+            // Handle empty values
+            if (a === undefined || a === null) a = '';
+            if (b === undefined || b === null) b = '';
+            
+            // Convert to string for comparison
+            const strA = String(a).toLowerCase();
+            const strB = String(b).toLowerCase();
+            
+            if (strA < strB) return order === 'asc' ? -1 : 1;
+            if (strA > strB) return order === 'asc' ? 1 : -1;
+            return 0;
+        }
+
+        // Column visibility
+        function hideColumn() {
+            const column = document.getElementById('columnToHide').value;
+            if (column && !tableState.hiddenColumns.includes(column)) {
+                tableState.hiddenColumns.push(column);
+                updateHideDropdown();
+                renderTable();
+            }
+        }
+
+        function showAllColumns() {
+            tableState.hiddenColumns = [];
+            updateHideDropdown();
+            renderTable();
+        }
+
+        // Row filtering
+        function applyFilter() {
+            tableState.currentFilter = {
+                column: document.getElementById('filterColumn').value,
+                value: document.getElementById('filterValue').value.toLowerCase()
+            };
+            renderTable();
+        }
+
+        function clearFilter() {
+            tableState.currentFilter = { column: '', value: '' };
+            document.getElementById('filterValue').value = '';
+            renderTable();
+        }
+
+        function filterData(data) {
+            if (!tableState.currentFilter.column || !tableState.currentFilter.value) {
+                return data;
+            }
+            
+            return data.filter(row => {
+                const cellValue = String(row[tableState.currentFilter.column]).toLowerCase();
+                return cellValue.includes(tableState.currentFilter.value);
+            });
+        }
+
+        // Main table rendering function
+        function renderTable() {
+            // Filter data first
+            let displayData = filterData([...tableState.originalData]);
+            
+            // Sort data
+            displayData = sortData(displayData);
+            
+            // Get visible columns
+            const visibleColumns = tableState.headers.filter(
+                col => !tableState.hiddenColumns.includes(col)
+            );
+            
+            // Clear existing table
+            tableContainer.innerHTML = '';
+            
+            // Create new table
+            currentTable = document.createElement("table");
+            
+            // Create header row
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            
+            visibleColumns.forEach(header => {
+                const th = document.createElement("th");
+                th.textContent = header;
+                
+                // Add resize handle
+                const resizeHandle = document.createElement("div");
+                resizeHandle.className = "resize-handle";
+                resizeHandle.addEventListener('mousedown', initResize);
+                th.appendChild(resizeHandle);
+                
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            currentTable.appendChild(thead);
+            
+            // Create data rows
+            const tbody = document.createElement("tbody");
+            
+            displayData.forEach(row => {
+                const tr = document.createElement("tr");
+                
+                visibleColumns.forEach(column => {
+                    const td = document.createElement("td");
+                    const contentDiv = document.createElement("div");
+                    contentDiv.className = "cell-content";
+                    contentDiv.textContent = row[column] || '';
+                    td.appendChild(contentDiv);
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+            
+            currentTable.appendChild(tbody);
+            tableContainer.appendChild(currentTable);
+            
+            // Apply default settings
+            applyDefaultColumnWidth();
+            applyRowHeight();
+            
+            // Setup synchronized scrolling
+            setupSyncScroll();
         }
 
         // Setup synchronized scrolling between header and table
