@@ -27,15 +27,15 @@ title: "What Is Minute Ventilation?"
 
 <div class="resource-card">
     <h2>Graphing the Results for Classification</h2>
-    <p>Performing the equation with different input parameters gives different Minute Ventilation results. Applying a coloring scheme based on Minute Ventilation Values allows for the creations of a color classification scheme based on conditional statements about the values produced.</p>
+    <p>Performing the equation with different input parameters gives different Minute Ventilation results. Applying a coloring scheme based on Minute Ventilation Values allows for the creations of a color classification scheme based on conditional statements about the values produced. The same color scheme is used in the next video.</p>
     <div class="embed-container">
         <iframe src="https://www.youtube.com/embed/ytD4F0awEKc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
 </div>
 
 <div class="resource-card">
-    <h2>Large Dataset Classified</h2>
-    <p>Input parameters are fixed so a narrow range of values can be expected, graphing 100+ values allows for dataset creation that more easily allows for inspecting potential spatial properties in the dataset.</p>
+    <h2>Large Dataset Visualization</h2>
+    <p>Since the input parameters are constrained to a narrow range, a full set of values can be graphed and plotted, graphing 100+ values with conditional formatting allows for a dataset to be visualized that more easily allows for analysis.</p>
     <div class="embed-container">
         <iframe src="https://www.youtube.com/embed/phbpRBO9Rkk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
