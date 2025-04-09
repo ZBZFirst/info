@@ -41,7 +41,8 @@
 /* Modernize other elements to match */
 .results {
     background: linear-gradient(to right, #fff8f5, #ffffff);
-    border-left: 4px solid #ff4d00;
+    box-sizing: border-box;
+    border: 3px solid #ff4d00;
     border-radius: 8px;
     padding: 18px;
     margin-bottom: 25px;
