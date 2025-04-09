@@ -21,7 +21,7 @@ The intake of this screen is varied and complex and requires a careful methodolo
 Isolating the areas of interest is important when discussing this machine.
 
 <div style="text-align: center; margin: 20px 0;">
-  <img src="/info/ventscreen/contours_debug.png" alt="Ventilator screen display traced" style="max-width: 100%; height: auto;">
+  <img src="/info/ventscreen/contours_debug.jpg" alt="Ventilator screen display traced" style="max-width: 100%; height: auto;">
   <p style="font-style: italic; margin-top: 8px;">Caption: This image shows a typical ventilator screen with various parameters displayed and then traced by a Python library.</p>
 </div>
 
@@ -31,7 +31,7 @@ Here, we traced the outlines of the data on the mechanical ventilator in green:
 - The bottom section has a blank area where values sometimes appear that are related to other items in the bottom section
 
 <div style="text-align: center; margin: 20px 0;">
-  <img src="/info/ventscreen/top_section.png" alt="Ventilator screen display top section" style="max-width: 100%; height: auto;">
+  <img src="/info/ventscreen/top_section.jpg" alt="Ventilator screen display top section" style="max-width: 100%; height: auto;">
   <p style="font-style: italic; margin-top: 8px;">Caption: This image shows a typical ventilator screen with various parameters displayed but only the top section.</p>
 </div>
 
@@ -41,7 +41,7 @@ The top section is isolated here:
 - Each value omits its unit of measurement, preexisiting knowledge of the unit of measurement is needed
 
 <div style="text-align: center; margin: 20px 0;">
-  <img src="/info/ventscreen/middle_section.png" alt="Ventilator screen display middle section" style="max-width: 100%; height: auto;">
+  <img src="/info/ventscreen/middle_section.jpg" alt="Ventilator screen display middle section" style="max-width: 100%; height: auto;">
   <p style="font-style: italic; margin-top: 8px;">Caption: This image shows a typical ventilator screen with various parameters displayed but only the middle section.</p>
 </div>
 
@@ -51,7 +51,7 @@ The middle section composes the graphics:
 - Improper scaling or abnormalities in the graphics indicates problems with the system
 
 <div style="text-align: center; margin: 20px 0;">
-  <img src="/info/ventscreen/bottom_section.png" alt="Ventilator screen display bottom section" style="max-width: 100%; height: auto;">
+  <img src="/info/ventscreen/bottom_section.jpg" alt="Ventilator screen display bottom section" style="max-width: 100%; height: auto;">
   <p style="font-style: italic; margin-top: 8px;">Caption: This image shows a typical ventilator screen with various parameters displayed but only the bottom section.</p>
 </div>
 
