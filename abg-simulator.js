@@ -328,8 +328,3 @@ function update() {
 }
 </script>
 {% endraw %}
-
-
-I am working on this page called ABGpHCalculator.md
-
-This script could safely be removed and encapsulated in a .is file no?
