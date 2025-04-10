@@ -211,58 +211,123 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // Section-specific answer checkers
+    const answerCheckers = {
+        z: {
+            check: function(userAnswer, correctAnswer) {
+                return Math.abs(userAnswer - correctAnswer) < 0.001;
+            },
+            onComplete: function() {
+                quizState.z.completed = true;
+                questionCards.z.cardEl.classList.add('disabled-card');
+                questionCards.z.submitBtn.disabled = true;
+            }
+        },
+        x: {
+            check: function(userAnswer, correctAnswer) {
+                return Math.abs(userAnswer - correctAnswer) < 0.001;
+            },
+            onComplete: function() {
+                quizState.x.completed = true;
+                questionCards.x.cardEl.classList.add('disabled-card');
+                questionCards.x.submitBtn.disabled = true;
+            }
+        },
+        y: {
+            check: function(userAnswer, correctAnswer) {
+                return Math.abs(userAnswer - correctAnswer) < 0.001;
+            },
+            onComplete: function() {
+                quizState.y.completed = true;
+                questionCards.y.cardEl.classList.add('disabled-card');
+                questionCards.y.submitBtn.disabled = true;
+            }
+        },
+        recall: {
+            // Recall has different handling (omitted for brevity)
+        }
+    };
+    
+    // Main checkAnswer function
     function checkAnswer(type) {
         const state = quizState[type];
         const card = questionCards[type];
         const userAnswer = parseFloat(card.answerEl.value);
         const correctAnswer = state.currentQuestion.answer;
-        const tolerance = 0.001;
     
         // Validate input
         if (isNaN(userAnswer)) {
-            card.feedbackEl.textContent = 'Please enter a valid number';
-            card.feedbackEl.className = 'feedback incorrect';
+            showFeedback(card, 'Please enter a valid number', 'incorrect');
             return;
         }
     
-        // Handle correct answer
-        if (Math.abs(userAnswer - correctAnswer) < tolerance) {
-            state.score++;
-            saveProgress();
-            card.feedbackEl.textContent = 'Correct!';
-            card.feedbackEl.className = 'feedback correct';
+        // Get the appropriate checker
+        const checker = answerCheckers[type];
+        
+        if (checker.check(userAnswer, correctAnswer)) {
+            handleCorrectAnswer(type, card);
+        } else {
+            handleIncorrectAnswer(type, card, correctAnswer);
+        }
+    }
     
-            // Check if section is now complete
-            if (state.score >= 5 && !state.completed) {
-                state.completed = true;
-                card.cardEl.classList.add('disabled-card');
-                card.submitBtn.disabled = true;
-                updateProgress(type);
-                checkAllComplete();
-                return; // Exit immediately after completion
-            }
+    function handleCorrectAnswer(type, card) {
+        const state = quizState[type];
+        state.score++;
+        saveProgress();
+        
+        showFeedback(card, 'Correct!', 'correct');
+        updateProgress(type);
     
-            // Only generate new question if not completed
-            if (!state.completed) {
-                setTimeout(() => {
-                    generateNewQuestion(type);
-                    updateProgress(type);
-                }, 1000);
-            }
-        } 
-        // Handle incorrect answer
-        else {
-            if (state.score > 0) state.score--;
-            card.feedbackEl.textContent = `Incorrect. The correct answer is ${correctAnswer.toFixed(2)}. Try again.`;
-            card.feedbackEl.className = 'feedback incorrect';
-            updateProgress(type);
-            
-            setTimeout(() => {
-                card.questionEl.textContent = state.currentQuestion.text;
-                card.answerEl.value = '';
-                card.answerEl.focus();
-                card.feedbackEl.textContent = '';
-            }, 1500);
+        // Check for completion
+        if (state.score >= 5 && !state.completed) {
+            answerCheckers[type].onComplete();
+            checkGlobalCompletion();
+            return;
+        }
+    
+        // Continue with next question if not complete
+        setTimeout(() => {
+            generateNewQuestion(type);
+        }, 1000);
+    }
+    
+    function handleIncorrectAnswer(type, card, correctAnswer) {
+        const state = quizState[type];
+        if (state.score > 0) state.score--;
+        
+        showFeedback(card, `Incorrect. The correct answer is ${correctAnswer.toFixed(2)}. Try again.`, 'incorrect');
+        updateProgress(type);
+        
+        setTimeout(() => {
+            resetQuestionDisplay(card, state.currentQuestion.text);
+        }, 1500);
+    }
+    
+    // Helper functions
+    function showFeedback(card, message, type) {
+        card.feedbackEl.textContent = message;
+        card.feedbackEl.className = `feedback ${type}`;
+    }
+    
+    function resetQuestionDisplay(card, questionText) {
+        card.questionEl.textContent = questionText;
+        card.answerEl.value = '';
+        card.answerEl.focus();
+        card.feedbackEl.textContent = '';
+    }
+    
+    function checkGlobalCompletion() {
+        const sectionsComplete = (
+            quizState.z.completed &&
+            quizState.x.completed &&
+            quizState.y.completed &&
+            quizState.recall.completed
+        );
+        
+        if (sectionsComplete) {
+            quizState.allComplete = true;
+            showFinalCompletion();
         }
     }
     
