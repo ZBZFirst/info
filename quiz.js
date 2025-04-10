@@ -308,8 +308,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showRandomRecallQuestion() {
-        logRecallState("Showing new question");
-        
         if (quizState.recall.remainingQuestions.length === 0) {
             completeRecallSection();
             return;
@@ -317,9 +315,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
         const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
         quizState.recall.currentQuestion = quizState.recall.remainingQuestions[randomIndex];
-        quizState.recall.currentAttempts = 0;
-    
-        // Display question
+        
+        // Display new question
         questionCards.recall.questionEl.textContent = quizState.recall.currentQuestion.question;
         questionCards.recall.optionsEl.innerHTML = '';
         
@@ -332,28 +329,56 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             questionCards.recall.optionsEl.appendChild(optionDiv);
         });
-    
+        
+        // Reset UI state for new question
+        questionCards.recall.feedbackEl.textContent = '';
+        questionCards.recall.feedbackEl.className = 'feedback';
+        questionCards.recall.submitBtn.disabled = false;
+        
         updateProgress('recall');
     }
     
     function checkRecallAnswer() {
-        logRecallState("Answer submitted");
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
-        
         if (!selectedOption) {
             showFeedback('Please select an answer', 'incorrect');
             return;
         }
     
-        const userAnswer = parseInt(selectedOption.value);
-        const isCorrect = userAnswer === quizState.recall.currentQuestion.answer;
-    
+        const isCorrect = parseInt(selectedOption.value) === quizState.recall.currentQuestion.answer;
+        
         if (isCorrect) {
-            handleCorrectRecallAnswer();
+            // Handle correct answer
+            quizState.recall.score++;
+            
+            // Remove answered question from pool
+            quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
+                q => q.id !== quizState.recall.currentQuestion.id
+            );
+    
+            showFeedback('Correct!', 'correct');
+            
+            // Clear selection and re-enable button after delay
+            setTimeout(() => {
+                const options = document.querySelectorAll('input[name="recall-answer"]');
+                options.forEach(option => option.checked = false);
+                questionCards.recall.submitBtn.disabled = false;
+                
+                if (quizState.recall.remainingQuestions.length === 0) {
+                    completeRecallSection();
+                } else {
+                    showRandomRecallQuestion();
+                }
+            }, 1000);
+            
         } else {
-            handleIncorrectRecallAnswer();
+            // Handle incorrect answer
+            showFeedback('Incorrect - Try again', 'incorrect');
+            // Keep submit button enabled for retry
+            questionCards.recall.submitBtn.disabled = false;
         }
     }
+
     
     function handleCorrectRecallAnswer() {
         quizState.recall.score++;
@@ -414,15 +439,8 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.feedbackEl.textContent = message;
         questionCards.recall.feedbackEl.className = `feedback ${type}`;
         questionCards.recall.submitBtn.disabled = (type === 'correct');
-        
-        if (type === 'correct') {
-            setTimeout(() => {
-                questionCards.recall.feedbackEl.textContent = '';
-                questionCards.recall.feedbackEl.className = 'feedback';
-            }, 2000);
-        }
     }
-    
+        
     function checkAllComplete() {
         const mathComplete = quizState.z.completed && 
                            quizState.x.completed && 
