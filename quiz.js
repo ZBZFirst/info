@@ -21,6 +21,15 @@ function loadProgress() {
     }
 }
 
+// Debug logging
+function logRecallState(action) {
+    console.log(`${action} - Recall State:`, {
+        score: quizState.recall.score,
+        remaining: quizState.recall.remainingQuestions.length,
+        completed: quizState.recall.completed
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
@@ -70,10 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
         y: { score: 0, currentQuestion: null, completed: false },
         recall: { 
             score: 0, 
-            currentIndex: 0, 
-            questions: [],
+            currentQuestion: null,
+            questions: [], 
             remainingQuestions: [],
-            completed: false 
+            completed: false,
+            currentAttempts: 0,
+            maxAttempts: 3 
         },
         allComplete: false
     };
@@ -262,26 +273,31 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateRecallQuestions() {
         return [
             {
+                id: 1,
                 question: "What was the unit of measurement for Respiratory Rate?",
                 options: ["Breaks Per Minute", "Breaths Per Minute", "Beats Per Minute", "Burps Per Minute"],
                 answer: 1
             },
             {
+                id: 2,
                 question: "What was the unit of measurement for Tidal Volume?",
                 options: ["Ounces", "Liters", "Grams", "Cups"],
                 answer: 1
             },
             {
+                id: 3,
                 question: "What was the unit of measurement for Minute Ventilation?",
                 options: ["Breaths Per Minute", "Liters per Minute", "42", "Big Chungus"],
                 answer: 1
             },
             {
+                id: 4,
                 question: "Why is the Minute Ventilation important?",
                 options: ["It determines the amount of oxygen dissolved in the blood plasma.", "It indicates the strength of the diaphragm muscle alone.", "It reflects the total air movement in the lungs per minute, ensuring proper gas exchange.", "It is used to diagnose specific heart rhythm abnormalities."],
                 answer: 2
             },
             {
+                id: 5,
                 question: "MV is the only way Minute Ventilation can be reported as a variable.",
                 options: ["True", "False"],
                 answer: 1
@@ -290,23 +306,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showRandomRecallQuestion() {
-        // If no questions left, show completion
+        logRecallState("Showing new question");
+        
         if (quizState.recall.remainingQuestions.length === 0) {
-            questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
-            questionCards.recall.optionsEl.innerHTML = '';
-            questionCards.recall.feedbackEl.textContent = `You got ${quizState.recall.score} out of ${quizState.recall.questions.length} correct!`;
-            questionCards.recall.feedbackEl.className = 'feedback correct';
-            questionCards.recall.nextBtn.classList.add('hidden');
-            questionCards.recall.submitBtn.classList.add('hidden');
+            completeRecallSection();
             return;
         }
-        
+    
         const randomIndex = Math.floor(Math.random() * quizState.recall.remainingQuestions.length);
-        const question = quizState.recall.remainingQuestions[randomIndex];
-        quizState.recall.currentIndex = quizState.recall.questions.indexOf(question);
-        questionCards.recall.questionEl.textContent = question.question;
+        quizState.recall.currentQuestion = quizState.recall.remainingQuestions[randomIndex];
+        quizState.recall.currentAttempts = 0;
+    
+        // Display question
+        questionCards.recall.questionEl.textContent = quizState.recall.currentQuestion.question;
         questionCards.recall.optionsEl.innerHTML = '';
-        question.options.forEach((option, i) => {
+        
+        quizState.recall.currentQuestion.options.forEach((option, i) => {
             const optionDiv = document.createElement('div');
             optionDiv.className = 'recall-option';
             optionDiv.innerHTML = `
@@ -315,64 +330,69 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             questionCards.recall.optionsEl.appendChild(optionDiv);
         });
-        
-        questionCards.recall.feedbackEl.textContent = '';
-        questionCards.recall.feedbackEl.className = 'feedback';
-        questionCards.recall.nextBtn.classList.add('hidden');
-        questionCards.recall.submitBtn.classList.remove('hidden');
+    
         updateProgress('recall');
     }
     
-    // Replace your entire checkRecallAnswer function with this:
     function checkRecallAnswer() {
-        questionCards.recall.submitBtn.disabled = true;
-        
+        logRecallState("Answer submitted");
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
+        
         if (!selectedOption) {
-            questionCards.recall.feedbackEl.textContent = 'Please select an answer';
-            questionCards.recall.feedbackEl.className = 'feedback incorrect';
-            questionCards.recall.submitBtn.disabled = false;
+            showFeedback('Please select an answer', 'incorrect');
             return;
         }
     
-        const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
-        const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
-        
+        const userAnswer = parseInt(selectedOption.value);
+        const isCorrect = userAnswer === quizState.recall.currentQuestion.answer;
+    
         if (isCorrect) {
-            questionCards.recall.feedbackEl.textContent = 'Correct!';
-            questionCards.recall.feedbackEl.className = 'feedback correct';
-            quizState.recall.score++;
-            
-            quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
-                q => q.question !== currentQuestion.question
-            );
-    
-            if (quizState.recall.remainingQuestions.length === 0) {
-                quizState.recall.completed = true;
-                saveProgress();
-                showRecallCompletion();
-                return;
-            }
+            handleCorrectRecallAnswer();
         } else {
-            questionCards.recall.feedbackEl.textContent = 'Incorrect - Try again';
-            questionCards.recall.feedbackEl.className = 'feedback incorrect';
+            handleIncorrectRecallAnswer();
         }
+    }
     
-        setTimeout(() => {
-            const options = document.querySelectorAll('input[name="recall-answer"]');
-            options.forEach(option => option.checked = false);
-            questionCards.recall.submitBtn.disabled = false;
-            
-            if (quizState.recall.remainingQuestions.length === 0 && 
-                quizState.recall.score < quizState.recall.questions.length) {
-                quizState.recall.remainingQuestions = [...quizState.recall.questions];
-                quizState.recall.score = 0;
-            }
-            
-            showRandomRecallQuestion();
-            updateProgress('recall');
-            saveProgress();
-        }, 1000);
+    function handleCorrectRecallAnswer() {
+        quizState.recall.score++;
+        quizState.recall.currentQuestion.answeredCorrectly = true;
+        
+        // Remove from remaining questions
+        quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
+            q => q.id !== quizState.recall.currentQuestion.id
+        );
+    
+        showFeedback('Correct!', 'correct');
+        logRecallState("Correct answer");
+    
+        if (quizState.recall.remainingQuestions.length === 0) {
+            completeRecallSection();
+        } else {
+            setTimeout(showNextRecallQuestion, 1000);
+        }
+        
+        saveProgress();
+    }
+    
+    function handleIncorrectRecallAnswer() {
+        quizState.recall.currentAttempts++;
+        
+        if (quizState.recall.currentAttempts >= quizState.recall.maxAttempts) {
+            showFeedback(`Maximum attempts reached. Correct answer was: ${quizState.recall.currentQuestion.options[quizState.recall.currentQuestion.answer]}`, 'incorrect');
+            setTimeout(showNextRecallQuestion, 1500);
+        } else {
+            showFeedback('Incorrect - Try again', 'incorrect');
+        }
+        
+        saveProgress();
+    }
+    
+    function completeRecallSection() {
+        quizState.recall.completed = true;
+        questionCards.recall.cardEl.classList.add('disabled-card');
+        showFeedback(`Completed with score: ${quizState.recall.score}/${quizState.recall.questions.length}`, 'correct');
+        saveProgress();
+        checkAllComplete();
     }
 
     // Update your showRecallCompletion function:
@@ -388,6 +408,19 @@ document.addEventListener('DOMContentLoaded', function() {
         checkAllComplete();
     }
 
+    function showFeedback(message, type) {
+        questionCards.recall.feedbackEl.textContent = message;
+        questionCards.recall.feedbackEl.className = `feedback ${type}`;
+        questionCards.recall.submitBtn.disabled = (type === 'correct');
+        
+        if (type === 'correct') {
+            setTimeout(() => {
+                questionCards.recall.feedbackEl.textContent = '';
+                questionCards.recall.feedbackEl.className = 'feedback';
+            }, 2000);
+        }
+    }
+    
     function checkAllComplete() {
         const mathComplete = quizState.z.completed && 
                            quizState.x.completed && 
