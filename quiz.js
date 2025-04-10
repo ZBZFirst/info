@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProgress('recall');
     }
     
+    // Replace your entire checkRecallAnswer function with this:
     function checkRecallAnswer() {
         // Prevent multiple submissions
         questionCards.recall.submitBtn.disabled = true;
@@ -337,23 +338,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentQuestion = quizState.recall.questions[quizState.recall.currentIndex];
         const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
         
-        // Show feedback
         if (isCorrect) {
+            // Handle correct answer
             questionCards.recall.feedbackEl.textContent = 'Correct!';
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
             
-            // Remove from pool if correct
+            // Remove from pool
             quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
                 q => q.question !== currentQuestion.question
             );
-            
-            // Mark as completed if all questions answered correctly
-            if (quizState.recall.remainingQuestions.length === 0) {
+    
+            // Check for full completion
+            if (quizState.recall.remainingQuestions.length === 0 && 
+                quizState.recall.score === quizState.recall.questions.length) {
                 quizState.recall.completed = true;
-                saveProgress(); // Save the completed state
+                saveProgress();
+                showRecallCompletion();
+                return;
             }
         } else {
+            // Handle incorrect answer
             questionCards.recall.feedbackEl.textContent = 'Incorrect - Try again';
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
@@ -365,33 +370,29 @@ document.addEventListener('DOMContentLoaded', function() {
             options.forEach(option => option.checked = false);
             questionCards.recall.submitBtn.disabled = false;
             
-            // Check if all questions are complete
-            if (quizState.recall.remainingQuestions.length === 0) {
-                if (quizState.recall.score === quizState.recall.questions.length) {
-                    // All correct - show completion
-                    showRecallCompletion();
-                } else {
-                    // Not all correct - reset remaining questions
-                    quizState.recall.remainingQuestions = [...quizState.recall.questions];
-                    quizState.recall.score = 0; // Reset score for retry
-                    showRandomRecallQuestion();
-                }
-            } else {
-                showRandomRecallQuestion();
+            // Check if we need to reset questions
+            if (quizState.recall.remainingQuestions.length === 0 && 
+                quizState.recall.score < quizState.recall.questions.length) {
+                quizState.recall.remainingQuestions = [...quizState.recall.questions];
+                quizState.recall.score = 0;
             }
             
+            showRandomRecallQuestion();
             updateProgress('recall');
-            saveProgress(); // Save after each answer attempt
+            saveProgress();
         }, 1000);
     }
 
+    // Update your showRecallCompletion function:
     function showRecallCompletion() {
-        questionCards.recall.questionEl.textContent = 'Quiz Completed!';
+        questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
         questionCards.recall.optionsEl.innerHTML = '';
         questionCards.recall.feedbackEl.textContent = `Perfect! You got all ${quizState.recall.questions.length} questions correct!`;
         questionCards.recall.feedbackEl.className = 'feedback correct';
         questionCards.recall.submitBtn.classList.add('hidden');
-        checkAllComplete();
+        quizState.recall.completed = true; // Explicitly set completion
+        saveProgress(); // Force save
+        checkAllComplete(); // Check if all sections are done
     }
 
     function checkAllComplete() {
