@@ -279,14 +279,16 @@ document.addEventListener('DOMContentLoaded', function() {
         showFeedback(card, 'Correct!', 'correct');
         updateProgress(type);
     
-        // Check for completion
-        if (state.score >= 5 && !state.completed) {
-            answerCheckers[type].onComplete();
-            checkGlobalCompletion();
-            return;
+        // Check for completion - modified condition
+        if (state.score >= 5) {
+            if (!state.completed) {
+                answerCheckers[type].onComplete();
+                checkGlobalCompletion();
+            }
+            return; // Always return after completion
         }
     
-        // Continue with next question if not complete
+        // Only generate new question if not completed
         setTimeout(() => {
             generateNewQuestion(type);
         }, 1000);
