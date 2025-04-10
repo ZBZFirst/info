@@ -347,14 +347,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 q => q.question !== currentQuestion.question
             );
     
-            if (quizState.recall.remainingQuestions.length === 0 && 
+            if (quizState.recall.remainingQuestions.length === 0) {
                 quizState.recall.completed = true;
                 saveProgress();
                 showRecallCompletion();
                 return;
             }
         } else {
-            // Handle incorrect answer
             questionCards.recall.feedbackEl.textContent = 'Incorrect - Try again';
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
