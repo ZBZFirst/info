@@ -221,6 +221,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 quizState.z.completed = true;
                 questionCards.z.cardEl.classList.add('disabled-card');
                 questionCards.z.submitBtn.disabled = true;
+                updateProgress('z'); // Add this
+                checkGlobalCompletion(); // Add this
             }
         },
         x: {
@@ -231,6 +233,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 quizState.x.completed = true;
                 questionCards.x.cardEl.classList.add('disabled-card');
                 questionCards.x.submitBtn.disabled = true;
+                updateProgress('x'); // Add this
+                checkGlobalCompletion(); // Add this                
             }
         },
         y: {
@@ -241,7 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 quizState.y.completed = true;
                 questionCards.y.cardEl.classList.add('disabled-card');
                 questionCards.y.submitBtn.disabled = true;
-            }
+                updateProgress('y'); // Add this
+                checkGlobalCompletion(); // Add this            }
         },
         recall: {
             // Recall has different handling (omitted for brevity)
@@ -284,6 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!state.completed) {
                 answerCheckers[type].onComplete();
                 checkGlobalCompletion();
+                updateProgress(type);
+
             }
             return; // Always return after completion
         }
