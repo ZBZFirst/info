@@ -211,60 +211,60 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-function checkAnswer(type) {
-    const state = quizState[type];
-    const card = questionCards[type];
-    const userAnswer = parseFloat(card.answerEl.value);
-    const correctAnswer = state.currentQuestion.answer;
-    const tolerance = 0.001;
-
-    // Validate input
-    if (isNaN(userAnswer)) {
-        card.feedbackEl.textContent = 'Please enter a valid number';
-        card.feedbackEl.className = 'feedback incorrect';
-        return;
-    }
-
-    // Handle correct answer
-    if (Math.abs(userAnswer - correctAnswer) < tolerance) {
-        state.score++;
-        saveProgress();
-        card.feedbackEl.textContent = 'Correct!';
-        card.feedbackEl.className = 'feedback correct';
-
-        // Check if section is now complete
-        if (state.score >= 5 && !state.completed) {
-            state.completed = true;
-            card.cardEl.classList.add('disabled-card');
-            card.submitBtn.disabled = true;
-            updateProgress(type);
-            checkAllComplete();
-            return; // Exit immediately after completion
+    function checkAnswer(type) {
+        const state = quizState[type];
+        const card = questionCards[type];
+        const userAnswer = parseFloat(card.answerEl.value);
+        const correctAnswer = state.currentQuestion.answer;
+        const tolerance = 0.001;
+    
+        // Validate input
+        if (isNaN(userAnswer)) {
+            card.feedbackEl.textContent = 'Please enter a valid number';
+            card.feedbackEl.className = 'feedback incorrect';
+            return;
         }
-
-        // Only generate new question if not completed
-        if (!state.completed) {
-            setTimeout(() => {
-                generateNewQuestion(type);
+    
+        // Handle correct answer
+        if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+            state.score++;
+            saveProgress();
+            card.feedbackEl.textContent = 'Correct!';
+            card.feedbackEl.className = 'feedback correct';
+    
+            // Check if section is now complete
+            if (state.score >= 5 && !state.completed) {
+                state.completed = true;
+                card.cardEl.classList.add('disabled-card');
+                card.submitBtn.disabled = true;
                 updateProgress(type);
-            }, 1000);
+                checkAllComplete();
+                return; // Exit immediately after completion
+            }
+    
+            // Only generate new question if not completed
+            if (!state.completed) {
+                setTimeout(() => {
+                    generateNewQuestion(type);
+                    updateProgress(type);
+                }, 1000);
+            }
+        } 
+        // Handle incorrect answer
+        else {
+            if (state.score > 0) state.score--;
+            card.feedbackEl.textContent = `Incorrect. The correct answer is ${correctAnswer.toFixed(2)}. Try again.`;
+            card.feedbackEl.className = 'feedback incorrect';
+            updateProgress(type);
+            
+            setTimeout(() => {
+                card.questionEl.textContent = state.currentQuestion.text;
+                card.answerEl.value = '';
+                card.answerEl.focus();
+                card.feedbackEl.textContent = '';
+            }, 1500);
         }
-    } 
-    // Handle incorrect answer
-    else {
-        if (state.score > 0) state.score--;
-        card.feedbackEl.textContent = `Incorrect. The correct answer is ${correctAnswer.toFixed(2)}. Try again.`;
-        card.feedbackEl.className = 'feedback incorrect';
-        updateProgress(type);
-        
-        setTimeout(() => {
-            card.questionEl.textContent = state.currentQuestion.text;
-            card.answerEl.value = '';
-            card.answerEl.focus();
-            card.feedbackEl.textContent = '';
-        }, 1500);
     }
-}
     
     function updateProgress(type) {
         const state = quizState[type];
