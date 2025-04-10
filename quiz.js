@@ -214,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (Math.abs(userAnswer - correctAnswer) < tolerance) {
             // Correct answer
             state.score++;
+            saveProgress();
             card.feedbackEl.textContent = 'Correct!';
             card.feedbackEl.className = 'feedback correct';
             
@@ -324,7 +325,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Replace your entire checkRecallAnswer function with this:
     function checkRecallAnswer() {
-        // Prevent multiple submissions
         questionCards.recall.submitBtn.disabled = true;
         
         const selectedOption = document.querySelector('input[name="recall-answer"]:checked');
@@ -339,19 +339,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const isCorrect = parseInt(selectedOption.value) === currentQuestion.answer;
         
         if (isCorrect) {
-            // Handle correct answer
             questionCards.recall.feedbackEl.textContent = 'Correct!';
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
             
-            // Remove from pool
             quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
                 q => q.question !== currentQuestion.question
             );
     
-            // Check for full completion
             if (quizState.recall.remainingQuestions.length === 0 && 
-                quizState.recall.score === quizState.recall.questions.length) {
                 quizState.recall.completed = true;
                 saveProgress();
                 showRecallCompletion();
@@ -363,14 +359,11 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
         }
     
-        // Advance after 1 second
         setTimeout(() => {
-            // Clear selection and re-enable button
             const options = document.querySelectorAll('input[name="recall-answer"]');
             options.forEach(option => option.checked = false);
             questionCards.recall.submitBtn.disabled = false;
             
-            // Check if we need to reset questions
             if (quizState.recall.remainingQuestions.length === 0 && 
                 quizState.recall.score < quizState.recall.questions.length) {
                 quizState.recall.remainingQuestions = [...quizState.recall.questions];
@@ -390,9 +383,10 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.feedbackEl.textContent = `Perfect! You got all ${quizState.recall.questions.length} questions correct!`;
         questionCards.recall.feedbackEl.className = 'feedback correct';
         questionCards.recall.submitBtn.classList.add('hidden');
-        quizState.recall.completed = true; // Explicitly set completion
-        saveProgress(); // Force save
-        checkAllComplete(); // Check if all sections are done
+        questionCards.recall.cardEl.classList.add('disabled-card'); // Add this line
+        quizState.recall.completed = true;
+        saveProgress();
+        checkAllComplete();
     }
 
     function checkAllComplete() {
