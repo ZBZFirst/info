@@ -21,15 +21,6 @@ function loadProgress() {
     }
 }
 
-// Debug logging
-function logRecallState(action) {
-    console.log(`${action} - Recall State:`, {
-        score: quizState.recall.score,
-        remaining: quizState.recall.remainingQuestions.length,
-        completed: quizState.recall.completed
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
@@ -73,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Quiz State
     const quizState = {
         z: { score: 0, currentQuestion: null, completed: false },
         x: { score: 0, currentQuestion: null, completed: false },
@@ -89,6 +81,16 @@ document.addEventListener('DOMContentLoaded', function() {
         allComplete: false
     };
 
+    // Debug Logger (now inside the scope where quizState exists)
+    function logRecallState(action) {
+        console.log(`${action} - Recall State:`, {
+            score: quizState.recall.score,
+            remaining: quizState.recall.remainingQuestions?.length || 0,
+            completed: quizState.recall.completed
+        });
+    }
+
+    // Initialize Quiz
     initMathQuiz();
 
     questionCards.z.submitBtn.addEventListener('click', () => checkAnswer('z'));
