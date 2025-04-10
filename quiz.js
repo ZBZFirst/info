@@ -1,3 +1,26 @@
+// Add at top of file
+function saveProgress() {
+    localStorage.setItem('quizProgress', JSON.stringify(quizState));
+}
+
+function loadProgress() {
+    const saved = localStorage.getItem('quizProgress');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.assign(quizState, parsed);
+        
+        // Update UI to reflect loaded state
+        if (quizState.z.completed) questionCards.z.cardEl.classList.add('disabled-card');
+        if (quizState.x.completed) questionCards.x.cardEl.classList.add('disabled-card');
+        if (quizState.y.completed) questionCards.y.cardEl.classList.add('disabled-card');
+        
+        updateProgress('z');
+        updateProgress('x');
+        updateProgress('y');
+        updateProgress('recall');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
@@ -320,15 +343,19 @@ document.addEventListener('DOMContentLoaded', function() {
             questionCards.recall.feedbackEl.className = 'feedback correct';
             quizState.recall.score++;
             
-            // Only remove from pool if correct
+            // Remove from pool if correct
             quizState.recall.remainingQuestions = quizState.recall.remainingQuestions.filter(
                 q => q.question !== currentQuestion.question
             );
+            
+            // Mark as completed if all questions answered correctly
+            if (quizState.recall.remainingQuestions.length === 0) {
+                quizState.recall.completed = true;
+                saveProgress(); // Save the completed state
+            }
         } else {
             questionCards.recall.feedbackEl.textContent = 'Incorrect - Try again';
             questionCards.recall.feedbackEl.className = 'feedback incorrect';
-            
-            // Keep question in pool by not filtering it out
         }
     
         // Advance after 1 second
@@ -354,6 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             updateProgress('recall');
+            saveProgress(); // Save after each answer attempt
         }, 1000);
     }
 
@@ -380,27 +408,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add this new function to show final completion:
     function showFinalCompletion() {
-        // Create completion overlay
+        // Create completion overlay with certificate button
         const overlay = document.createElement('div');
         overlay.className = 'completion-overlay';
         overlay.innerHTML = `
             <div class="completion-container">
-                <h2>Congratulations!</h2>
-                <p>You've completed all sections of the quiz!</p>
+                <h2>Quiz Completed!</h2>
+                <p>You've unlocked certificate generation</p>
                 <div class="results">
                     <h3>Your Results:</h3>
                     <p>Math Equations: Perfect scores in all categories</p>
                     <p>Recall Questions: ${quizState.recall.score}/${quizState.recall.questions.length} correct</p>
                 </div>
+                <button id="generate-certificate">Generate Certificate</button>
                 <button id="restart-quiz">Restart Quiz</button>
             </div>
         `;
         
         document.body.appendChild(overlay);
         
-        // Add restart functionality
+        // Add certificate generation
+        document.getElementById('generate-certificate').addEventListener('click', () => {
+            // Store completion in localStorage
+            localStorage.setItem('quizCompleted', 'true');
+            // Redirect to certificate page
+            window.location.href = '/certificate.html'; 
+        });
+        
         document.getElementById('restart-quiz').addEventListener('click', () => {
-            location.reload(); // Simple reload for now
+            localStorage.clear();
+            location.reload();
         });
     }
 
@@ -408,3 +445,10 @@ document.addEventListener('DOMContentLoaded', function() {
         showRandomRecallQuestion();
     }
 });
+
+
+
+
+
+
+
