@@ -1,26 +1,3 @@
-// Add at top of file
-function saveProgress() {
-    localStorage.setItem('quizProgress', JSON.stringify(quizState));
-}
-
-function loadProgress() {
-    const saved = localStorage.getItem('quizProgress');
-    if (saved) {
-        const parsed = JSON.parse(saved);
-        Object.assign(quizState, parsed);
-        
-        // Update UI to reflect loaded state
-        if (quizState.z.completed) questionCards.z.cardEl.classList.add('disabled-card');
-        if (quizState.x.completed) questionCards.x.cardEl.classList.add('disabled-card');
-        if (quizState.y.completed) questionCards.y.cardEl.classList.add('disabled-card');
-        
-        updateProgress('z');
-        updateProgress('x');
-        updateProgress('y');
-        updateProgress('recall');
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
@@ -90,6 +67,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Add at top of file
+    function saveProgress() {
+        localStorage.setItem('quizProgress', JSON.stringify(quizState));
+    }
+    
+    function loadProgress() {
+        const saved = localStorage.getItem('quizProgress');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            Object.assign(quizState, parsed);
+            
+            // Update UI to reflect loaded state
+            if (quizState.z.completed) questionCards.z.cardEl.classList.add('disabled-card');
+            if (quizState.x.completed) questionCards.x.cardEl.classList.add('disabled-card');
+            if (quizState.y.completed) questionCards.y.cardEl.classList.add('disabled-card');
+            
+            updateProgress('z');
+            updateProgress('x');
+            updateProgress('y');
+            updateProgress('recall');
+        }
+    }
+    
     // Initialize Quiz
     initMathQuiz();
 
