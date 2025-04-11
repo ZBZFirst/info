@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
+    const finalSubmitBtn = document.getElementById('final-submission');
     const questionCards = {
         z: {
             questionEl: document.getElementById('z-question'),
@@ -277,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Modify your existing checkAnswer functions to call checkAllSectionsComplete():
     function handleCorrectAnswer(type, card) {
         const state = quizState[type];
         state.score++;
@@ -284,21 +286,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         showFeedback(card, 'Correct!', 'correct');
         updateProgress(type);
-    
-        // Check for completion - modified condition
-        if (state.score >= 5) {
-            if (!state.completed) {
-                answerCheckers[type].onComplete();
-                checkGlobalCompletion();
-                updateProgress(type);
-
-            }
-            return; // Always return after completion
+        checkAllSectionsComplete(); // <-- Add this
+        
+        if (state.score >= 5 && !state.completed) {
+            answerCheckers[type].onComplete();
+            checkAllSectionsComplete(); // <-- Add this
+            return;
         }
-    
-        // Only generate new question if not completed
+        
         setTimeout(() => {
-            generateNewQuestion(type);
+            if (!quizState[type].completed) {
+                generateNewQuestion(type);
+            }
         }, 1000);
     }
     
@@ -575,9 +574,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+    function checkAllSectionsComplete() {
+        const mathComplete = quizState.z.score >= 5 && 
+                           quizState.x.score >= 5 && 
+                           quizState.y.score >= 5;
+        const recallComplete = quizState.recall.score >= quizState.recall.questions.length;
+        
+        if (mathComplete && recallComplete) {
+            finalSubmitBtn.classList.remove('hidden');
+            finalSubmitBtn.disabled = false;
+            finalSubmitBtn.classList.add('ready');
+        } else {
+            finalSubmitBtn.classList.add('hidden');
+            finalSubmitBtn.disabled = true;
+            finalSubmitBtn.classList.remove('ready');
+        }
+    }
 
 
-
+    // Add this to handle the final submission:
+    finalSubmitBtn.addEventListener('click', () => {
+        // Mark all sections as completed
+        quizState.z.completed = true;
+        quizState.x.completed = true;
+        quizState.y.completed = true;
+        quizState.recall.completed = true;
+        
+        // Update UI
+        questionCards.z.cardEl.classList.add('disabled-card');
+        questionCards.x.cardEl.classList.add('disabled-card');
+        questionCards.y.cardEl.classList.add('disabled-card');
+        questionCards.recall.cardEl.classList.add('disabled-card');
+        
+        // Show final completion
+        showFinalCompletion();
+        saveProgress();
+    });
 
 
 
