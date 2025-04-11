@@ -134,5 +134,5 @@ title: Minute Ventilation Quiz
     </div>
 </div>
 
-<script src="certificate-manager.js"></script>
+<script type="module" src="certificate-manager.js"></script>
 <script src="quiz.js"></script>
