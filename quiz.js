@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.submitBtn.disabled = (type === 'correct');
     }
         
-    function checkAllComplete() {
+    async function checkAllComplete() {
         console.log('Checking completion state:', quizState.allComplete);
         if (!quizState.allComplete) return;
         
