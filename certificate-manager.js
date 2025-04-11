@@ -2,54 +2,56 @@ import { AUTH_CONFIG } from './certificateconfig.js';
 
 class CertificateManager {
   constructor() {
-    this.authSettings = {
-      publicKey: '',
-      githubToken: '',
-      secretNames: AUTH_CONFIG.SECRET_NAMES
-    };
+    this.isVerified = false;
+    this.currentCertificate = null;
     this.initEventListeners();
   }
 
+  /* Core Authentication Methods */
   async verifyCredentials() {
-    const { publicKey, githubToken } = this.getInputValues();
-    
-    if (!this.validateInputs(publicKey, githubToken)) {
-      return;
-    }
-
-    this.showStatus('Verifying credentials...', 'loading');
-
     try {
-      const isValid = await this.verifyWithGitHub(publicKey, githubToken);
-      isValid ? this.handleSuccess() : this.handleFailure();
+      const { publicKey, githubToken } = this.getAuthInputs();
+      this.validateInputs(publicKey, githubToken);
+      
+      this.showStatus('Verifying with LockBox...', 'loading');
+      
+      const isValid = await this.verifyAgainstGitHub(publicKey, githubToken);
+      if (!isValid) throw new Error('Invalid credentials');
+
+      this.handleVerificationSuccess();
     } catch (error) {
-      this.showStatus(`Error: ${error.message}`, 'error');
+      this.handleVerificationError(error);
     }
   }
 
-  async verifyWithGitHub(publicKey, token) {
+  async verifyAgainstGitHub(publicKey, token) {
     const { REPO_OWNER, REPO_NAME, AUTH_FILE } = AUTH_CONFIG;
     
-    const response = await fetch(
-      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUTH_FILE}`,
-      {
-        headers: {
-          'Authorization': `token ${token}`,
-          'Accept': 'application/vnd.github.v3.raw'
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUTH_FILE}`,
+        {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3.raw'
+          }
         }
+      );
+
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
       }
-    );
 
-    if (!response.ok) {
-      throw new Error('Failed to access repository');
+      const csvData = await response.text();
+      return this.validatePublicKey(csvData, publicKey);
+    } catch (error) {
+      console.error('GitHub verification failed:', error);
+      throw new Error('Could not access verification file');
     }
-
-    const content = await response.text();
-    return content.includes(publicKey);
   }
 
-  // Helper methods
-  getInputValues() {
+  /* Helper Methods */
+  getAuthInputs() {
     return {
       publicKey: document.getElementById('public-key').value.trim(),
       githubToken: document.getElementById('github-token').value.trim()
@@ -58,33 +60,95 @@ class CertificateManager {
 
   validateInputs(publicKey, token) {
     if (!publicKey || !token) {
-      this.showStatus('Both fields are required', 'error');
-      return false;
+      throw new Error('Both public key and token are required');
     }
-    return true;
   }
 
-  handleSuccess() {
-    this.showStatus('Access granted!', 'success');
-    // Only enable certificate generation after quiz completion
-    document.getElementById('generate-cert').disabled = false;
+  validatePublicKey(csvData, publicKey) {
+    // Simple CSV check - adjust based on your testauth.csv format
+    return csvData.includes(publicKey);
   }
 
-  handleFailure() {
-    this.showStatus('Invalid credentials', 'error');
+  handleVerificationSuccess() {
+    this.isVerified = true;
+    this.showStatus('✓ Verified successfully', 'success');
+    this.toggleCertificateGeneration(true);
   }
 
+  handleVerificationError(error) {
+    this.isVerified = false;
+    this.showStatus(`✗ ${error.message}`, 'error');
+    this.toggleCertificateGeneration(false);
+  }
+
+  /* Certificate Generation */
+  generateCertificate(userData) {
+    if (!this.isVerified) {
+      throw new Error('User not verified');
+    }
+
+    this.currentCertificate = {
+      id: `cert-${Date.now()}`,
+      name: userData?.name || 'Verified User',
+      date: new Date().toLocaleDateString(),
+      score: userData?.score || '100%',
+      timestamp: Date.now(),
+      verified: true
+    };
+
+    this.saveCertificate(this.currentCertificate);
+    return this.currentCertificate;
+  }
+
+  saveCertificate(cert) {
+    // Implement your certificate storage logic here
+    console.log('Certificate saved:', cert);
+  }
+
+  /* UI Methods */
   showStatus(message, type) {
     const statusEl = document.getElementById('cert-status');
-    statusEl.textContent = message;
-    statusEl.className = `cert-status ${type}`;
+    if (statusEl) {
+      statusEl.textContent = message;
+      statusEl.className = `cert-status ${type}`;
+    }
+  }
+
+  toggleCertificateGeneration(enabled) {
+    const genBtn = document.getElementById('generate-cert');
+    if (genBtn) {
+      genBtn.disabled = !enabled;
+    }
   }
 
   initEventListeners() {
-    document.getElementById('load-cert-data').addEventListener('click', () => {
+    document.getElementById('load-cert-data')?.addEventListener('click', () => {
       this.verifyCredentials();
     });
+
+    document.getElementById('generate-cert')?.addEventListener('click', () => {
+      if (this.isVerified) {
+        const cert = this.generateCertificate();
+        this.showCertificate(cert);
+      }
+    });
+  }
+
+  showCertificate(cert) {
+    const certDisplay = document.getElementById('certificate-display');
+    if (certDisplay) {
+      certDisplay.innerHTML = `
+        <div class="cert-preview">
+          <h3>${cert.name}</h3>
+          <p>Date: ${cert.date}</p>
+          <p>Score: ${cert.score}</p>
+          <p class="cert-id">ID: ${cert.id}</p>
+          <p class="verified-badge"><i class="fas fa-check-circle"></i> Verified</p>
+        </div>
+      `;
+    }
   }
 }
 
+// Initialize
 window.certManager = new CertificateManager();
