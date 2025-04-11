@@ -4,7 +4,31 @@ class CertificateManager {
   constructor() {
     this.isVerified = false;
     this.currentCertificate = null;
+    this.overlay = document.getElementById('certificate-manager-overlay');
     this.initEventListeners();
+  }
+
+  /* Overlay Control Methods */
+  toggleOverlay() {
+    this.overlay.classList.toggle('active');
+    if (this.overlay.classList.contains('active')) {
+      this.resetForm();
+    }
+  }
+
+  showOverlay() {
+    this.overlay.classList.add('active');
+    this.resetForm();
+  }
+
+  hideOverlay() {
+    this.overlay.classList.remove('active');
+  }
+
+  resetForm() {
+    this.showStatus('', '');
+    document.getElementById('certificate-display').innerHTML = '';
+    document.getElementById('generate-cert').disabled = true;
   }
 
   /* Core Authentication Methods */
@@ -24,131 +48,50 @@ class CertificateManager {
     }
   }
 
-  async verifyAgainstGitHub(publicKey, token) {
-    const { REPO_OWNER, REPO_NAME, AUTH_FILE } = AUTH_CONFIG;
-    
-    try {
-      const response = await fetch(
-        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUTH_FILE}`,
-        {
-          headers: {
-            'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3.raw'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status}`);
-      }
-
-      const csvData = await response.text();
-      return this.validatePublicKey(csvData, publicKey);
-    } catch (error) {
-      console.error('GitHub verification failed:', error);
-      throw new Error('Could not access verification file');
-    }
-  }
-
-  /* Helper Methods */
-  getAuthInputs() {
-    return {
-      publicKey: document.getElementById('public-key').value.trim(),
-      githubToken: document.getElementById('github-token').value.trim()
-    };
-  }
-
-  validateInputs(publicKey, token) {
-    if (!publicKey || !token) {
-      throw new Error('Both public key and token are required');
-    }
-  }
-
-  validatePublicKey(csvData, publicKey) {
-    // Simple CSV check - adjust based on your testauth.csv format
-    return csvData.includes(publicKey);
-  }
-
-  handleVerificationSuccess() {
-    this.isVerified = true;
-    this.showStatus('✓ Verified successfully', 'success');
-    this.toggleCertificateGeneration(true);
-  }
-
-  handleVerificationError(error) {
-    this.isVerified = false;
-    this.showStatus(`✗ ${error.message}`, 'error');
-    this.toggleCertificateGeneration(false);
-  }
-
-  /* Certificate Generation */
-  generateCertificate(userData) {
-    if (!this.isVerified) {
-      throw new Error('User not verified');
-    }
-
-    this.currentCertificate = {
-      id: `cert-${Date.now()}`,
-      name: userData?.name || 'Verified User',
-      date: new Date().toLocaleDateString(),
-      score: userData?.score || '100%',
-      timestamp: Date.now(),
-      verified: true
-    };
-
-    this.saveCertificate(this.currentCertificate);
-    return this.currentCertificate;
-  }
-
-  saveCertificate(cert) {
-    // Implement your certificate storage logic here
-    console.log('Certificate saved:', cert);
-  }
-
-  /* UI Methods */
-  showStatus(message, type) {
-    const statusEl = document.getElementById('cert-status');
-    if (statusEl) {
-      statusEl.textContent = message;
-      statusEl.className = `cert-status ${type}`;
-    }
-  }
-
-  toggleCertificateGeneration(enabled) {
-    const genBtn = document.getElementById('generate-cert');
-    if (genBtn) {
-      genBtn.disabled = !enabled;
-    }
-  }
+  /* ... (keep all other existing methods exactly the same) ... */
 
   initEventListeners() {
+    // Certificate Manager Button Toggle
+    document.getElementById('cert-manager-btn')?.addEventListener('click', () => {
+      this.toggleOverlay();
+    });
+
+    // Close Overlay Button
+    document.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
+      this.hideOverlay();
+    });
+
+    // Auth button
     document.getElementById('load-cert-data')?.addEventListener('click', () => {
       this.verifyCredentials();
     });
 
+    // Generate certificate
     document.getElementById('generate-cert')?.addEventListener('click', () => {
       if (this.isVerified) {
         const cert = this.generateCertificate();
         this.showCertificate(cert);
       }
     });
+
+    // Download certificate
+    document.getElementById('download-cert')?.addEventListener('click', () => {
+      if (this.currentCertificate) {
+        this.downloadCertificate();
+      }
+    });
   }
 
-  showCertificate(cert) {
-    const certDisplay = document.getElementById('certificate-display');
-    if (certDisplay) {
-      certDisplay.innerHTML = `
-        <div class="cert-preview">
-          <h3>${cert.name}</h3>
-          <p>Date: ${cert.date}</p>
-          <p>Score: ${cert.score}</p>
-          <p class="cert-id">ID: ${cert.id}</p>
-          <p class="verified-badge"><i class="fas fa-check-circle"></i> Verified</p>
-        </div>
-      `;
-    }
+  /* Add this new method for downloading */
+  downloadCertificate() {
+    if (!this.currentCertificate) return;
+    // Implement your PDF download logic here
+    console.log('Downloading certificate:', this.currentCertificate);
+    // This would use jsPDF or similar to generate the PDF
   }
 }
 
-// Initialize
-window.certManager = new CertificateManager();
+// Initialize after DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+  window.certManager = new CertificateManager();
+});
