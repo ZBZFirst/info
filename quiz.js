@@ -554,7 +554,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
         
     function checkAllComplete() {
-        if (!quizState.allComplete) return; // Only act when flag is true
+        if (!quizState.allComplete) return;
+        
+        // Generate certificate
+        const totalScore = quizState.z.score + quizState.x.score + quizState.y.score + quizState.recall.score;
+        const maxPossibleScore = 20;
+        
+        const certData = {
+            id: 'cert-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+            name: localStorage.getItem('userName') || 'Anonymous',
+            date: new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }),
+            timestamp: Date.now(),
+            score: totalScore,
+            maxScore: maxPossibleScore,
+            quizType: 'Minute Ventilation Worksheet'
+        };
+        
+        certManager.saveCertificate(certData);
         showFinalCompletion();
     }
 
