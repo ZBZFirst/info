@@ -554,16 +554,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
         
     function checkAllComplete() {
-        const mathComplete = quizState.z.completed && 
-                           quizState.x.completed && 
-                           quizState.y.completed;
-        const recallComplete = quizState.recall.completed;
-        
-        if (mathComplete && recallComplete) {
-            quizState.allComplete = true;
-            showFinalCompletion();
-        }
+        if (!quizState.allComplete) return; // Only act when flag is true
+        showFinalCompletion();
     }
+
 
     function showNextRecallQuestion() {
         showRandomRecallQuestion();
