@@ -99,5 +99,8 @@ title: Minute Ventilation Quiz
         All application and recall questions completed!
     </div>
 </div>
+<button id="final-submission" class="hidden" disabled>
+    Submit All Answers
+</button>
 
 <script src="quiz.js"></script>
