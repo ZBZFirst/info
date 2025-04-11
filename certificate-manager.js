@@ -4,11 +4,19 @@ class CertificateManager {
   constructor() {
     this.isVerified = false;
     this.currentCertificate = null;
-    this.overlay = document.getElementById('certificate-manager-overlay');
+    this.overlay = null; // Initialize as null
     this.initEventListeners();
   }
 
+  initOverlay() {
+    this.overlay = document.getElementById('certificate-manager-overlay');
+    if (!this.overlay) {
+      console.error('Certificate manager overlay element not found');
+    }
+  }
+
   toggleOverlay() {
+    if (!this.overlay) return;
     this.overlay.classList.toggle('active');
     if (this.overlay.classList.contains('active')) {
       this.resetForm();
@@ -82,4 +90,6 @@ class CertificateManager {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.certManager = new CertificateManager();
+  window.certManager.initOverlay(); // Initialize overlay after DOM loads
+
 });
