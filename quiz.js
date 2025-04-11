@@ -587,14 +587,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Generated certificate data:', certData);
             
+            // Save certificate before showing overlay
             if (window.certManager) {
-                window.certManager.saveCertificate(certData);
-                console.log('Certificate saved successfully');
+                await window.certManager.saveCertificate(certData);
+                const savedCerts = window.certManager.getAllCerts();
+                console.log('Saved certificates:', savedCerts);
+                
+                if (savedCerts.length > 0) {
+                    showFinalCompletion();
+                } else {
+                    console.error('Certificate failed to save');
+                }
             } else {
                 console.error('Certificate manager not available');
             }
-            
-            showFinalCompletion();
         } catch (error) {
             console.error('Error in checkAllComplete:', error);
         }
@@ -615,12 +621,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
     
-            // Hide any completion messages
-            const mathComplete = document.getElementById('math-complete');
-            if (mathComplete) mathComplete.classList.add('hidden');
-    
             // Get the most recent certificate
             const certs = window.certManager?.getAllCerts() || [];
+            console.log('Available certificates:', certs);
             const latestCert = certs[0];
             
             if (!latestCert) {
@@ -635,43 +638,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>Certificate of Completion</h3>
                     <p>Congratulations, ${latestCert.name}!</p>
                     <p>You've successfully completed the Minute Ventilation Worksheet</p>
-                    <div class="score-display">
-                        <span class="score">${latestCert.score}</span>
-                        <span class="score-separator">/</span>
-                        <span class="max-score">${latestCert.maxScore}</span>
-                    </div>
-                    <p class="completion-date">Completed on: ${latestCert.date}</p>
+                    <p>Score: ${latestCert.score}/${latestCert.maxScore}</p>
+                    <p>Completed on: ${latestCert.date}</p>
                     <p class="cert-id">ID: ${latestCert.id}</p>
                 `;
             }
     
-            // Setup buttons
+            // Remove any existing click handlers to prevent duplicates
             const downloadBtn = document.getElementById('download-cert');
             const restartBtn = document.getElementById('restart-quiz');
-            const closeBtn = document.getElementById('close-overlay');
             
             if (downloadBtn) {
+                downloadBtn.onclick = null; // Clear previous handler
                 downloadBtn.onclick = () => {
                     window.certManager?.downloadCert(latestCert.id);
                 };
             }
             
             if (restartBtn) {
+                restartBtn.onclick = null; // Clear previous handler
                 restartBtn.onclick = () => location.reload();
             }
-            
-            if (closeBtn) {
-                closeBtn.onclick = () => overlay.classList.remove('active');
-            }
     
-            // Show overlay
+            // Activate overlay (remove hidden, add active)
+            overlay.classList.remove('hidden');
             overlay.classList.add('active');
             console.log('Completion overlay shown successfully');
         } catch (error) {
             console.error('Error in showFinalCompletion:', error);
         }
     }
-
     
 });
 
