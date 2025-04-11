@@ -580,15 +580,8 @@ document.addEventListener('DOMContentLoaded', function() {
                            quizState.y.score >= 5;
         const recallComplete = quizState.recall.score >= quizState.recall.questions.length;
         
-        if (mathComplete && recallComplete) {
-            finalSubmitBtn.classList.remove('hidden');
-            finalSubmitBtn.disabled = false;
-            finalSubmitBtn.classList.add('ready');
-        } else {
-            finalSubmitBtn.classList.add('hidden');
-            finalSubmitBtn.disabled = true;
-            finalSubmitBtn.classList.remove('ready');
-        }
+        // Simply update disabled state
+        finalSubmitBtn.disabled = !(mathComplete && recallComplete);
     }
 
 
