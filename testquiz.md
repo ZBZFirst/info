@@ -114,3 +114,4 @@ title: Minute Ventilation Quiz
 
 
 <script src="quiz.js"></script>
+<script src="certificate-manager.js"></script>
