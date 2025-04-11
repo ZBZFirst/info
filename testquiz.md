@@ -6,7 +6,9 @@ title: Minute Ventilation Quiz
 <div id="math-quiz" class="math-quiz-container">
     <div class="section-title">
         <h1>Minute Ventilation Worksheet</h1>
-        <span id="math-status" class="section-status">In Progress</span>
+        <button id="cert-manager-btn" class="section-status">
+            <i class="fas fa-certificate"></i> Certificate Manager
+        </button>
     </div>
     <h2>Complete all sections to complete the worksheet to obtain a certificate of completion.</h2>
     <div class="question-section">
@@ -90,18 +92,38 @@ title: Minute Ventilation Quiz
         All application and recall questions completed!
     </div>
     <button id="final-submission" disabled>
-    Submit All Answers
+        Submit All Answers
     </button>
-    <!-- Add this just before </div> closing the math-quiz container -->
+    
     <div id="completion-overlay" class="completion-overlay hidden">
         <div class="completion-content certificate-card">
             <button id="close-overlay" class="close-btn" aria-label="Close">×</button>
             <h2><i class="fas fa-check-circle success-icon"></i> Worksheet Complete! 🎉</h2>
-            <div id="certificate-display" class="certificate-details">
-                <!-- This will be populated by JavaScript -->
+            
+            <!-- Certificate controls section -->
+            <div id="certificate-controls" class="certificate-controls">
+                <h3>Generate Verified Certificate</h3>
+                <div class="input-group">
+                    <label for="github-token">GitHub Token:</label>
+                    <input type="password" id="github-token" placeholder="Enter LockBox repo token">
+                </div>
+                <div class="input-group">
+                    <label for="public-key">Your Public Key:</label>
+                    <input type="text" id="public-key" placeholder="From your testauth.csv">
+                </div>
+                <button id="load-cert-data" class="btn-primary">
+                    <i class="fas fa-unlock"></i> Authenticate
+                </button>
+                <div id="cert-status" class="cert-status"></div>
             </div>
+            
+            <div id="certificate-display" class="certificate-details">
+                <!-- Default completion message -->
+                <p>Congratulations on completing the worksheet!</p>
+            </div>
+            
             <div class="completion-actions">
-                <button id="download-cert" class="btn-primary">
+                <button id="download-cert" class="btn-primary" disabled>
                     <i class="fas fa-download"></i> Download Certificate
                 </button>
                 <button id="restart-quiz" class="btn-secondary">
@@ -114,4 +136,3 @@ title: Minute Ventilation Quiz
 
 <script src="certificate-manager.js"></script>
 <script src="quiz.js"></script>
-
