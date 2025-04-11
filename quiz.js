@@ -556,26 +556,32 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkAllComplete() {
         if (!quizState.allComplete) return;
         
-        // Generate certificate
-        const totalScore = quizState.z.score + quizState.x.score + quizState.y.score + quizState.recall.score;
-        const maxPossibleScore = 20;
-        
-        const certData = {
-            id: 'cert-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-            name: localStorage.getItem('userName') || 'Anonymous',
-            date: new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            }),
-            timestamp: Date.now(),
-            score: totalScore,
-            maxScore: maxPossibleScore,
-            quizType: 'Minute Ventilation Worksheet'
-        };
-        
-        certManager.saveCertificate(certData);
-        showFinalCompletion();
+        try {
+            // Generate certificate
+            const totalScore = quizState.z.score + quizState.x.score + quizState.y.score + quizState.recall.score;
+            const maxPossibleScore = 20;
+            
+            const certData = {
+                id: 'cert-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                name: localStorage.getItem('userName') || 'Anonymous',
+                date: new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }),
+                timestamp: Date.now(),
+                score: totalScore,
+                maxScore: maxPossibleScore,
+                quizType: 'Minute Ventilation Worksheet'
+            };
+            
+            if (window.certManager) {
+                window.certManager.saveCertificate(certData);
+            }
+            showFinalCompletion();
+        } catch (error) {
+            console.error('Error completing quiz:', error);
+        }
     }
 
 
@@ -584,35 +590,56 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFinalCompletion() {
-        // Hide the complete message (if shown)
-        document.getElementById('math-complete').classList.add('hidden');
-        
-        // Get the most recent certificate
-        const certs = certManager.getAllCerts();
-        const latestCert = certs[0];
-        
-        // Populate the certificate display
-        const certDisplay = document.getElementById('certificate-display');
-        certDisplay.innerHTML = `
-            <h3>Certificate of Completion</h3>
-            <p>Congratulations, ${latestCert.name}!</p>
-            <p>You've successfully completed the Minute Ventilation Worksheet</p>
-            <p>Score: ${latestCert.score}/${latestCert.maxScore}</p>
-            <p>Completed on: ${latestCert.date}</p>
-            <p class="cert-id">ID: ${latestCert.id}</p>
-        `;
-        
-        // Show the overlay
-        document.getElementById('completion-overlay').classList.remove('hidden');
-        
-        // Setup button handlers
-        document.getElementById('download-cert').onclick = () => {
-            certManager.downloadCert(latestCert.id);
-        };
-        
-        document.getElementById('restart-quiz').onclick = () => {
-            location.reload();
-        };
+        try {
+            const overlay = document.getElementById('completion-overlay');
+            const mathComplete = document.getElementById('math-complete');
+            
+            if (!overlay) {
+                console.error('Completion overlay element not found');
+                return;
+            }
+    
+            // Hide the complete message (if shown)
+            if (mathComplete) mathComplete.classList.add('hidden');
+            
+            // Get the most recent certificate
+            const certs = window.certManager?.getAllCerts() || [];
+            const latestCert = certs[0];
+            
+            // Populate the certificate display
+            const certDisplay = document.getElementById('certificate-display');
+            if (certDisplay && latestCert) {
+                certDisplay.innerHTML = `
+                    <h3>Certificate of Completion</h3>
+                    <p>Congratulations, ${latestCert.name}!</p>
+                    <p>You've successfully completed the Minute Ventilation Worksheet</p>
+                    <p>Score: ${latestCert.score}/${latestCert.maxScore}</p>
+                    <p>Completed on: ${latestCert.date}</p>
+                    <p class="cert-id">ID: ${latestCert.id}</p>
+                `;
+            }
+            
+            // Setup button handlers
+            const downloadBtn = document.getElementById('download-cert');
+            const restartBtn = document.getElementById('restart-quiz');
+            
+            if (downloadBtn && latestCert) {
+                downloadBtn.onclick = () => {
+                    window.certManager?.downloadCert(latestCert.id);
+                };
+            }
+            
+            if (restartBtn) {
+                restartBtn.onclick = () => {
+                    location.reload();
+                };
+            }
+            
+            // Show the overlay
+            overlay.classList.remove('hidden');
+        } catch (error) {
+            console.error('Error showing completion:', error);
+        }
     }
 
     
