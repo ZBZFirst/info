@@ -511,23 +511,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function completeRecallSection() {
         quizState.recall.completed = true;
         questionCards.recall.cardEl.classList.add('disabled-card');
-        showFeedback(`Completed with score: ${quizState.recall.score}/${quizState.recall.questions.length}`, 'correct');
+        showFeedback(`Score: ${quizState.recall.score}/${quizState.recall.questions.length}`, 'correct');
         saveProgress();
         checkGlobalCompletion();
     }
 
-    // Update your showRecallCompletion function:
-    function showRecallCompletion() {
-        questionCards.recall.questionEl.textContent = 'Recall Quiz Completed!';
-        questionCards.recall.optionsEl.innerHTML = '';
-        questionCards.recall.feedbackEl.textContent = `Perfect! You got all ${quizState.recall.questions.length} questions correct!`;
-        questionCards.recall.feedbackEl.className = 'feedback correct';
-        questionCards.recall.submitBtn.classList.add('hidden');
-        questionCards.recall.cardEl.classList.add('disabled-card'); // Add this line
-        quizState.recall.completed = true;
-        saveProgress();
-        checkAllComplete();
-    }
+
 
     function showFeedback(message, type) {
         questionCards.recall.feedbackEl.textContent = message;
@@ -535,18 +524,6 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.submitBtn.disabled = (type === 'correct');
     }
         
-    function checkAllComplete() {
-        quizState.allComplete = (
-            quizState.z.completed &&
-            quizState.x.completed &&
-            quizState.y.completed &&
-            quizState.recall.completed
-        );
-        
-        if (quizState.allComplete) {
-            console.log("Quiz fully completed!"); // Optional debug
-        }
-    }
     
     function showNextRecallQuestion() {
         showRandomRecallQuestion();
