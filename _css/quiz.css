@@ -638,6 +638,7 @@ button:hover::after {
 /* === Completion Overlay === */
 /* ========================== */
 
+/* Replace your completion overlay CSS with this: */
 .completion-overlay {
     position: fixed;
     top: 0;
@@ -649,67 +650,64 @@ button:hover::after {
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.completion-overlay.active {
+    opacity: 1;
+    pointer-events: all;
 }
 
 .completion-content {
-    background: linear-gradient(135deg, white 0%, #f8f9fa 100%);
-    border: 1px solid rgba(67, 97, 238, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    transform: scale(0.95);
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    position: relative;
 }
 
-.completion-overlay.active .completion-content {
-    transform: scale(1);
-}
-
-/* Add a confetti effect */
-.completion-overlay::after {
-    content: "";
+.close-btn {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="10" y="20" font-size="10" fill="%234361ee" opacity="0.3">★</text></svg>');
-    background-size: 20px;
-    opacity: 0.5;
-    pointer-events: none;
-    z-index: -1;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray);
+}
+
+.success-icon {
+    color: var(--success);
+    margin-right: 0.5rem;
+}
+
+.certificate-details {
+    margin: 1.5rem 0;
+    text-align: left;
+    padding: 1rem;
+    background: var(--light);
+    border-radius: var(--radius-md);
 }
 
 .completion-actions {
-    margin-top: 1.5rem;
     display: flex;
     gap: 1rem;
     justify-content: center;
+    margin-top: 1.5rem;
 }
 
-.completion-actions button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-#download-cert {
-    background-color: #4CAF50;
+.btn-primary {
+    background: var(--primary);
     color: white;
 }
 
-#restart-quiz {
-    background-color: #2196F3;  
+.btn-secondary {
+    background: var(--secondary);
     color: white;
-}
-
-.hidden {
-    display: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
 }
