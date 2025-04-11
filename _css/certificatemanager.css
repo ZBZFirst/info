@@ -1,1 +1,121 @@
+/* Certificate Manager Overlay */
+.certificate-manager-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
 
+.certificate-manager-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.certificate-manager-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+}
+
+.certificate-manager-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.cert-manager-status {
+  padding: 0.5rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.cert-manager-status.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.cert-manager-status.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.cert-manager-status.loading {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.cert-manager-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.cert-manager-verified {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.cert-manager-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cert-manager-btn {
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.cert-manager-btn-primary {
+  background: #4361ee;
+  color: white;
+}
+
+.cert-manager-btn-secondary {
+  background: white;
+  color: #4361ee;
+  border: 2px solid #4361ee;
+}
+
+.cert-manager-btn-primary:hover {
+  background: #3a56d4;
+  transform: translateY(-2px);
+}
+
+.cert-manager-btn-secondary:hover {
+  background: #f8f9fa;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .certificate-manager-content {
+    padding: 1.5rem;
+  }
+  
+  .cert-manager-actions {
+    flex-direction: column;
+  }
+}
