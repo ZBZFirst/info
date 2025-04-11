@@ -586,14 +586,17 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             console.log('Generated certificate data:', certData);
-            
-            // Save certificate before showing overlay
+            console.log('Attempting to save certificate...');
+
             if (window.certManager) {
+                console.log('CertManager found, saving...');
                 await window.certManager.saveCertificate(certData);
+                console.log('Save completed, retrieving certificates...');
                 const savedCerts = window.certManager.getAllCerts();
-                console.log('Saved certificates:', savedCerts);
+                console.log('Retrieved certificates:', savedCerts);
                 
                 if (savedCerts.length > 0) {
+                    console.log('Certificate found, showing completion');
                     showFinalCompletion();
                 } else {
                     console.error('Certificate failed to save');
@@ -605,8 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error in checkAllComplete:', error);
         }
     }
-
-
+    
     function showNextRecallQuestion() {
         showRandomRecallQuestion();
     }
