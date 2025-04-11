@@ -10,7 +10,6 @@ class CertificateManager {
     constructor() {
         this.loadedCertificates = [];
         this.migrateLegacyCerts();
-        this.loadCertificates();
         
     }
 
@@ -27,18 +26,26 @@ class CertificateManager {
     }
 
     renderCertificates() {
-        const container = document.getElementById('cert-list');
-        
-        if (this.loadedCertificates.length === 0) {
-            document.getElementById('no-certs').style.display = 'block';
-            container.innerHTML = '';
-            return;
-        }
+        try {
+            const container = document.getElementById('cert-list');
+            const noCertsEl = document.getElementById('no-certs');
+            
+            // Skip rendering if elements don't exist
+            if (!container || !noCertsEl) return;
+            
+            if (this.loadedCertificates.length === 0) {
+                noCertsEl.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
 
-        document.getElementById('no-certs').style.display = 'none';
-        container.innerHTML = this.loadedCertificates
-            .map(cert => this.createCertCard(cert))
-            .join('');
+            noCertsEl.style.display = 'none';
+            container.innerHTML = this.loadedCertificates
+                .map(cert => this.createCertCard(cert))
+                .join('');
+        } catch (error) {
+            console.error('Error rendering certificates:', error);
+        }
     }
     
     saveCertificate(cert) {
