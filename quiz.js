@@ -277,8 +277,37 @@ document.addEventListener('DOMContentLoaded', function() {
             handleIncorrectAnswer(type, card, correctAnswer);
         }
     }
+
+    function checkAllSectionsComplete() {
+        const mathComplete = quizState.z.score >= 5 && 
+                           quizState.x.score >= 5 && 
+                           quizState.y.score >= 5;
+        const recallComplete = quizState.recall.score >= quizState.recall.questions.length;
+        
+        // Simply update disabled state
+        finalSubmitBtn.disabled = !(mathComplete && recallComplete);
+    }
+
+
+    // Add this to handle the final submission:
+    finalSubmitBtn.addEventListener('click', () => {
+        // Mark all sections as completed
+        quizState.z.completed = true;
+        quizState.x.completed = true;
+        quizState.y.completed = true;
+        quizState.recall.completed = true;
+        
+        // Update UI
+        questionCards.z.cardEl.classList.add('disabled-card');
+        questionCards.x.cardEl.classList.add('disabled-card');
+        questionCards.y.cardEl.classList.add('disabled-card');
+        questionCards.recall.cardEl.classList.add('disabled-card');
+        
+        // Show final completion
+        showFinalCompletion();
+        saveProgress();
+    });
     
-    // Modify your existing checkAnswer functions to call checkAllSectionsComplete():
     function handleCorrectAnswer(type, card) {
         const state = quizState[type];
         state.score++;
@@ -574,35 +603,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-    function checkAllSectionsComplete() {
-        const mathComplete = quizState.z.score >= 5 && 
-                           quizState.x.score >= 5 && 
-                           quizState.y.score >= 5;
-        const recallComplete = quizState.recall.score >= quizState.recall.questions.length;
-        
-        // Simply update disabled state
-        finalSubmitBtn.disabled = !(mathComplete && recallComplete);
-    }
-
-
-    // Add this to handle the final submission:
-    finalSubmitBtn.addEventListener('click', () => {
-        // Mark all sections as completed
-        quizState.z.completed = true;
-        quizState.x.completed = true;
-        quizState.y.completed = true;
-        quizState.recall.completed = true;
-        
-        // Update UI
-        questionCards.z.cardEl.classList.add('disabled-card');
-        questionCards.x.cardEl.classList.add('disabled-card');
-        questionCards.y.cardEl.classList.add('disabled-card');
-        questionCards.recall.cardEl.classList.add('disabled-card');
-        
-        // Show final completion
-        showFinalCompletion();
-        saveProgress();
-    });
 
 
 
