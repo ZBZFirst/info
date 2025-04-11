@@ -565,57 +565,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add this new function to show final completion:
-    function showFinalCompletion() {
-        // Create completion overlay with certificate button
-        const overlay = document.createElement('div');
-        overlay.className = 'completion-overlay';
-        overlay.innerHTML = `
-            <div class="completion-container">
-                <h2>Quiz Completed!</h2>
-                <p>You've unlocked certificate generation</p>
-                <div class="results">
-                    <h3>Your Results:</h3>
-                    <p>Math Equations: Perfect scores in all categories</p>
-                    <p>Recall Questions: ${quizState.recall.score}/${quizState.recall.questions.length} correct</p>
-                </div>
-                <button id="generate-certificate">Generate Certificate</button>
-                <button id="restart-quiz">Restart Quiz</button>
-            </div>
-        `;
-        
-        document.body.appendChild(overlay);
-        
-        // Add certificate generation
-        document.getElementById('generate-certificate').addEventListener('click', () => {
-            // Store completion in localStorage
-            localStorage.setItem('quizCompleted', 'true');
-            // Redirect to certificate page
-            window.location.href = '/certificate.html'; 
-        });
-        
-        document.getElementById('restart-quiz').addEventListener('click', () => {
-            localStorage.clear();
-            location.reload();
-        });
-    }
-
     function showNextRecallQuestion() {
         showRandomRecallQuestion();
     }
 
     function showFinalCompletion() {
-        // Hide all quiz cards
-        document.querySelectorAll('.quiz-card').forEach(card => {
-            card.style.display = 'none';
-        });
-        
+        // Do NOT hide the cards
+        // document.querySelectorAll('.quiz-card').forEach(card => {
+        //     card.style.display = 'none';
+        // });
+    
         // Show completion overlay
         const overlay = document.createElement('div');
         overlay.className = 'completion-overlay';
         overlay.innerHTML = `
             <div class="completion-container">
-                <h2>Congratulations!</h2>
+                <h2>Quiz Completed!</h2>
                 <p>You've successfully completed all sections!</p>
                 <div class="results-summary">
                     <h3>Your Results:</h3>
@@ -630,13 +595,28 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         document.body.appendChild(overlay);
-        
-        // Add event listeners for the new buttons
-        document.getElementById('generate-certificate').addEventListener('click', generateCertificate);
-        document.getElementById('restart-quiz').addEventListener('click', restartQuiz);
+    
+        // Leave this as a placeholder — no error, just a message
+        document.getElementById('generate-certificate').addEventListener('click', () => {
+            alert("Certificate generation coming soon!");
+            // Later, replace this with a call to generateCertificate()
+        });
+    
+        document.getElementById('restart-quiz').addEventListener('click', () => {
+            localStorage.clear();
+            location.reload();
+        });
     }
+
     
 });
+
+
+
+
+
+
+
 
 
 
