@@ -110,6 +110,18 @@ title: Minute Ventilation Quiz
             </div>
         </div>
     </div>
+    <div id="cert-list" class="hidden"></div>
+    <div id="no-certs" class="hidden">No certificates earned yet</div>
+    <div id="completion-overlay" class="hidden">
+        <div class="completion-content">
+            <h2>Worksheet Complete! 🎉</h2>
+            <div id="certificate-display"></div>
+            <div class="completion-actions">
+                <button id="download-cert">Download Certificate</button>
+                <button id="restart-quiz">Restart Worksheet</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="certificate-manager.js"></script>
