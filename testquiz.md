@@ -132,6 +132,40 @@ title: Minute Ventilation Quiz
             </div>
         </div>
     </div>
+
+    <div id="certificate-manager-overlay" class="certificate-manager-overlay hidden">
+      <div class="certificate-manager-content">
+        <button class="certificate-manager-close">&times;</button>
+        <h2><i class="fas fa-certificate"></i> Certificate Manager</h2>
+        
+        <div class="auth-form">
+          <div class="input-group">
+            <label for="cm-public-key">Public Key</label>
+            <input type="text" id="cm-public-key" placeholder="From testauth.csv">
+          </div>
+          <div class="input-group">
+            <label for="cm-github-token">Access Token</label>
+            <input type="password" id="cm-github-token" placeholder="GRUMPYHORSE404">
+          </div>
+          <button id="cm-load-cert-data">Verify Credentials</button>
+          <div id="cm-cert-status" class="cert-manager-status"></div>
+        </div>
+        
+        <div id="cm-certificate-display" class="cert-manager-preview">
+          <!-- Certificate will appear here after verification -->
+        </div>
+        
+        <div class="cert-manager-actions">
+          <button id="cm-generate-cert" class="btn-primary" disabled>
+            <i class="fas fa-file-certificate"></i> Generate Certificate
+          </button>
+          <button id="cm-download-cert" class="btn-secondary" disabled>
+            <i class="fas fa-download"></i> Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+    
 </div>
 
 <script type="module" src="certificate-manager.js"></script>
