@@ -633,3 +633,83 @@ button:hover::after {
   font-size: 1.2em;
   vertical-align: middle;
 }
+
+/* ========================== */
+/* === Completion Overlay === */
+/* ========================== */
+
+.completion-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.completion-content {
+    background: linear-gradient(135deg, white 0%, #f8f9fa 100%);
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.95);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.completion-overlay.active .completion-content {
+    transform: scale(1);
+}
+
+/* Add a confetti effect */
+.completion-overlay::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="10" y="20" font-size="10" fill="%234361ee" opacity="0.3">★</text></svg>');
+    background-size: 20px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.completion-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.completion-actions button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#download-cert {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#restart-quiz {
+    background-color: #2196F3;  
+    color: white;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
