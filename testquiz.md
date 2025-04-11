@@ -9,9 +9,6 @@ title: Minute Ventilation Quiz
         <span id="math-status" class="section-status">In Progress</span>
     </div>
     <h2>Complete all sections to complete the worksheet to obtain a certificate of completion.</h2>
-    <button id="final-submission" class="hidden" disabled>
-    Submit All Answers
-    </button>
     <div class="question-section">
         <!-- Solve for Z Card -->
         <div class="question-card" id="z-card">
@@ -32,7 +29,6 @@ title: Minute Ventilation Quiz
                 </div>
             </div>
         </div>
-        
         <!-- Solve for X Card -->
         <div class="question-card" id="x-card">
             <h2>Solve for Tidal Volume (Vt)</h2>
@@ -52,7 +48,6 @@ title: Minute Ventilation Quiz
                 </div>
             </div>
         </div>
-        
         <!-- Solve for Y Card -->
         <div class="question-card" id="y-card">
             <h2>Solve for Respiratory Rate (RR)</h2>
@@ -72,20 +67,14 @@ title: Minute Ventilation Quiz
                 </div>
             </div>
         </div>
-        
         <!-- Recall Card -->
         <div class="question-card recall-card" id="recall-card">
             <h1>Recall Questions on Minute Ventilation</h1>
             <div class="question" id="recall-question"></div>
             <div id="recall-options"></div>
             <div class="feedback" id="recall-feedback"></div>
-            
-            <!-- Submit Button (visible initially) -->
             <button id="recall-submit">Submit Answer</button>
-            
-            <!-- Next Button (hidden initially) -->
             <button id="next-recall" class="hidden">Next Question</button>
-            
             <div class="progress-container">
                 <div class="progress-label">
                     <span>Progress</span>
