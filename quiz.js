@@ -603,6 +603,39 @@ document.addEventListener('DOMContentLoaded', function() {
     function showNextRecallQuestion() {
         showRandomRecallQuestion();
     }
+
+    function showFinalCompletion() {
+        // Hide all quiz cards
+        document.querySelectorAll('.quiz-card').forEach(card => {
+            card.style.display = 'none';
+        });
+        
+        // Show completion overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'completion-overlay';
+        overlay.innerHTML = `
+            <div class="completion-container">
+                <h2>Congratulations!</h2>
+                <p>You've successfully completed all sections!</p>
+                <div class="results-summary">
+                    <h3>Your Results:</h3>
+                    <p>Math Equations: Perfect scores in all categories</p>
+                    <p>Recall Questions: ${quizState.recall.score}/${quizState.recall.questions.length} correct</p>
+                </div>
+                <div class="completion-buttons">
+                    <button id="generate-certificate" class="btn-certificate">Generate Certificate</button>
+                    <button id="restart-quiz" class="btn-restart">Restart Quiz</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // Add event listeners for the new buttons
+        document.getElementById('generate-certificate').addEventListener('click', generateCertificate);
+        document.getElementById('restart-quiz').addEventListener('click', restartQuiz);
+    }
+    
 });
 
 
