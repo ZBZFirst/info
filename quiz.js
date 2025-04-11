@@ -563,6 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
         
     function checkAllComplete() {
+        console.log('Checking completion state:', quizState.allComplete);
         if (!quizState.allComplete) return;
         
         try {
@@ -584,12 +585,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 quizType: 'Minute Ventilation Worksheet'
             };
             
+            console.log('Generated certificate data:', certData);
+            
             if (window.certManager) {
                 window.certManager.saveCertificate(certData);
+                console.log('Certificate saved successfully');
+            } else {
+                console.error('Certificate manager not available');
             }
+            
             showFinalCompletion();
         } catch (error) {
-            console.error('Error completing quiz:', error);
+            console.error('Error in checkAllComplete:', error);
         }
     }
 
@@ -599,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFinalCompletion() {
-        console.log('Attempting to show final completion...');
+        console.log('Attempting to show final completion overlay');
         
         try {
             const overlay = document.getElementById('completion-overlay');
@@ -612,62 +619,53 @@ document.addEventListener('DOMContentLoaded', function() {
             const mathComplete = document.getElementById('math-complete');
             if (mathComplete) mathComplete.classList.add('hidden');
     
-            // Generate certificate data if needed
-            if (!window.certManager) {
-                console.error('Certificate manager not available');
+            // Get the most recent certificate
+            const certs = window.certManager?.getAllCerts() || [];
+            const latestCert = certs[0];
+            
+            if (!latestCert) {
+                console.error('No certificate found to display');
                 return;
             }
-    
-            const totalScore = quizState.z.score + quizState.x.score + quizState.y.score + quizState.recall.score;
-            const maxPossibleScore = 20;
-            
-            const certData = {
-                id: 'cert-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-                name: localStorage.getItem('userName') || 'Anonymous',
-                date: new Date().toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                }),
-                timestamp: Date.now(),
-                score: totalScore,
-                maxScore: maxPossibleScore,
-                quizType: 'Minute Ventilation Worksheet'
-            };
-    
-            // Save certificate
-            window.certManager.saveCertificate(certData);
-            console.log('Certificate saved:', certData);
     
             // Display certificate
             const certDisplay = document.getElementById('certificate-display');
             if (certDisplay) {
                 certDisplay.innerHTML = `
                     <h3>Certificate of Completion</h3>
-                    <p>Congratulations, ${certData.name}!</p>
+                    <p>Congratulations, ${latestCert.name}!</p>
                     <p>You've successfully completed the Minute Ventilation Worksheet</p>
-                    <p>Score: ${certData.score}/${certData.maxScore}</p>
-                    <p>Completed on: ${certData.date}</p>
-                    <p class="cert-id">ID: ${certData.id}</p>
+                    <div class="score-display">
+                        <span class="score">${latestCert.score}</span>
+                        <span class="score-separator">/</span>
+                        <span class="max-score">${latestCert.maxScore}</span>
+                    </div>
+                    <p class="completion-date">Completed on: ${latestCert.date}</p>
+                    <p class="cert-id">ID: ${latestCert.id}</p>
                 `;
             }
     
             // Setup buttons
             const downloadBtn = document.getElementById('download-cert');
             const restartBtn = document.getElementById('restart-quiz');
+            const closeBtn = document.getElementById('close-overlay');
             
             if (downloadBtn) {
                 downloadBtn.onclick = () => {
-                    window.certManager.downloadCert(certData.id);
+                    window.certManager?.downloadCert(latestCert.id);
                 };
             }
             
             if (restartBtn) {
                 restartBtn.onclick = () => location.reload();
             }
+            
+            if (closeBtn) {
+                closeBtn.onclick = () => overlay.classList.remove('active');
+            }
     
             // Show overlay
-            overlay.classList.remove('hidden');
+            overlay.classList.add('active');
             console.log('Completion overlay shown successfully');
         } catch (error) {
             console.error('Error in showFinalCompletion:', error);
