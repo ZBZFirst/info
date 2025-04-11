@@ -564,42 +564,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFinalCompletion() {
-        // Do NOT hide the cards
-        // document.querySelectorAll('.quiz-card').forEach(card => {
-        //     card.style.display = 'none';
-        // });
-    
-        // Show completion overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'completion-overlay';
-        overlay.innerHTML = `
-            <div class="completion-container">
-                <h2>Quiz Completed!</h2>
-                <p>You've successfully completed all sections!</p>
-                <div class="results-summary">
-                    <h3>Your Results:</h3>
-                    <p>Math Equations: Perfect scores in all categories</p>
-                    <p>Recall Questions: ${quizState.recall.score}/${quizState.recall.questions.length} correct</p>
-                </div>
-                <div class="completion-buttons">
-                    <button id="generate-certificate" class="btn-certificate">Generate Certificate</button>
-                    <button id="restart-quiz" class="btn-restart">Restart Quiz</button>
-                </div>
-            </div>
+        // Hide the complete message (if shown)
+        document.getElementById('math-complete').classList.add('hidden');
+        
+        // Get the most recent certificate
+        const certs = certManager.getAllCerts();
+        const latestCert = certs[0];
+        
+        // Populate the certificate display
+        const certDisplay = document.getElementById('certificate-display');
+        certDisplay.innerHTML = `
+            <h3>Certificate of Completion</h3>
+            <p>Congratulations, ${latestCert.name}!</p>
+            <p>You've successfully completed the Minute Ventilation Worksheet</p>
+            <p>Score: ${latestCert.score}/${latestCert.maxScore}</p>
+            <p>Completed on: ${latestCert.date}</p>
+            <p class="cert-id">ID: ${latestCert.id}</p>
         `;
         
-        document.body.appendChild(overlay);
-    
-        // Leave this as a placeholder — no error, just a message
-        document.getElementById('generate-certificate').addEventListener('click', () => {
-            alert("Certificate generation coming soon!");
-            // Later, replace this with a call to generateCertificate()
-        });
-    
-        document.getElementById('restart-quiz').addEventListener('click', () => {
-            localStorage.clear();
+        // Show the overlay
+        document.getElementById('completion-overlay').classList.remove('hidden');
+        
+        // Setup button handlers
+        document.getElementById('download-cert').onclick = () => {
+            certManager.downloadCert(latestCert.id);
+        };
+        
+        document.getElementById('restart-quiz').onclick = () => {
             location.reload();
-        });
+        };
     }
 
     
