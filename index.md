@@ -19,4 +19,5 @@ title: Paul's Desktop Reference
 <h3>See My Current Audio Adventures</h3>
 <ul>
     <li><a href="FFT.html" title="Curated job listings scraped programmatically">Access the current FFT Adventure. I will add more "styles" over time.</a></li>
+    <p>An explanation of the FFT can be found in the graphics section.</p>
 </ul>
