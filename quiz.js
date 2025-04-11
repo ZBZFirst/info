@@ -623,49 +623,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
     
-            // Get the most recent certificate
-            const certs = window.certManager?.getAllCerts() || [];
-            console.log('Available certificates:', certs);
+            // Get certificates with more error handling
+            let certs = [];
+            if (window.certManager) {
+                certs = window.certManager.getAllCerts() || [];
+                console.log('Certificates from manager:', certs);
+            } else {
+                console.error('Certificate manager not available');
+            }
+    
             const latestCert = certs[0];
             
             if (!latestCert) {
-                console.error('No certificate found to display');
+                console.error('No certificate found - showing generic completion');
+                const certDisplay = document.getElementById('certificate-display');
+                if (certDisplay) {
+                    certDisplay.innerHTML = `
+                        <h3>Quiz Completed!</h3>
+                        <p>Congratulations on completing the quiz!</p>
+                        <p>Certificate could not be generated at this time.</p>
+                    `;
+                }
+                overlay.classList.remove('hidden');
+                overlay.classList.add('active');
                 return;
             }
     
-            // Display certificate
-            const certDisplay = document.getElementById('certificate-display');
-            if (certDisplay) {
-                certDisplay.innerHTML = `
-                    <h3>Certificate of Completion</h3>
-                    <p>Congratulations, ${latestCert.name}!</p>
-                    <p>You've successfully completed the Minute Ventilation Worksheet</p>
-                    <p>Score: ${latestCert.score}/${latestCert.maxScore}</p>
-                    <p>Completed on: ${latestCert.date}</p>
-                    <p class="cert-id">ID: ${latestCert.id}</p>
-                `;
-            }
-    
-            // Remove any existing click handlers to prevent duplicates
-            const downloadBtn = document.getElementById('download-cert');
-            const restartBtn = document.getElementById('restart-quiz');
-            
-            if (downloadBtn) {
-                downloadBtn.onclick = null; // Clear previous handler
-                downloadBtn.onclick = () => {
-                    window.certManager?.downloadCert(latestCert.id);
-                };
-            }
-            
-            if (restartBtn) {
-                restartBtn.onclick = null; // Clear previous handler
-                restartBtn.onclick = () => location.reload();
-            }
-    
-            // Activate overlay (remove hidden, add active)
-            overlay.classList.remove('hidden');
-            overlay.classList.add('active');
-            console.log('Completion overlay shown successfully');
+            // ... rest of your existing display code ...
         } catch (error) {
             console.error('Error in showFinalCompletion:', error);
         }
