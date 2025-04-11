@@ -9,7 +9,9 @@ title: Minute Ventilation Quiz
         <span id="math-status" class="section-status">In Progress</span>
     </div>
     <h2>Complete all sections to complete the worksheet to obtain a certificate of completion.</h2>
-    
+    <button id="final-submission" class="hidden" disabled>
+    Submit All Answers
+    </button>
     <div class="question-section">
         <!-- Solve for Z Card -->
         <div class="question-card" id="z-card">
@@ -99,8 +101,6 @@ title: Minute Ventilation Quiz
         All application and recall questions completed!
     </div>
 </div>
-<button id="final-submission" class="hidden" disabled>
-    Submit All Answers
-</button>
+
 
 <script src="quiz.js"></script>
