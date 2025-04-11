@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn: document.getElementById('recall-submit')
         }
     };
-    
+
     // Quiz State
     const quizState = {
         z: { score: 0, currentQuestion: null, completed: false },
@@ -61,6 +61,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.quizState = quizState; 
 
+    if (finalSubmitBtn) {
+        finalSubmitBtn.addEventListener('click', () => {
+            if (!finalSubmitBtn.disabled) { // Only if button is enabled
+                // Mark all complete
+                quizState.z.completed = true;
+                quizState.x.completed = true;
+                quizState.y.completed = true; 
+                quizState.recall.completed = true;
+                
+                // Update state and UI
+                checkGlobalCompletion();
+                saveProgress();
+                Object.values(questionCards).forEach(card => {
+                    card.cardEl.classList.add('disabled-card');
+                });
+                finalSubmitBtn.disabled = true;
+            }
+        });
+    }
+
+
+    
     // Debug Logger (now inside the scope where quizState exists)
     function logRecallState(action) {
         console.log(`${action} - Recall State:`, {
