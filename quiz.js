@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn: document.getElementById('recall-submit')
         }
     };
-
+    
     // Quiz State
     const quizState = {
         z: { score: 0, currentQuestion: null, completed: false },
@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         allComplete: false
     };
+
+    window.quizState = quizState; 
 
     // Debug Logger (now inside the scope where quizState exists)
     function logRecallState(action) {
@@ -109,27 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     questionCards.recall.submitBtn.addEventListener('click', checkRecallAnswer);
     questionCards.recall.nextBtn.addEventListener('click', showNextRecallQuestion);
-    
-    // Final submission handler
-    if (finalSubmitBtn) {
-        finalSubmitBtn.addEventListener('click', () => {
-            // Mark all sections as completed
-            quizState.z.completed = true;
-            quizState.x.completed = true;
-            quizState.y.completed = true;
-            quizState.recall.completed = true;
-            
-            // Update UI
-            questionCards.z.cardEl.classList.add('disabled-card');
-            questionCards.x.cardEl.classList.add('disabled-card');
-            questionCards.y.cardEl.classList.add('disabled-card');
-            questionCards.recall.cardEl.classList.add('disabled-card');
-            
-            // Show final completion
-            showFinalCompletion();
-            saveProgress();
-        });
-    }
+
     
     // Functions
     function initMathQuiz() {
@@ -358,25 +340,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkGlobalCompletion() {
-        const sectionsComplete = (
+        quizState.allComplete = (
             quizState.z.completed &&
             quizState.x.completed &&
             quizState.y.completed &&
             quizState.recall.completed
         );
-        
-        console.log('Completion check:', {
-            z: quizState.z.completed,
-            x: quizState.x.completed,
-            y: quizState.y.completed,
-            recall: quizState.recall.completed,
-            allComplete: sectionsComplete
-        });
     
-        if (sectionsComplete) {
-            quizState.allComplete = true;
-            console.log('All sections completed! Triggering final completion...');
-            showFinalCompletion();
+        if (quizState.allComplete) {
+            console.log("Quiz fully completed!"); // Optional debug
+            // No UI changes here—just set the state.
         }
     }
     
@@ -540,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.cardEl.classList.add('disabled-card');
         showFeedback(`Completed with score: ${quizState.recall.score}/${quizState.recall.questions.length}`, 'correct');
         saveProgress();
-        checkAllComplete();
+        checkGlobalCompletion();
     }
 
     // Update your showRecallCompletion function:
@@ -562,50 +535,16 @@ document.addEventListener('DOMContentLoaded', function() {
         questionCards.recall.submitBtn.disabled = (type === 'correct');
     }
         
-    async function checkAllComplete() {
-        console.log('Checking completion state:', quizState.allComplete);
-        if (!quizState.allComplete) return;
+    function checkAllComplete() {
+        quizState.allComplete = (
+            quizState.z.completed &&
+            quizState.x.completed &&
+            quizState.y.completed &&
+            quizState.recall.completed
+        );
         
-        try {
-            // Generate certificate
-            const totalScore = quizState.z.score + quizState.x.score + quizState.y.score + quizState.recall.score;
-            const maxPossibleScore = 20;
-            
-            const certData = {
-                id: 'cert-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-                name: localStorage.getItem('userName') || 'Anonymous',
-                date: new Date().toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                }),
-                timestamp: Date.now(),
-                score: totalScore,
-                maxScore: maxPossibleScore,
-                quizType: 'Minute Ventilation Worksheet'
-            };
-            
-            console.log('Generated certificate data:', certData);
-            console.log('Attempting to save certificate...');
-
-            if (window.certManager) {
-                console.log('CertManager found, saving...');
-                await window.certManager.saveCertificate(certData);
-                console.log('Save completed, retrieving certificates...');
-                const savedCerts = window.certManager.getAllCerts();
-                console.log('Retrieved certificates:', savedCerts);
-                
-                if (savedCerts.length > 0) {
-                    console.log('Certificate found, showing completion');
-                    showFinalCompletion();
-                } else {
-                    console.error('Certificate failed to save');
-                }
-            } else {
-                console.error('Certificate manager not available');
-            }
-        } catch (error) {
-            console.error('Error in checkAllComplete:', error);
+        if (quizState.allComplete) {
+            console.log("Quiz fully completed!"); // Optional debug
         }
     }
     
@@ -613,47 +552,6 @@ document.addEventListener('DOMContentLoaded', function() {
         showRandomRecallQuestion();
     }
 
-    function showFinalCompletion() {
-        console.log('Attempting to show final completion overlay');
-        
-        try {
-            const overlay = document.getElementById('completion-overlay');
-            if (!overlay) {
-                console.error('Completion overlay element not found!');
-                return;
-            }
-    
-            // Get certificates with more error handling
-            let certs = [];
-            if (window.certManager) {
-                certs = window.certManager.getAllCerts() || [];
-                console.log('Certificates from manager:', certs);
-            } else {
-                console.error('Certificate manager not available');
-            }
-    
-            const latestCert = certs[0];
-            
-            if (!latestCert) {
-                console.error('No certificate found - showing generic completion');
-                const certDisplay = document.getElementById('certificate-display');
-                if (certDisplay) {
-                    certDisplay.innerHTML = `
-                        <h3>Quiz Completed!</h3>
-                        <p>Congratulations on completing the quiz!</p>
-                        <p>Certificate could not be generated at this time.</p>
-                    `;
-                }
-                overlay.classList.remove('hidden');
-                overlay.classList.add('active');
-                return;
-            }
-    
-            // ... rest of your existing display code ...
-        } catch (error) {
-            console.error('Error in showFinalCompletion:', error);
-        }
-    }
     
 });
 
