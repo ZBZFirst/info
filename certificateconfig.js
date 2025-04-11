@@ -1,4 +1,4 @@
-// config.js
+// certificateconfig.js.js
 export const AUTH_CONFIG = {
   // Editable secret names (without exposing values)
   SECRET_NAMES: {
