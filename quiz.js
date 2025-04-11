@@ -365,8 +365,17 @@ document.addEventListener('DOMContentLoaded', function() {
             quizState.recall.completed
         );
         
+        console.log('Completion check:', {
+            z: quizState.z.completed,
+            x: quizState.x.completed,
+            y: quizState.y.completed,
+            recall: quizState.recall.completed,
+            allComplete: sectionsComplete
+        });
+    
         if (sectionsComplete) {
             quizState.allComplete = true;
+            console.log('All sections completed! Triggering final completion...');
             showFinalCompletion();
         }
     }
@@ -590,55 +599,78 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFinalCompletion() {
+        console.log('Attempting to show final completion...');
+        
         try {
             const overlay = document.getElementById('completion-overlay');
-            const mathComplete = document.getElementById('math-complete');
-            
             if (!overlay) {
-                console.error('Completion overlay element not found');
+                console.error('Completion overlay element not found!');
                 return;
             }
     
-            // Hide the complete message (if shown)
+            // Hide any completion messages
+            const mathComplete = document.getElementById('math-complete');
             if (mathComplete) mathComplete.classList.add('hidden');
+    
+            // Generate certificate data if needed
+            if (!window.certManager) {
+                console.error('Certificate manager not available');
+                return;
+            }
+    
+            const totalScore = quizState.z.score + quizState.x.score + quizState.y.score + quizState.recall.score;
+            const maxPossibleScore = 20;
             
-            // Get the most recent certificate
-            const certs = window.certManager?.getAllCerts() || [];
-            const latestCert = certs[0];
-            
-            // Populate the certificate display
+            const certData = {
+                id: 'cert-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                name: localStorage.getItem('userName') || 'Anonymous',
+                date: new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }),
+                timestamp: Date.now(),
+                score: totalScore,
+                maxScore: maxPossibleScore,
+                quizType: 'Minute Ventilation Worksheet'
+            };
+    
+            // Save certificate
+            window.certManager.saveCertificate(certData);
+            console.log('Certificate saved:', certData);
+    
+            // Display certificate
             const certDisplay = document.getElementById('certificate-display');
-            if (certDisplay && latestCert) {
+            if (certDisplay) {
                 certDisplay.innerHTML = `
                     <h3>Certificate of Completion</h3>
-                    <p>Congratulations, ${latestCert.name}!</p>
+                    <p>Congratulations, ${certData.name}!</p>
                     <p>You've successfully completed the Minute Ventilation Worksheet</p>
-                    <p>Score: ${latestCert.score}/${latestCert.maxScore}</p>
-                    <p>Completed on: ${latestCert.date}</p>
-                    <p class="cert-id">ID: ${latestCert.id}</p>
+                    <p>Score: ${certData.score}/${certData.maxScore}</p>
+                    <p>Completed on: ${certData.date}</p>
+                    <p class="cert-id">ID: ${certData.id}</p>
                 `;
             }
-            
-            // Setup button handlers
+    
+            // Setup buttons
             const downloadBtn = document.getElementById('download-cert');
             const restartBtn = document.getElementById('restart-quiz');
             
-            if (downloadBtn && latestCert) {
+            if (downloadBtn) {
                 downloadBtn.onclick = () => {
-                    window.certManager?.downloadCert(latestCert.id);
+                    window.certManager.downloadCert(certData.id);
                 };
             }
             
             if (restartBtn) {
-                restartBtn.onclick = () => {
-                    location.reload();
-                };
+                restartBtn.onclick = () => location.reload();
             }
-            
-            // Show the overlay
+    
+            // Show overlay
             overlay.classList.remove('hidden');
+            console.log('Completion overlay shown successfully');
         } catch (error) {
-            console.error('Error showing completion:', error);
+            console.error('Error in showFinalCompletion:', error);
         }
     }
 
