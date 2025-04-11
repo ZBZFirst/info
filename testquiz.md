@@ -92,6 +92,24 @@ title: Minute Ventilation Quiz
     <button id="final-submission" disabled>
     Submit All Answers
     </button>
+    <!-- Add this just before </div> closing the math-quiz container -->
+    <div id="completion-overlay" class="completion-overlay hidden">
+        <div class="completion-content certificate-card">
+            <button id="close-overlay" class="close-btn" aria-label="Close">×</button>
+            <h2><i class="fas fa-check-circle success-icon"></i> Worksheet Complete! 🎉</h2>
+            <div id="certificate-display" class="certificate-details">
+                <!-- This will be populated by JavaScript -->
+            </div>
+            <div class="completion-actions">
+                <button id="download-cert" class="btn-primary">
+                    <i class="fas fa-download"></i> Download Certificate
+                </button>
+                <button id="restart-quiz" class="btn-secondary">
+                    <i class="fas fa-redo"></i> Restart Worksheet
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
