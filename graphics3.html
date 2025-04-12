@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Moving Shape Demo</title>
+    <title>Enhanced Shape Demo</title>
     <style>
         .shape-container {
             margin: 20px;
@@ -21,45 +21,144 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .shape-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            white-space: nowrap;
         }
 
         .controls {
             margin: 20px;
-            text-align: center;
+            max-width: 600px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+            margin-right: 10px;
+        }
+
+        input[type="text"], 
+        input[type="range"],
+        select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
         }
 
         button {
             padding: 8px 16px;
-            margin: 0 5px;
             background: #4ECDC4;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .value-display {
+            display: inline-block;
+            width: 40px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="shape-container" id="shapeContainer">
-        <div class="shape" id="movingShape"></div>
+        <div class="shape" id="movingShape">
+            <div class="shape-label" id="shapeLabel">Circle</div>
+        </div>
     </div>
 
     <div class="controls">
-        <button onclick="moveShape(-10)">Move Left 10px</button>
-        <button onclick="moveShape(10)">Move Right 10px</button>
+        <div class="control-group">
+            <label for="shapeName">Shape Label:</label>
+            <input type="text" id="shapeName" value="Circle">
+            <button onclick="updateLabel()">Update Label</button>
+        </div>
+
+        <div class="control-group">
+            <label for="positionButton">Cycle Position:</label>
+            <button id="positionButton" onclick="cyclePosition()">Move to Position 1</button>
+            <span id="positionDisplay">(Center)</span>
+        </div>
+
+        <div class="control-group">
+            <label for="sizeSlider">Circle Size:</label>
+            <input type="range" id="sizeSlider" min="20" max="100" value="50">
+            <span class="value-display" id="sizeValue">50px</span>
+        </div>
+
+        <div class="control-group">
+            <label for="colorSelect">Border Color:</label>
+            <select id="colorSelect" onchange="changeColor()">
+                <option value="#FF6B6B">Red</option>
+                <option value="#4ECDC4">Teal</option>
+                <option value="#6BFF6B">Green</option>
+            </select>
+        </div>
     </div>
 
     <script>
         const shape = document.getElementById('movingShape');
-        let position = 50; // Starting position (50% of container)
+        const label = document.getElementById('shapeLabel');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeValue = document.getElementById('sizeValue');
+        const positionButton = document.getElementById('positionButton');
+        const positionDisplay = document.getElementById('positionDisplay');
+        
+        // Position presets
+        const positions = [
+            { left: '50%', name: 'Center' },
+            { left: '20%', name: 'Left' },
+            { left: '80%', name: 'Right' }
+        ];
+        let currentPosition = 0;
 
-        function moveShape(amount) {
-            position += amount;
-            
-            // Keep the shape within bounds (optional)
-            if (position < 0) position = 0;
-            if (position > 100) position = 100;
-            
-            shape.style.left = position + '%';
+        // Update shape label
+        function updateLabel() {
+            const newLabel = document.getElementById('shapeName').value;
+            label.textContent = newLabel || 'Circle';
+        }
+
+        // Cycle through positions
+        function cyclePosition() {
+            currentPosition = (currentPosition + 1) % positions.length;
+            shape.style.left = positions[currentPosition].left;
+            positionButton.textContent = `Move to Position ${currentPosition + 1}`;
+            positionDisplay.textContent = `(${positions[currentPosition].name})`;
+        }
+
+        // Change circle size
+        sizeSlider.addEventListener('input', function() {
+            const size = this.value;
+            shape.style.width = size + 'px';
+            shape.style.height = size + 'px';
+            sizeValue.textContent = size + 'px';
+        });
+
+        // Change border color
+        function changeColor() {
+            const color = document.getElementById('colorSelect').value;
+            shape.style.borderColor = color;
         }
     </script>
 </body>
