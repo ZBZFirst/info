@@ -14,6 +14,9 @@ Label the Ventilator Screen
 EXPERIMENTAL - NOT CREATE A USABLE OUTPUT
 [View the JSON Exporter for the Label-A-Vent Page](/info/graphics2.html)
 
+Mobius Strip - Experimental - May not work
+[Saw something cool, wanted to try it out](/info/graphics3.html)
+
 # Animation Movement Test Page
 
 A Test of Moving Graphics with No Java
