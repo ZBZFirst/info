@@ -172,24 +172,31 @@ class CertificateManager {
   }
 
   async fetchCertificateData(token) {
-    // Use the API URL instead of raw or blob URL
+    // Use the correct API endpoint
     const API_URL = "https://api.github.com/repos/ZBZFirst/LockBox/contents/testauth.csv";
     
-    const response = await fetch(API_URL, {
-      headers: {
-        "Authorization": `token ${token}`,
-        "Accept": "application/vnd.github.v3.raw" // This gets the raw file content
+    try {
+      const response = await fetch(API_URL, {
+        headers: {
+          "Authorization": `Bearer ${token}`,  // Changed from 'token' to 'Bearer'
+          "Accept": "application/vnd.github.v3.raw",
+          "X-GitHub-Api-Version": "2022-11-28"  // Recommended header
+        }
+      });
+  
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Invalid token - check permissions');
+        }
+        throw new Error(`GitHub API error: ${response.status}`);
       }
-    });
   
-    if (!response.ok) {
-      throw new Error(response.status === 401 
-        ? 'Invalid GitHub token' 
-        : 'Failed to fetch certificate data');
+      const csvText = await response.text();
+      return this.parseCSV(csvText);
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw new Error('Failed to fetch data from GitHub');
     }
-  
-    const csvText = await response.text();
-    return this.parseCSV(csvText);
   }
 
   parseCSV(csvText) {
