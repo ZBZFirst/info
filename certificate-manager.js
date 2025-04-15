@@ -241,7 +241,7 @@ class CertificateManager {
   showEditableCertificate(cert) {
     const certDisplay = document.getElementById('cm-certificate-display');
     if (!certDisplay) return;
-
+  
     // Keep the generate button disabled
     const generateBtn = document.getElementById('cm-generate-cert');
     if (generateBtn) {
@@ -269,10 +269,10 @@ class CertificateManager {
           <p>Date: ${cert.date}</p>
           
           <!-- Score (editable) -->
-          <p>Score: ${cert.score}</p>
+          <p>Score: <span contenteditable="true" class="editable-field" data-field="score">${cert.score}</span></p>
           
           <!-- ID (now editable) -->
-          <p class="cert-id">ID: ${cert.id}</p>
+          <p>ID: <span contenteditable="true" class="editable-field" data-field="id">${cert.id}</span></p>
         
         <div class="certificate-controls">
           <button id="cm-update-cert">Update Certificate</button>
