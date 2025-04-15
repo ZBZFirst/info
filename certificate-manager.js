@@ -200,3 +200,4 @@ class CertificateManager {
 document.addEventListener('DOMContentLoaded', () => {
   window.certManager = new CertificateManager();
 });
+}
