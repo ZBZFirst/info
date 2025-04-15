@@ -39,6 +39,39 @@
   cursor: pointer;
 }
 
+.certificate-editor {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 20px 0;
+  background: white;
+}
+
+.editable-field {
+  border-bottom: 1px dashed #999;
+  padding: 2px 5px;
+  min-width: 50px;
+  display: inline-block;
+}
+
+.editable-field:focus {
+  outline: none;
+  background: #f0f8ff;
+  border-bottom: 1px solid #1a5276;
+}
+
+.certificate-controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#cert-preview {
+  background: white;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
 .cert-manager-status {
   padding: 0.5rem;
   margin: 1rem 0;
