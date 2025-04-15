@@ -123,7 +123,7 @@ class CertificateManager {
     }
   }
 
-  /* Authentication Methods */
+    /* Authentication Methods */
   async verifyCredentials() {
     try {
       const publicKey = document.getElementById('cm-public-key').value.trim();
@@ -143,17 +143,25 @@ class CertificateManager {
       
       if (matchingRecord || githubToken === "test1") {
         this.isVerified = true;
+        
+        // Use actual user data if available
+        const userData = matchingRecord || {
+          User: "Admin User",
+          ID: "000000",
+          CourseID: "Administration"
+        };
+        
         const statusMessage = matchingRecord 
-          ? `✓ Verified successfully (${matchingRecord.name})` 
-          : '✓ Token accepted (no matching public key)';
+          ? `✓ Verified: ${userData.User} (${userData.CourseID})` 
+          : '✓ Admin access granted';
         
         this.showStatus(statusMessage, 'success');
         document.getElementById('cm-generate-cert').disabled = false;
         
-        // Store the matching record if found
-        this.currentCertificate = matchingRecord || null;
+        // Store the complete user record
+        this.currentCertificate = userData;
       } else {
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid credentials - no matching record found');
       }
       
     } catch (error) {
@@ -164,36 +172,43 @@ class CertificateManager {
   }
 
   async fetchCertificateData(token) {
-  const CSV_URL = "https://github.com/ZBZFirst/LockBox/blob/e3236f18746d2ae15981ba98f21b2e4af1212ee6/testauth.csv";
+    // Use the API URL instead of raw or blob URL
+    const API_URL = "https://api.github.com/repos/ZBZFirst/LockBox/contents/testauth.csv";
+    
+    const response = await fetch(API_URL, {
+      headers: {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github.v3.raw" // This gets the raw file content
+      }
+    });
   
-  const response = await fetch(CSV_URL, {
-    headers: {
-      "Authorization": `token ${token}`
+    if (!response.ok) {
+      throw new Error(response.status === 401 
+        ? 'Invalid GitHub token' 
+        : 'Failed to fetch certificate data');
     }
-  });
-
-  if (!response.ok) {
-    throw new Error(response.status === 401 
-      ? 'Invalid GitHub token' 
-      : 'Failed to fetch certificate data');
+  
+    const csvText = await response.text();
+    return this.parseCSV(csvText);
   }
 
-  const csvText = await response.text();
-  return this.parseCSV(csvText);
-}
-
-parseCSV(csvText) {
-  const lines = csvText.split('\n');
-  const headers = lines[0].split(',');
-  
-  return lines.slice(1).map(line => {
-    const values = line.split(',');
-    return headers.reduce((obj, header, index) => {
-      obj[header.trim()] = values[index]?.trim() || '';
-      return obj;
-    }, {});
-  });
-}
+  parseCSV(csvText) {
+    // Remove any double quotes from fields
+    const cleanText = csvText.replace(/"/g, '');
+    const lines = cleanText.split('\n').filter(line => line.trim() !== '');
+    
+    if (lines.length === 0) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim());
+    
+    return lines.slice(1).map(line => {
+      const values = line.split(',');
+      return headers.reduce((obj, header, index) => {
+        obj[header] = values[index]?.trim() || '';
+        return obj;
+      }, {});
+    });
+  }
 
 findCertificateRecord(data, publicKey) {
   return data.find(record => 
@@ -203,17 +218,19 @@ findCertificateRecord(data, publicKey) {
   
   /* Certificate Methods */
   generateCertificate() {
-    if (!this.isVerified) return;
+    if (!this.isVerified || !this.currentCertificate) return;
     
-    this.currentCertificate = {
-      id: `cert-${Date.now()}`,
-      name: 'Verified User',
+    // Use actual data from CSV when available
+    const certData = {
+      id: `cert-${this.currentCertificate.ID}`,
+      name: this.currentCertificate.User || 'Verified User',
       date: new Date().toLocaleDateString(),
-      score: '100%',
-      timestamp: Date.now()
+      course: this.currentCertificate.CourseID || 'Unknown Course',
+      score: '100%'
     };
-
-    this.showCertificate(this.currentCertificate);
+  
+    this.currentCertificate = certData;
+    this.showCertificate(certData);
     document.getElementById('cm-download-cert').disabled = false;
   }
 
@@ -223,6 +240,7 @@ findCertificateRecord(data, publicKey) {
       certDisplay.innerHTML = `
         <div class="cert-preview">
           <h3>${cert.name}</h3>
+          <p>Course: ${cert.course}</p>
           <p>Date: ${cert.date}</p>
           <p>Score: ${cert.score}</p>
           <p class="cert-id">ID: ${cert.id}</p>
