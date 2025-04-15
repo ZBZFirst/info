@@ -108,11 +108,15 @@ class CertificateManager {
   }
 
   resetForm() {
-    this.showStatus('', ''); // Clear status
+    this.showStatus('', '');
     const certDisplay = document.getElementById('cm-certificate-display');
     if (certDisplay) certDisplay.innerHTML = '';
-    const genBtn = document.getElementById('cm-generate-cert');
-    if (genBtn) genBtn.disabled = true;
+    
+    const generateBtn = document.getElementById('cm-generate-cert');
+    if (generateBtn) {
+      generateBtn.disabled = !this.isVerified;
+      generateBtn.classList.remove('disabled');
+    }
   }
 
   showStatus(message, type) {
@@ -235,6 +239,13 @@ class CertificateManager {
   showEditableCertificate(cert) {
     const certDisplay = document.getElementById('cm-certificate-display');
     if (!certDisplay) return;
+
+    // Keep the generate button disabled
+    const generateBtn = document.getElementById('cm-generate-cert');
+    if (generateBtn) {
+      generateBtn.disabled = true;
+      generateBtn.classList.add('disabled');
+    }
   
     certDisplay.innerHTML = `
       <div class="certificate-editor">
