@@ -5,68 +5,84 @@ class CertificateManager {
     this.isVerified = false;
     this.currentCertificate = null;
     this.overlay = null;
-    this.injectHTML();
     this.initEventListeners();
   }
 
   injectHTML() {
-    if (!document.getElementById('certificate-manager-overlay')) {
-      const overlayHTML = `
-        <div id="certificate-manager-overlay" class="certificate-manager-overlay">
-          <div class="certificate-manager-content">
-            <button class="certificate-manager-close">&times;</button>
-            <h2>Certificate Manager</h2>
-            
-            <div id="cm-cert-status" class="cert-manager-status"></div>
-            
-            <div class="input-group">
-              <label for="cm-public-key">Public Key:</label>
-              <input type="text" id="cm-public-key" placeholder="Enter your public key">
-            </div>
-            
-            <div class="input-group">
-              <label for="cm-github-token">GitHub Token:</label>
-              <input type="password" id="cm-github-token" placeholder="Enter your GitHub token">
-            </div>
-            
-            <div class="cert-manager-actions">
-              <button id="cm-load-cert-data" class="cert-manager-btn cert-manager-btn-primary">Verify Credentials</button>
-            </div>
-            
-            <div id="cm-certificate-display" class="cert-manager-preview"></div>
-            
-            <div class="cert-manager-actions">
-              <button id="cm-generate-cert" class="cert-manager-btn cert-manager-btn-primary" disabled>Generate Certificate</button>
-              <button id="cm-download-cert" class="cert-manager-btn cert-manager-btn-secondary" disabled>Download Certificate</button>
-            </div>
+    // Always create fresh overlay when needed
+    const overlayHTML = `
+      <div id="certificate-manager-overlay">
+        <div class="certificate-manager-container">
+          <span class="certificate-manager-close">&times;</span>
+          <h2>Certificate Manager</h2>
+          
+          <div id="cm-cert-status" class="cert-manager-status"></div>
+          
+          <div class="input-group">
+            <label for="cm-public-key">Public Key:</label>
+            <input type="text" id="cm-public-key" placeholder="Enter your public key">
           </div>
+          
+          <div class="input-group">
+            <label for="cm-github-token">GitHub Token:</label>
+            <input type="password" id="cm-github-token" placeholder="Enter your GitHub token">
+          </div>
+          
+          <button id="cm-load-cert-data">Verify Credentials</button>
+          
+          <div id="cm-certificate-display"></div>
+          
+          <button id="cm-generate-cert" disabled>Generate Certificate</button>
+          <button id="cm-download-cert" disabled>Download Certificate</button>
         </div>
-      `;
-      
-      document.body.insertAdjacentHTML('beforeend', overlayHTML);
-      this.overlay = document.getElementById('certificate-manager-overlay');
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', overlayHTML);
+    this.overlay = document.getElementById('certificate-manager-overlay');
+    this.setupOverlayEventListeners();
+  }
+
+  removeHTML() {
+    if (this.overlay) {
+      this.overlay.remove();
+      this.overlay = null;
     }
   }
+
+  setupOverlayEventListeners() {
+    // Close Overlay Button
+    this.overlay.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
+      this.hideOverlay();
+    });
 
   /* UI Control Methods */
   toggleOverlay() {
     if (!this.overlay) {
-      console.error('Overlay element not found');
-      return;
-    }
-    this.overlay.classList.toggle('active');
-    if (this.overlay.classList.contains('active')) {
+      this.injectHTML(); // Inject HTML only when first opened
+      this.overlay.classList.add('active');
       this.resetForm();
+    } else {
+      this.overlay.classList.toggle('active');
+      if (this.overlay.classList.contains('active')) {
+        this.resetForm();
+      }
     }
   }
 
   showOverlay() {
-    if (this.overlay) this.overlay.classList.add('active');
+    if (!this.overlay) {
+      this.injectHTML();
+    }
+    this.overlay.classList.add('active');
     this.resetForm();
   }
 
   hideOverlay() {
-    if (this.overlay) this.overlay.classList.remove('active');
+    if (this.overlay) {
+      this.overlay.classList.remove('active');
+      setTimeout(() => this.removeHTML(), 300); // Wait for transition
+    }
   }
 
   resetForm() {
