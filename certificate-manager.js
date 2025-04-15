@@ -51,25 +51,27 @@ class CertificateManager {
   }
 
   setupOverlayEventListeners() {
-      // Close Overlay Button
-      this.overlay.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
+    if (!this.overlay) return;
+    
+    // All overlay-specific listeners go here
+    this.overlay.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
         this.hideOverlay();
-      });
-  
-      // Verify Credentials Button
-      document.getElementById('cm-load-cert-data')?.addEventListener('click', () => {
+    });
+
+    // Verify Credentials Button
+    this.overlay.querySelector('#cm-load-cert-data')?.addEventListener('click', () => {
         this.verifyCredentials();
-      });
-  
-      // Generate Certificate Button
-      document.getElementById('cm-generate-cert')?.addEventListener('click', () => {
+    });
+
+    // Generate Certificate Button
+    this.overlay.querySelector('#cm-generate-cert')?.addEventListener('click', () => {
         this.generateCertificate();
-      });
-  
-      // Download Certificate Button
-      document.getElementById('cm-download-cert')?.addEventListener('click', () => {
+    });
+
+    // Download Certificate Button
+    this.overlay.querySelector('#cm-download-cert')?.addEventListener('click', () => {
         this.downloadCertificate();
-      });
+    });
   }
 
   /* UI Control Methods */
@@ -185,35 +187,15 @@ class CertificateManager {
 
   /* Event Listeners */
   initEventListeners() {
-    // Certificate Manager Button
     document.getElementById('cert-manager-btn')?.addEventListener('click', () => {
-      this.toggleOverlay();
-    });
-
-    // Close Overlay Button
-    document.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
-      this.hideOverlay();
-    });
-
-    // Verify Credentials Button
-    document.getElementById('cm-load-cert-data')?.addEventListener('click', () => {
-      this.verifyCredentials();
-    });
-
-    // Generate Certificate Button
-    document.getElementById('cm-generate-cert')?.addEventListener('click', () => {
-      this.generateCertificate();
-    });
-
-    // Download Certificate Button
-    document.getElementById('cm-download-cert')?.addEventListener('click', () => {
-      this.downloadCertificate();
+        this.toggleOverlay();
     });
   }
+
+  
 }
 
 // Initialize after DOM loads
 document.addEventListener('DOMContentLoaded', () => {
   window.certManager = new CertificateManager();
 });
-
