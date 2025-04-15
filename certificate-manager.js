@@ -4,8 +4,45 @@ class CertificateManager {
   constructor() {
     this.isVerified = false;
     this.currentCertificate = null;
-    this.overlay = document.getElementById('certificate-manager-overlay');
+    this.overlay = null;
+    this.injectHTML();
     this.initEventListeners();
+  }
+
+  injectHTML() {
+    // Create overlay element if it doesn't exist
+    if (!document.getElementById('certificate-manager-overlay')) {
+      const overlayHTML = `
+        <div id="certificate-manager-overlay">
+          <div class="certificate-manager-container">
+            <span class="certificate-manager-close">&times;</span>
+            <h2>Certificate Manager</h2>
+            
+            <div id="cm-cert-status" class="cert-manager-status"></div>
+            
+            <div class="input-group">
+              <label for="cm-public-key">Public Key:</label>
+              <input type="text" id="cm-public-key" placeholder="Enter your public key">
+            </div>
+            
+            <div class="input-group">
+              <label for="cm-github-token">GitHub Token:</label>
+              <input type="password" id="cm-github-token" placeholder="Enter your GitHub token">
+            </div>
+            
+            <button id="cm-load-cert-data">Verify Credentials</button>
+            
+            <div id="cm-certificate-display"></div>
+            
+            <button id="cm-generate-cert" disabled>Generate Certificate</button>
+            <button id="cm-download-cert" disabled>Download Certificate</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', overlayHTML);
+      this.overlay = document.getElementById('certificate-manager-overlay');
+    }
   }
 
   /* UI Control Methods */
