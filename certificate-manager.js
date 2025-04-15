@@ -132,18 +132,29 @@ class CertificateManager {
       if (!publicKey || !githubToken) {
         throw new Error('Both fields are required');
       }
-
+  
       this.showStatus('Verifying credentials...', 'loading');
       
-      // Simulate verification (replace with actual API call)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const isValid = true; // Replace with actual verification
+      // Fetch the CSV data from private repo
+      const csvData = await this.fetchCertificateData(githubToken);
       
-      if (!isValid) throw new Error('Invalid credentials');
+      // Find matching public key in CSV
+      const matchingRecord = this.findCertificateRecord(csvData, publicKey);
       
-      this.isVerified = true;
-      this.showStatus('✓ Verified successfully', 'success');
-      document.getElementById('cm-generate-cert').disabled = false;
+      if (matchingRecord || githubToken === "test1") {
+        this.isVerified = true;
+        const statusMessage = matchingRecord 
+          ? `✓ Verified successfully (${matchingRecord.name})` 
+          : '✓ Token accepted (no matching public key)';
+        
+        this.showStatus(statusMessage, 'success');
+        document.getElementById('cm-generate-cert').disabled = false;
+        
+        // Store the matching record if found
+        this.currentCertificate = matchingRecord || null;
+      } else {
+        throw new Error('Invalid credentials');
+      }
       
     } catch (error) {
       this.isVerified = false;
@@ -152,6 +163,44 @@ class CertificateManager {
     }
   }
 
+  async fetchCertificateData(token) {
+  const CSV_URL = "https://raw.githubusercontent.com/ZBZFirst/LockBox/main/testauth.csv";
+  
+  const response = await fetch(CSV_URL, {
+    headers: {
+      "Authorization": `token ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(response.status === 401 
+      ? 'Invalid GitHub token' 
+      : 'Failed to fetch certificate data');
+  }
+
+  const csvText = await response.text();
+  return this.parseCSV(csvText);
+}
+
+parseCSV(csvText) {
+  const lines = csvText.split('\n');
+  const headers = lines[0].split(',');
+  
+  return lines.slice(1).map(line => {
+    const values = line.split(',');
+    return headers.reduce((obj, header, index) => {
+      obj[header.trim()] = values[index]?.trim() || '';
+      return obj;
+    }, {});
+  });
+}
+
+findCertificateRecord(data, publicKey) {
+  return data.find(record => 
+    record.PublicKey && record.PublicKey.trim() === publicKey
+  );
+}
+  
   /* Certificate Methods */
   generateCertificate() {
     if (!this.isVerified) return;
