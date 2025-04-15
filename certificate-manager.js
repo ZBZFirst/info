@@ -51,10 +51,25 @@ class CertificateManager {
   }
 
   setupOverlayEventListeners() {
-    // Close Overlay Button
-    this.overlay.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
-      this.hideOverlay();
-    });
+      // Close Overlay Button
+      this.overlay.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
+        this.hideOverlay();
+      });
+  
+      // Verify Credentials Button
+      document.getElementById('cm-load-cert-data')?.addEventListener('click', () => {
+        this.verifyCredentials();
+      });
+  
+      // Generate Certificate Button
+      document.getElementById('cm-generate-cert')?.addEventListener('click', () => {
+        this.generateCertificate();
+      });
+  
+      // Download Certificate Button
+      document.getElementById('cm-download-cert')?.addEventListener('click', () => {
+        this.downloadCertificate();
+      });
   }
 
   /* UI Control Methods */
