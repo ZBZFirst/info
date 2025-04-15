@@ -55,6 +55,7 @@ class CertificateManager {
     this.overlay.querySelector('.certificate-manager-close')?.addEventListener('click', () => {
       this.hideOverlay();
     });
+  }
 
   /* UI Control Methods */
   toggleOverlay() {
@@ -200,4 +201,4 @@ class CertificateManager {
 document.addEventListener('DOMContentLoaded', () => {
   window.certManager = new CertificateManager();
 });
-}
+
