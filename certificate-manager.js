@@ -267,7 +267,7 @@ class CertificateManager {
           <p>Date: ${cert.date}</p>
           
           <!-- Score (editable) -->
-          <p>Score: <span contenteditable="true" class="editable-field" data-field="score">${cert.score}</span></p>
+          <p>Score: ${cert.score}</p>
           
           <!-- ID (now editable) -->
           <p>ID: <span contenteditable="true" class="editable-field" data-field="id">${cert.id}</span></p>
