@@ -210,6 +210,13 @@ class CertificateManager {
   
   /* Certificate Methods */
   generateCertificate() {
+    // Disable the button immediately
+    const generateBtn = document.getElementById('cm-generate-cert');
+    if (generateBtn) {
+      generateBtn.disabled = true;
+      generateBtn.classList.add('disabled');
+    }
+  
     if (!this.isVerified) return;
     
     // Create editable certificate data
@@ -224,7 +231,7 @@ class CertificateManager {
   
     this.showEditableCertificate(this.currentCertificate);
   }
-
+  
   showEditableCertificate(cert) {
     const certDisplay = document.getElementById('cm-certificate-display');
     if (!certDisplay) return;
