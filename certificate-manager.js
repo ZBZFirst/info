@@ -270,11 +270,7 @@ class CertificateManager {
           <p>Score: ${cert.score}</p>
           
           <!-- ID (now editable) -->
-          <p class="cert-id">ID: 
-            <span contenteditable="true" class="editable-field" data-field="id">
-              ${cert.id}
-            </span>
-          </p>
+          <p class="cert-id">ID: ${cert.id}</p>
         
         <div class="certificate-controls">
           <button id="cm-update-cert">Update Certificate</button>
