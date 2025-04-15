@@ -9,38 +9,42 @@ class CertificateManager {
   }
 
   injectHTML() {
-    // Always create fresh overlay when needed
-    const overlayHTML = `
-      <div id="certificate-manager-overlay">
-        <div class="certificate-manager-content">
-          <span class="certificate-manager-close">&times;</span>
-          <h2>Certificate Manager</h2>
-          
-          <div id="cm-cert-status" class="cert-manager-status"></div>
-          
-          <div class="input-group">
-            <label for="cm-public-key">Public Key:</label>
-            <input type="text" id="cm-public-key" placeholder="Enter your public key">
+      // Always create fresh overlay when needed
+      const overlayHTML = `
+        <div id="certificate-manager-overlay">
+          <div class="certificate-manager-content">  <!-- Changed from certificate-manager-container -->
+            <button class="certificate-manager-close">&times;</button>  <!-- Changed from span to button -->
+            <h2>Certificate Manager</h2>
+            
+            <div id="cm-cert-status" class="cert-manager-status"></div>
+            
+            <div class="input-group">
+              <label for="cm-public-key">Public Key:</label>
+              <input type="text" id="cm-public-key" placeholder="Enter your public key">
+            </div>
+            
+            <div class="input-group">
+              <label for="cm-github-token">GitHub Token:</label>
+              <input type="password" id="cm-github-token" placeholder="Enter your GitHub token">
+            </div>
+            
+            <div class="cert-manager-actions">
+              <button id="cm-load-cert-data" class="cert-manager-btn cert-manager-btn-primary">Verify Credentials</button>
+            </div>
+            
+            <div id="cm-certificate-display" class="cert-manager-preview"></div>
+            
+            <div class="cert-manager-actions">
+              <button id="cm-generate-cert" class="cert-manager-btn cert-manager-btn-primary" disabled>Generate Certificate</button>
+              <button id="cm-download-cert" class="cert-manager-btn cert-manager-btn-secondary" disabled>Download Certificate</button>
+            </div>
           </div>
-          
-          <div class="input-group">
-            <label for="cm-github-token">GitHub Token:</label>
-            <input type="password" id="cm-github-token" placeholder="Enter your GitHub token">
-          </div>
-          
-          <button id="cm-load-cert-data">Verify Credentials</button>
-          
-          <div id="cm-certificate-display"></div>
-          
-          <button id="cm-generate-cert" disabled>Generate Certificate</button>
-          <button id="cm-download-cert" disabled>Download Certificate</button>
         </div>
-      </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', overlayHTML);
-    this.overlay = document.getElementById('certificate-manager-overlay');
-    this.setupOverlayEventListeners();
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', overlayHTML);
+      this.overlay = document.getElementById('certificate-manager-overlay');
+      this.setupOverlayEventListeners();
   }
 
   removeHTML() {
