@@ -1,4 +1,4 @@
-/* Certificate Manager Styles */
+/* Certificate Manager Overlay Styles */
 #certificate-manager-overlay {
   position: fixed;
   top: 0;
@@ -39,6 +39,7 @@
   cursor: pointer;
 }
 
+/* Certificate Editor & Preview Styles */
 .certificate-editor {
   border: 1px solid #ddd;
   padding: 20px;
@@ -46,11 +47,35 @@
   background: white;
 }
 
+#cert-preview {
+  position: relative;
+  background: white;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  min-height: 400px;
+}
+
+.cert-preview p {
+  margin: 10px 0;
+}
+
+/* Field Styles */
+.cert-field {
+  position: absolute;
+  z-index: 1;
+}
+
 .editable-field {
   border-bottom: 1px dashed #999;
   padding: 2px 5px;
   min-width: 50px;
   display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.editable-field:hover {
+  background-color: rgba(0,0,0,0.05);
 }
 
 .editable-field:focus {
@@ -59,56 +84,31 @@
   border-bottom: 1px solid #1a5276;
 }
 
+/* Non-editable fields */
+.cert-preview p:not(:has(.editable-field)) {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 2px;
+}
+
+/* Image Upload Controls */
+.image-uploader {
+  position: absolute;
+  bottom: -25px;
+  left: 0;
+}
+
+.image-uploader input {
+  width: 100%;
+  font-size: 12px;
+}
+
+/* Control Buttons */
 .certificate-controls {
   margin-top: 20px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-}
-
-#cert-preview {
-  background: white;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.cert-manager-status {
-  padding: 0.5rem;
-  margin: 1rem 0;
-  border-radius: 4px;
-}
-
-.cert-manager-status.success {
-  background: #d4edda;
-  color: #155724;
-}
-
-.cert-manager-status.error {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.cert-manager-status.loading {
-  background: #e2e3e5;
-  color: #383d41;
-}
-
-.cert-manager-preview {
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-}
-
-.cert-manager-verified {
-  color: #28a745;
-  font-weight: bold;
-}
-
-.cert-manager-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  justify-content: center;
 }
 
 .cert-manager-btn {
@@ -142,23 +142,29 @@
   background: #f8f9fa;
 }
 
-.cert-preview p {
-  margin: 10px 0;
+/* Status Messages */
+.cert-manager-status {
+  padding: 0.5rem;
+  margin: 1rem 0;
+  border-radius: 4px;
 }
 
-.editable-field {
-  border-bottom: 1px dashed #999;
-  padding: 2px 5px;
-  min-width: 50px;
-  display: inline-block;
+.cert-manager-status.success {
+  background: #d4edda;
+  color: #155724;
 }
 
-.cert-preview p:not(:has(.editable-field)) {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 2px;
+.cert-manager-status.error {
+  background: #f8d7da;
+  color: #721c24;
 }
 
-/* Input group styles */
+.cert-manager-status.loading {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* Input Groups */
 .input-group {
   margin-bottom: 1rem;
 }
@@ -177,13 +183,19 @@
   font-size: 1rem;
 }
 
-/* Mobile responsiveness */
+/* Mobile Responsiveness */
 @media (max-width: 600px) {
   .certificate-manager-content {
     padding: 1.5rem;
   }
   
-  .cert-manager-actions {
+  .cert-manager-actions,
+  .certificate-controls {
     flex-direction: column;
+  }
+  
+  #cert-preview {
+    padding: 15px;
+    min-height: 350px;
   }
 }
