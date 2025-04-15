@@ -1,8 +1,5 @@
-/certificatemanager.css file for certificate-manager.js
-/file needs to be optimizied for usage. not consistent
-
-/* Certificate Manager Overlay */
-.certificate-manager-overlay {
+/* Certificate Manager Styles */
+#certificate-manager-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -18,7 +15,7 @@
   transition: opacity 0.3s ease;
 }
 
-.certificate-manager-overlay.active {
+#certificate-manager-overlay.active {
   opacity: 1;
   pointer-events: all;
 }
@@ -110,6 +107,25 @@
 
 .cert-manager-btn-secondary:hover {
   background: #f8f9fa;
+}
+
+/* Input group styles */
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 /* Mobile responsiveness */
