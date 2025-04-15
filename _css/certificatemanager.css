@@ -142,6 +142,22 @@
   background: #f8f9fa;
 }
 
+.cert-preview p {
+  margin: 10px 0;
+}
+
+.editable-field {
+  border-bottom: 1px dashed #999;
+  padding: 2px 5px;
+  min-width: 50px;
+  display: inline-block;
+}
+
+.cert-preview p:not(:has(.editable-field)) {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 2px;
+}
+
 /* Input group styles */
 .input-group {
   margin-bottom: 1rem;
