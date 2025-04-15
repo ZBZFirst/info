@@ -1,3 +1,5 @@
+//certificate-manager.js
+
 import { CERTIFICATE_TEMPLATE } from './certificateconfig.js';
 
 class CertificateManager {
