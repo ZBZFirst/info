@@ -74,7 +74,7 @@ class CertificateManager {
 
     // Download Certificate Button
     this.overlay.querySelector('#cm-download-cert')?.addEventListener('click', () => {
-        this.downloadCertificate();
+        this.generatePDF();
     });
   }
 
@@ -202,52 +202,147 @@ class CertificateManager {
     });
   }
 
-findCertificateRecord(data, publicKey) {
-  return data.find(record => 
-    record.PublicKey && record.PublicKey.trim() === publicKey
-  );
-}
+  findCertificateRecord(data, publicKey) {
+    return data.find(record => 
+      record.PublicKey && record.PublicKey.trim() === publicKey
+    );
+  }
   
   /* Certificate Methods */
   generateCertificate() {
-    if (!this.isVerified || !this.currentCertificate) return;
+    if (!this.isVerified) return;
     
-    // Use actual data from CSV when available
-    const certData = {
-      id: `cert-${this.currentCertificate.ID}`,
-      name: this.currentCertificate.User || 'Verified User',
+    // Create editable certificate data
+    this.currentCertificate = {
+      id: this.currentCertificate?.ID || `cert-${Date.now()}`,
+      name: this.currentCertificate?.User || 'Verified User',
       date: new Date().toLocaleDateString(),
-      course: this.currentCertificate.CourseID || 'Unknown Course',
-      score: '100%'
+      course: this.currentCertificate?.CourseID || 'Unknown Course',
+      score: '100%',
+      customFields: {}
     };
   
-    this.currentCertificate = certData;
-    this.showCertificate(certData);
-    document.getElementById('cm-download-cert').disabled = false;
+    this.showEditableCertificate(this.currentCertificate);
   }
 
-  showCertificate(cert) {
+  showEditableCertificate(cert) {
     const certDisplay = document.getElementById('cm-certificate-display');
-    if (certDisplay) {
-      certDisplay.innerHTML = `
-        <div class="cert-preview">
-          <h3>${cert.name}</h3>
-          <p>Course: ${cert.course}</p>
-          <p>Date: ${cert.date}</p>
-          <p>Score: ${cert.score}</p>
+    if (!certDisplay) return;
+  
+    certDisplay.innerHTML = `
+      <div class="certificate-editor">
+        <div class="cert-preview" id="cert-preview">
+          <h3 contenteditable="true" class="editable-field" data-field="name">${cert.name}</h3>
+          <p>Course: <span contenteditable="true" class="editable-field" data-field="course">${cert.course}</span></p>
+          <p>Date: <span contenteditable="true" class="editable-field" data-field="date">${cert.date}</span></p>
+          <p>Score: <span contenteditable="true" class="editable-field" data-field="score">${cert.score}</span></p>
           <p class="cert-id">ID: ${cert.id}</p>
-          <p class="verified-badge"><i class="fas fa-check-circle"></i> Verified</p>
         </div>
-      `;
-    }
+        
+        <div class="certificate-controls">
+          <button id="cm-update-cert">Update Certificate</button>
+          <button id="cm-print-cert">Print Certificate</button>
+          <button id="cm-pdf-cert">Export as PDF</button>
+        </div>
+      </div>
+    `;
+  
+    // Add event listeners for the new buttons
+    this.setupCertificateControls();
   }
 
-  downloadCertificate() {
+  setupCertificateControls() {
+    document.getElementById('cm-update-cert')?.addEventListener('click', () => {
+      this.updateCertificateFromEdits();
+    });
+    
+    document.getElementById('cm-print-cert')?.addEventListener('click', () => {
+      this.printCertificate();
+    });
+    
+    document.getElementById('cm-pdf-cert')?.addEventListener('click', () => {
+      this.generatePDF();
+    });
+  }
+  
+  updateCertificateFromEdits() {
+    const preview = document.getElementById('cert-preview');
+    if (!preview) return;
+  
+    const fields = preview.querySelectorAll('.editable-field');
+    fields.forEach(field => {
+      const fieldName = field.dataset.field;
+      this.currentCertificate[fieldName] = field.textContent;
+    });
+  
+    this.showStatus('Certificate updated!', 'success');
+  }
+  
+  printCertificate() {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Certificate</title>
+        <style>
+          body { font-family: Arial; text-align: center; }
+          .certificate { border: 2px solid #000; padding: 20px; margin: 20px; }
+          h1 { color: #1a5276; }
+        </style>
+      </head>
+      <body>
+        <div class="certificate">
+          <h1>Certificate of Completion</h1>
+          <p>This certifies that <strong>${this.currentCertificate.name}</strong></p>
+          <p>has successfully completed <strong>${this.currentCertificate.course}</strong></p>
+          <p>with a score of <strong>${this.currentCertificate.score}</strong></p>
+          <p>on ${this.currentCertificate.date}</p>
+          <p>Certificate ID: ${this.currentCertificate.id}</p>
+        </div>
+        <script>
+          window.onload = function() { window.print(); window.close(); }
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
+  generatePDF() {
     if (!this.currentCertificate) return;
-    console.log('Downloading:', this.currentCertificate);
-    // Implement PDF generation here
+  
+    // Load jsPDF library dynamically
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add certificate content
+      doc.setFontSize(20);
+      doc.text('Certificate of Completion', 105, 20, { align: 'center' });
+      
+      doc.setFontSize(16);
+      doc.text(`This certifies that ${this.currentCertificate.name}`, 105, 40, { align: 'center' });
+      doc.text(`has successfully completed ${this.currentCertificate.course}`, 105, 50, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text(`Score: ${this.currentCertificate.score}`, 105, 70, { align: 'center' });
+      doc.text(`Date: ${this.currentCertificate.date}`, 105, 80, { align: 'center' });
+      doc.text(`ID: ${this.currentCertificate.id}`, 105, 90, { align: 'center' });
+      
+      // Add decorative elements
+      doc.setDrawColor(0);
+      doc.setLineWidth(1);
+      doc.line(20, 30, 190, 30);
+      
+      // Save the PDF
+      doc.save(`certificate_${this.currentCertificate.id}.pdf`);
+    };
+    document.head.appendChild(script);
   }
-
+  
   /* Event Listeners */
   initEventListeners() {
     document.getElementById('cert-manager-btn')?.addEventListener('click', () => {
