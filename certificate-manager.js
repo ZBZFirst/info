@@ -12,7 +12,7 @@ class CertificateManager {
     // Always create fresh overlay when needed
     const overlayHTML = `
       <div id="certificate-manager-overlay">
-        <div class="certificate-manager-container">
+        <div class="certificate-manager-content">
           <span class="certificate-manager-close">&times;</span>
           <h2>Certificate Manager</h2>
           
