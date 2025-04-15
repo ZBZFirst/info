@@ -164,7 +164,7 @@ class CertificateManager {
   }
 
   async fetchCertificateData(token) {
-  const CSV_URL = "https://raw.githubusercontent.com/ZBZFirst/LockBox/main/testauth.csv";
+  const CSV_URL = "https://github.com/ZBZFirst/LockBox/blob/e3236f18746d2ae15981ba98f21b2e4af1212ee6/testauth.csv";
   
   const response = await fetch(CSV_URL, {
     headers: {
