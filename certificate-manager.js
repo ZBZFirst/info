@@ -1,4 +1,4 @@
-import { AUTH_CONFIG, CERTIFICATE_TEMPLATE } from './certificateconfig.js';
+import { CERTIFICATE_TEMPLATE } from './certificateconfig.js';
 
 class CertificateManager {
   constructor() {
