@@ -129,39 +129,31 @@ class CertificateManager {
       const publicKey = document.getElementById('cm-public-key').value.trim();
       const githubToken = document.getElementById('cm-github-token').value.trim();
       
-      if (!publicKey || !githubToken) {
-        throw new Error('Both fields are required');
+      if (!githubToken) {
+        throw new Error('GitHub Token is required');
       }
   
       this.showStatus('Verifying credentials...', 'loading');
       
-      // Fetch the CSV data from private repo
+      // Fetch data using the user-provided token
       const csvData = await this.fetchCertificateData(githubToken);
       
-      // Find matching public key in CSV
-      const matchingRecord = this.findCertificateRecord(csvData, publicKey);
-      
-      if (matchingRecord || githubToken === "test1") {
+      // Find matching record (if public key provided)
+      const matchingRecord = publicKey 
+        ? this.findCertificateRecord(csvData, publicKey)
+        : null;
+  
+      if (matchingRecord || githubToken) {
         this.isVerified = true;
-        
-        // Use actual user data if available
-        const userData = matchingRecord || {
-          User: "Admin User",
-          ID: "000000",
-          CourseID: "Administration"
-        };
-        
         const statusMessage = matchingRecord 
-          ? `✓ Verified: ${userData.User} (${userData.CourseID})` 
-          : '✓ Admin access granted';
+          ? `✓ Verified: ${matchingRecord.User}` 
+          : '✓ Token accepted';
         
         this.showStatus(statusMessage, 'success');
         document.getElementById('cm-generate-cert').disabled = false;
-        
-        // Store the complete user record
-        this.currentCertificate = userData;
+        this.currentCertificate = matchingRecord || { verified: true };
       } else {
-        throw new Error('Invalid credentials - no matching record found');
+        throw new Error('No matching record found');
       }
       
     } catch (error) {
@@ -172,31 +164,24 @@ class CertificateManager {
   }
 
   async fetchCertificateData(token) {
-    // Use the correct API endpoint
     const API_URL = "https://api.github.com/repos/ZBZFirst/LockBox/contents/testauth.csv";
     
-    try {
-      const response = await fetch(API_URL, {
-        headers: {
-          "Authorization": `Bearer ${token}`,  // Changed from 'token' to 'Bearer'
-          "Accept": "application/vnd.github.v3.raw",
-          "X-GitHub-Api-Version": "2022-11-28"  // Recommended header
-        }
-      });
-  
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Invalid token - check permissions');
-        }
-        throw new Error(`GitHub API error: ${response.status}`);
+    const response = await fetch(API_URL, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github.v3.raw",
+        "X-GitHub-Api-Version": "2022-11-28"
       }
+    });
   
-      const csvText = await response.text();
-      return this.parseCSV(csvText);
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw new Error('Failed to fetch data from GitHub');
+    if (!response.ok) {
+      throw new Error(response.status === 401 
+        ? 'Invalid token - check permissions' 
+        : 'Failed to fetch data');
     }
+  
+    const csvText = await response.text();
+    return this.parseCSV(csvText);
   }
 
   parseCSV(csvText) {
