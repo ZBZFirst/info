@@ -232,10 +232,30 @@ class CertificateManager {
     certDisplay.innerHTML = `
       <div class="certificate-editor">
         <div class="cert-preview" id="cert-preview">
-          <h3 contenteditable="true" class="editable-field" data-field="name">${cert.name}</h3>
-          <p>Course: <span contenteditable="true" class="editable-field" data-field="course">${cert.course}</span></p>
-          <p>Date: <span contenteditable="true" class="editable-field" data-field="date">${cert.date}</span></p>
-          <p>Score: <span contenteditable="true" class="editable-field" data-field="score">${cert.score}</span></p>
+          <!-- Title (non-editable) -->
+          <h3>${CERTIFICATE_TEMPLATE.fields.find(f => f.name === 'title').content}</h3>
+          
+          <!-- Recipient (editable) -->
+          <p>${CERTIFICATE_TEMPLATE.fields.find(f => f.name === 'recipient').prefix}
+            <span contenteditable="true" class="editable-field" data-field="name">
+              ${cert.name}
+            </span>
+          </p>
+          
+          <!-- Course (non-editable) -->
+          <p>Course: ${cert.course}</p>
+          
+          <!-- Date (non-editable) -->
+          <p>Date: ${cert.date}</p>
+          
+          <!-- Score (editable) -->
+          <p>Score: 
+            <span contenteditable="true" class="editable-field" data-field="score">
+              ${cert.score}
+            </span>
+          </p>
+          
+          <!-- ID (non-editable) -->
           <p class="cert-id">ID: ${cert.id}</p>
         </div>
         
@@ -247,7 +267,6 @@ class CertificateManager {
       </div>
     `;
   
-    // Add event listeners for the new buttons
     this.setupCertificateControls();
   }
 
