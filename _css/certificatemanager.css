@@ -90,6 +90,26 @@
   padding-bottom: 2px;
 }
 
+/* Button disabled state */
+.cert-manager-btn:disabled,
+.cert-manager-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.cert-manager-btn-primary:disabled,
+.cert-manager-btn-primary.disabled {
+  background: #7b8fd8;
+}
+
+.cert-manager-btn-secondary:disabled,
+.cert-manager-btn-secondary.disabled {
+  background: #f0f0f0;
+  color: #7b8fd8;
+  border-color: #7b8fd8;
+}
+
 /* Image Upload Controls */
 .image-uploader {
   position: absolute;
