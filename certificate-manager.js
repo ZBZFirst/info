@@ -10,12 +10,11 @@ class CertificateManager {
   }
 
   injectHTML() {
-    // Create overlay element if it doesn't exist
     if (!document.getElementById('certificate-manager-overlay')) {
       const overlayHTML = `
-        <div id="certificate-manager-overlay">
-          <div class="certificate-manager-container">
-            <span class="certificate-manager-close">&times;</span>
+        <div id="certificate-manager-overlay" class="certificate-manager-overlay">
+          <div class="certificate-manager-content">
+            <button class="certificate-manager-close">&times;</button>
             <h2>Certificate Manager</h2>
             
             <div id="cm-cert-status" class="cert-manager-status"></div>
@@ -30,12 +29,16 @@ class CertificateManager {
               <input type="password" id="cm-github-token" placeholder="Enter your GitHub token">
             </div>
             
-            <button id="cm-load-cert-data">Verify Credentials</button>
+            <div class="cert-manager-actions">
+              <button id="cm-load-cert-data" class="cert-manager-btn cert-manager-btn-primary">Verify Credentials</button>
+            </div>
             
-            <div id="cm-certificate-display"></div>
+            <div id="cm-certificate-display" class="cert-manager-preview"></div>
             
-            <button id="cm-generate-cert" disabled>Generate Certificate</button>
-            <button id="cm-download-cert" disabled>Download Certificate</button>
+            <div class="cert-manager-actions">
+              <button id="cm-generate-cert" class="cert-manager-btn cert-manager-btn-primary" disabled>Generate Certificate</button>
+              <button id="cm-download-cert" class="cert-manager-btn cert-manager-btn-secondary" disabled>Download Certificate</button>
+            </div>
           </div>
         </div>
       `;
