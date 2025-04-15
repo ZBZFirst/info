@@ -1,4 +1,4 @@
-// Add to your certificateconfig.js
+// certificateconfig.js
 export const CERTIFICATE_TEMPLATE = {
   // Layout configuration
   background: {
