@@ -6,6 +6,29 @@ class CertificateManager {
     this.currentCertificate = null;
     this.overlay = null;
     this.initEventListeners();
+    this.checkConditions();
+  }
+
+  // New method to check if the button should be enabled
+  checkConditions() {
+    const certManagerBtn = document.getElementById('cert-manager-btn');
+    if (!certManagerBtn) return;
+
+    // Check localStorage for quiz completion or MenuScreen status
+    const quizProgress = JSON.parse(localStorage.getItem('quizProgress')) || {};
+    const menuScreen = localStorage.getItem('MenuScreen') === 'true';
+
+    const isUnlocked = quizProgress.allComplete || menuScreen;
+
+    // Enable/disable the button based on conditions
+    certManagerBtn.disabled = !isUnlocked;
+
+    // Optional: Add a visual cue (e.g., tooltip) when locked
+    if (!isUnlocked) {
+      certManagerBtn.title = "Complete the quiz to unlock the Certificate Manager";
+    } else {
+      certManagerBtn.title = "";
+    }
   }
 
   injectHTML() {
@@ -377,8 +400,18 @@ class CertificateManager {
   
   /* Event Listeners */
   initEventListeners() {
-    document.getElementById('cert-manager-btn')?.addEventListener('click', () => {
-        this.toggleOverlay();
+    document.getElementById('cert-manager-btn')?.addEventListener('click', (e) => {
+      // Prevent opening if conditions aren't met
+      const quizProgress = JSON.parse(localStorage.getItem('quizProgress')) || {};
+      const menuScreen = localStorage.getItem('MenuScreen') === 'true';
+  
+      if (!quizProgress.allComplete && !menuScreen) {
+        e.preventDefault();
+        alert("Please complete the quiz first!");
+        return;
+      }
+  
+      this.toggleOverlay();
     });
   }
 
