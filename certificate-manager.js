@@ -7,28 +7,38 @@ class CertificateManager {
     this.overlay = null;
     this.initEventListeners();
     this.checkConditions();
+    this.setupStorageListener();
+
   }
 
-  // New method to check if the button should be enabled
+  setupStorageListener() {
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'quizProgress' || e.key === 'MenuScreen') {
+        this.checkConditions(); // Update button state when storage changes
+      }
+    });
+  }
+
+  
   checkConditions() {
     const certManagerBtn = document.getElementById('cert-manager-btn');
     if (!certManagerBtn) return;
-
-    // Check localStorage for quiz completion or MenuScreen status
+  
+    // Initialize as disabled (greyed out) by default
+    certManagerBtn.disabled = true;
+  
     const quizProgress = JSON.parse(localStorage.getItem('quizProgress')) || {};
     const menuScreen = localStorage.getItem('MenuScreen') === 'true';
-
+  
     const isUnlocked = quizProgress.allComplete || menuScreen;
-
-    // Enable/disable the button based on conditions
+  
+    // Update based on conditions
     certManagerBtn.disabled = !isUnlocked;
-
-    // Optional: Add a visual cue (e.g., tooltip) when locked
-    if (!isUnlocked) {
-      certManagerBtn.title = "Complete the quiz to unlock the Certificate Manager";
-    } else {
-      certManagerBtn.title = "";
-    }
+  
+    // Visual feedback
+    certManagerBtn.title = isUnlocked 
+      ? "" 
+      : "Complete the quiz to unlock the Certificate Manager";
   }
 
   injectHTML() {
@@ -398,20 +408,9 @@ class CertificateManager {
     document.head.appendChild(script);
   }
   
-  /* Event Listeners */
   initEventListeners() {
-    document.getElementById('cert-manager-btn')?.addEventListener('click', (e) => {
-      // Prevent opening if conditions aren't met
-      const quizProgress = JSON.parse(localStorage.getItem('quizProgress')) || {};
-      const menuScreen = localStorage.getItem('MenuScreen') === 'true';
-  
-      if (!quizProgress.allComplete && !menuScreen) {
-        e.preventDefault();
-        alert("Please complete the quiz first!");
-        return;
-      }
-  
-      this.toggleOverlay();
+    document.getElementById('cert-manager-btn')?.addEventListener('click', () => {
+      this.toggleOverlay(); // No need for extra checks; button state is already managed
     });
   }
 
