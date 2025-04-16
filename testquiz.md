@@ -10,7 +10,10 @@ title: Minute Ventilation Quiz
             <i class="fas fa-certificate"></i> Certificate Manager
         </button>
     </div>
-    <h2>Complete all sections to complete the worksheet to obtain a certificate of completion.</h2>
+    <h2>Complete all sections to unlock the Certificate Manager.</h2>
+    <h3>When solving for Minute Ventilation, round to 1 decimal point</h3>
+    <h3>When solving for Tidal Volume, round to 2 decimal point</h3>
+    <h3>When solving for Respiratory Rate, use whole numbers</h3>
     <div class="question-section">
         <!-- Solve for Z Card -->
         <div class="question-card" id="z-card">
