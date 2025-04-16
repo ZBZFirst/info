@@ -8,6 +8,7 @@ class CertificateManager {
     this.initEventListeners();
     this.checkConditions();
     this.setupStorageListener();
+    this.setupQuizCompletionListener();
 
   }
 
@@ -19,26 +20,33 @@ class CertificateManager {
     });
   }
 
+  setupQuizCompletionListener() {
+      window.addEventListener('quizCompletionChanged', () => {
+          this.checkConditions();
+      });
+  }
   
   checkConditions() {
-    const certManagerBtn = document.getElementById('cert-manager-btn');
-    if (!certManagerBtn) return;
+      const certManagerBtn = document.getElementById('cert-manager-btn');
+      if (!certManagerBtn) return;
   
-    // Initialize as disabled (greyed out) by default
-    certManagerBtn.disabled = true;
+      const quizProgress = JSON.parse(localStorage.getItem('quizProgress')) || {};
+      const menuScreen = localStorage.getItem('MenuScreen') === 'true';
   
-    const quizProgress = JSON.parse(localStorage.getItem('quizProgress')) || {};
-    const menuScreen = localStorage.getItem('MenuScreen') === 'true';
-  
-    const isUnlocked = quizProgress.allComplete || menuScreen;
-  
-    // Update based on conditions
-    certManagerBtn.disabled = !isUnlocked;
-  
-    // Visual feedback
-    certManagerBtn.title = isUnlocked 
-      ? "" 
-      : "Complete the quiz to unlock the Certificate Manager";
+      // More robust state checking
+      const isUnlocked = (quizProgress.allComplete === true) || menuScreen;
+      
+      certManagerBtn.disabled = !isUnlocked;
+      certManagerBtn.title = isUnlocked 
+          ? "" 
+          : "Complete the quiz to unlock the Certificate Manager";
+      
+      // Debug logging
+      console.log('Cert Manager State:', {
+          allComplete: quizProgress.allComplete,
+          menuScreen,
+          isUnlocked
+      });
   }
 
   injectHTML() {
