@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const mathStatus = document.getElementById('math-status');
     const mathComplete = document.getElementById('math-complete');
-    const finalSubmitBtn = document.getElementById('final-submission');
     const questionCards = {
         z: {
             questionEl: document.getElementById('z-question'),
@@ -61,25 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.quizState = quizState; 
 
-    if (finalSubmitBtn) {
-        finalSubmitBtn.addEventListener('click', () => {
-            if (!finalSubmitBtn.disabled) { // Only if button is enabled
-                // Mark all complete
-                quizState.z.completed = true;
-                quizState.x.completed = true;
-                quizState.y.completed = true; 
-                quizState.recall.completed = true;
-                
-                // Update state and UI
-                checkGlobalCompletion();
-                saveProgress();
-                Object.values(questionCards).forEach(card => {
-                    card.cardEl.classList.add('disabled-card');
-                });
-                finalSubmitBtn.disabled = true;
-            }
-        });
-    }
+
 
 
     
@@ -311,7 +292,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const recallComplete = quizState.recall.score >= quizState.recall.questions.length;
         
         // Simply update disabled state
-        finalSubmitBtn.disabled = !(mathComplete && recallComplete);
     }
     
     function handleCorrectAnswer(type, card) {
@@ -372,6 +352,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (quizState.allComplete !== newCompleteState) {
             quizState.allComplete = newCompleteState;
             saveProgress();
+            
+            // Show/hide completion message
+            const completionMessage = document.getElementById('math-complete');
+            if (completionMessage) {
+                if (newCompleteState) {
+                    completionMessage.classList.remove('hidden');
+                } else {
+                    completionMessage.classList.add('hidden');
+                }
+            }
             
             // Dispatch custom event when completion state changes
             const event = new CustomEvent('quizCompletionChanged', {
