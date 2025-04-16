@@ -321,11 +321,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         showFeedback(card, 'Correct!', 'correct');
         updateProgress(type);
-        checkAllSectionsComplete(); // <-- Add this
         
         if (state.score >= 5 && !state.completed) {
             answerCheckers[type].onComplete();
-            checkAllSectionsComplete(); // <-- Add this
+            checkGlobalCompletion(); // Ensure this runs after completion
             return;
         }
         
@@ -362,16 +361,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkGlobalCompletion() {
-        quizState.allComplete = (
+        const newCompleteState = (
             quizState.z.completed &&
             quizState.x.completed &&
             quizState.y.completed &&
             quizState.recall.completed
         );
     
-        if (quizState.allComplete) {
-            console.log("Quiz fully completed!"); // Optional debug
-            // No UI changes here—just set the state.
+        // Only update and save if state changed
+        if (quizState.allComplete !== newCompleteState) {
+            quizState.allComplete = newCompleteState;
+            saveProgress();
+            
+            // Dispatch custom event when completion state changes
+            const event = new CustomEvent('quizCompletionChanged', {
+                detail: { allComplete: newCompleteState }
+            });
+            window.dispatchEvent(event);
         }
     }
     
