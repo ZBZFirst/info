@@ -93,9 +93,10 @@
 /* Button disabled state */
 .cert-manager-btn:disabled,
 .cert-manager-btn.disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
   transform: none !important;
+  box-shadow: none !important;
 }
 
 .cert-manager-btn-primary:disabled,
@@ -109,6 +110,55 @@
   color: #7b8fd8;
   border-color: #7b8fd8;
 }
+
+/* ===== Certificate Manager Button - ADD THESE NEW RULES ===== */
+#cert-manager-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+#cert-manager-btn .fas {
+  font-size: 1.1em;
+  transition: inherit;
+}
+
+#cert-manager-btn[disabled] .fas {
+  color: rgba(255,255,255,0.8);
+}
+
+#cert-manager-btn[disabled]::after {
+  content: "Complete all sections to unlock";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+#cert-manager-btn[disabled]:hover::after {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  #cert-manager-btn[disabled]::after {
+    bottom: -35px;
+    font-size: 0.7rem;
+  }
+}
+
+
+
+
 
 /* Image Upload Controls */
 .image-uploader {
@@ -153,9 +203,10 @@
   border: 2px solid #4361ee;
 }
 
-.cert-manager-btn-primary:hover {
+.cert-manager-btn-primary:not([disabled]):hover {
   background: #3a56d4;
   transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .cert-manager-btn-secondary:hover {
