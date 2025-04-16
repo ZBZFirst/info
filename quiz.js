@@ -356,10 +356,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show/hide completion message
             const completionMessage = document.getElementById('math-complete');
             if (completionMessage) {
+                completionMessage.classList.toggle('hidden', !newCompleteState);
+                
+                // Optional: Add animation for better UX
                 if (newCompleteState) {
-                    completionMessage.classList.remove('hidden');
-                } else {
-                    completionMessage.classList.add('hidden');
+                    setTimeout(() => {
+                        completionMessage.style.opacity = '1';
+                        completionMessage.style.transform = 'translateY(0)';
+                    }, 100);
                 }
             }
             
