@@ -91,9 +91,6 @@ title: Minute Ventilation Quiz
     <div id="math-complete" class="completion-message hidden">
         All application and recall questions completed!
     </div>
-    <button id="final-submission" disabled>
-        Submit All Answers
-    </button>
 </div>
 <script type="module" src="certificate-manager.js"></script>
 <script src="quiz.js"></script>
