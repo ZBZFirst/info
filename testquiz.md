@@ -6,7 +6,7 @@ title: Minute Ventilation Quiz
 <div id="math-quiz" class="math-quiz-container">
     <div class="section-title">
         <h1>Minute Ventilation Worksheet</h1>
-        <button id="cert-manager-btn" class="section-status" disabled>
+        <button id="cert-manager-btn" class="section-status cert-manager-btn cert-manager-btn-primary" disabled>
             <i class="fas fa-certificate"></i> Certificate Manager
         </button>
     </div>
