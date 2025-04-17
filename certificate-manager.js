@@ -253,7 +253,6 @@ class CertificateManager {
     );
   }
   
-    /* Certificate Methods */
   generatePDF() {
     if (!this.currentCertificate) return;
   
@@ -262,84 +261,25 @@ class CertificateManager {
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
     script.onload = () => {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm'
-      });
-  
-      // Page dimensions
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const centerX = pageWidth / 2;
+      const doc = new jsPDF();
       
-      // Add background (optional)
-      doc.setFillColor(248, 248, 248);
-      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+      // Add certificate content
+      doc.setFontSize(20);
+      doc.text('Certificate of Completion', 105, 20, { align: 'center' });
       
-      // Add border
-      doc.setDrawColor(150, 150, 150);
+      doc.setFontSize(16);
+      doc.text(`This certifies that ${this.currentCertificate.name}`, 105, 40, { align: 'center' });
+      doc.text(`has successfully completed ${this.currentCertificate.course}`, 105, 50, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text(`Score: ${this.currentCertificate.score}`, 105, 70, { align: 'center' });
+      doc.text(`Date: ${this.currentCertificate.date}`, 105, 80, { align: 'center' });
+      doc.text(`ID: ${this.currentCertificate.id}`, 105, 90, { align: 'center' });
+      
+      // Add decorative elements
+      doc.setDrawColor(0);
       doc.setLineWidth(1);
-      doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
-      
-      // Add decorative header
-      doc.setFillColor(30, 80, 120);
-      doc.rect(10, 10, pageWidth - 20, 20, 'F');
-      
-      // Certificate title
-      doc.setFontSize(28);
-      doc.setTextColor(255, 255, 255);
-      doc.text('CERTIFICATE OF COMPLETION', centerX, 25, { align: 'center' });
-      
-      // Main content
-      doc.setFontSize(16);
-      doc.setTextColor(0, 0, 0);
-      
-      // Spacing variables
-      let currentY = 60;
-      const lineHeight = 10;
-      
-      // Recipient line
-      doc.setFont('helvetica', 'bold');
-      doc.text('This certifies that', centerX, currentY, { align: 'center' });
-      currentY += lineHeight * 1.5;
-      
-      // Name (larger and emphasized)
-      doc.setFontSize(24);
-      doc.setTextColor(30, 80, 120);
-      doc.text(this.currentCertificate.name, centerX, currentY, { align: 'center' });
-      currentY += lineHeight * 1.5;
-      
-      // Course line
-      doc.setFontSize(16);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`has successfully completed the course`, centerX, currentY, { align: 'center' });
-      currentY += lineHeight;
-      
-      // Course name
-      doc.setFont('helvetica', 'bold');
-      doc.text(this.currentCertificate.course, centerX, currentY, { align: 'center' });
-      currentY += lineHeight * 1.5;
-      
-      // Score and date
-      doc.setFont('helvetica', 'normal');
-      doc.text(`with a score of ${this.currentCertificate.score}`, centerX, currentY, { align: 'center' });
-      currentY += lineHeight;
-      doc.text(`on ${this.currentCertificate.date}`, centerX, currentY, { align: 'center' });
-      currentY += lineHeight * 2;
-      
-      // Certificate ID
-      doc.setFontSize(12);
-      doc.text(`Certificate ID: ${this.currentCertificate.id}`, centerX, currentY, { align: 'center' });
-      
-      // Decorative footer
-      doc.setDrawColor(30, 80, 120);
-      doc.setLineWidth(0.5);
-      doc.line(centerX - 30, pageHeight - 30, centerX + 30, pageHeight - 30);
-      
-      // Signature line (optional)
-      doc.setFontSize(12);
-      doc.text('Authorized Signature', centerX, pageHeight - 20, { align: 'center' });
+      doc.line(20, 30, 190, 30);
       
       // Save the PDF
       doc.save(`certificate_${this.currentCertificate.id}.pdf`);
