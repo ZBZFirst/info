@@ -304,10 +304,10 @@ class CertificateManager {
       <div class="certificate-editor">
         <div class="cert-preview" id="cert-preview">
           <!-- Title (non-editable) -->
-          <h3>${CERTIFICATE_TEMPLATE.fields.find(f => f.name === 'title').content}</h3>
+          <h3>${CERTIFICATE_TEMPLATE.fields.title}</h3>
           
           <!-- Recipient (editable) -->
-          <p>${CERTIFICATE_TEMPLATE.fields.find(f => f.name === 'recipient').prefix}
+          <p>${CERTIFICATE_TEMPLATE.fields.recipient.prefix}
             <span contenteditable="true" class="editable-field" data-field="name">
               ${cert.name}
             </span>
@@ -325,9 +325,15 @@ class CertificateManager {
           <!-- ID (now editable) -->
           <p>ID: <span contenteditable="true" class="editable-field" data-field="id">${cert.id}</span></p>
         
-        <div class="certificate-controls">
-          <button id="cm-update-cert">Update Certificate</button>
-          <button id="cm-print-cert">Print Certificate</button>
+          <!-- Logo if defined -->
+          ${CERTIFICATE_TEMPLATE.fields.logo ? `
+            <img src="${CERTIFICATE_TEMPLATE.fields.logo}" alt="Logo" style="width: 150px; margin-top: 20px;">
+          ` : ''}
+        
+          <div class="certificate-controls">
+            <button id="cm-update-cert">Update Certificate</button>
+            <button id="cm-print-cert">Print Certificate</button>
+          </div>
         </div>
       </div>
     `;
