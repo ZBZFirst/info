@@ -1,6 +1,7 @@
 // OIInteractive.js
 (function() {
   const size = 100000;
+  const chunkSize = 10000; // Points rendered per frame
   const progressDiv = document.createElement('div');
   progressDiv.style.cssText = `
     position: fixed; top: 20px; left: 20px; padding: 10px;
@@ -9,143 +10,100 @@
   `;
   document.body.appendChild(progressDiv);
 
-  // Web Worker for parallel computation
-  function createWorker() {
-    const workerCode = `
-      onmessage = function(e) {
-        const size = e.data;
-        const results = {};
-        
-        // Generate base data
-        results.fio2 = new Float32Array(size);
-        results.map = new Float32Array(size);
-        results.pao2 = new Float32Array(size);
-        for (let i = 0; i < size; i++) {
-          results.fio2[i] = Math.round((0.21 + 0.79 * Math.random()) * 100) / 100;
-          results.map[i] = Math.round(5 + 45 * Math.random());
-          results.pao2[i] = Math.round(35 + 65 * Math.random());
-          if (i % 10000 === 0) postMessage({progress: i/size, stage: 1});
-        }
+  // Web Worker for computation
+  const worker = new Worker(URL.createObjectURL(new Blob([`
+    const calculate = (size) => {
+      const results = {
+        fio2: new Float32Array(size),
+        map: new Float32Array(size),
+        pao2: new Float32Array(size),
+        oi: new Float32Array(size),
+        x: new Float32Array(size),
+        y: new Float32Array(size),
+        text: new Array(size)
+      };
 
-        // Calculate min/max
-        let [min, max] = [Infinity, -Infinity];
-        for (let i = 0; i < size; i++) {
-          min = Math.min(min, results.pao2[i]);
-          max = Math.max(max, results.pao2[i]);
-          if (i % 10000 === 0) postMessage({progress: i/size, stage: 2});
-        }
+      // Generate base data
+      for (let i = 0; i < size; i++) {
+        results.fio2[i] = Math.round((0.21 + 0.79 * Math.random()) * 100) / 100;
+        results.map[i] = Math.round(5 + 45 * Math.random());
+        results.pao2[i] = Math.round(35 + 65 * Math.random());
+        if (i % 5000 === 0) self.postMessage({progress: i/size, stage: 1});
+      }
 
-        // Compute derived values
-        results.oi = new Float32Array(size);
-        results.pao2Norm = new Float32Array(size);
-        results.x = new Float32Array(size);
-        results.y = new Float32Array(size);
-        for (let i = 0; i < size; i++) {
-          results.oi[i] = Math.round((results.fio2[i] * results.map[i] * 100) / results.pao2[i]);
-          results.pao2Norm[i] = Math.round(((results.pao2[i] - min) / (max - min)) * 100) / 100;
-          results.x[i] = Math.round(results.pao2Norm[i] * 2 * Math.cos(results.fio2[i] * 2 * Math.PI) * 100) / 100;
-          results.y[i] = Math.round(results.pao2Norm[i] * 2 * Math.sin(results.fio2[i] * 2 * Math.PI) * 100) / 100;
-          if (i % 10000 === 0) postMessage({progress: i/size, stage: 3});
-        }
-        postMessage({results});
-      }`;
-    const blob = new Blob([workerCode], {type: 'application/javascript'});
-    return new Worker(URL.createObjectURL(blob));
-  }
+      // Calculate min/max
+      const min = Math.min(...results.pao2);
+      const max = Math.max(...results.pao2);
+      self.postMessage({progress: 1, stage: 2});
 
-  const worker = createWorker();
+      // Compute derived values and hover text
+      for (let i = 0; i < size; i++) {
+        results.oi[i] = Math.round((results.fio2[i] * results.map[i] * 100) / results.pao2[i]);
+        const norm = Math.round(((results.pao2[i] - min) / (max - min)) * 100) / 100;
+        results.x[i] = Math.round(norm * 2 * Math.cos(results.fio2[i] * 2 * Math.PI) * 100) / 100;
+        results.y[i] = Math.round(norm * 2 * Math.sin(results.fio2[i] * 2 * Math.PI) * 100) / 100;
+        results.text[i] = \`PaO2: \${results.pao2[i]}<br>FiO2: \${results.fio2[i]}<br>MAP: \${results.map[i]}<br>OI: \${results.oi[i]}\`;
+        if (i % 5000 === 0) self.postMessage({progress: i/size, stage: 3});
+      }
+      return results;
+    };
+    self.onmessage = (e) => self.postMessage({results: calculate(e.data)});
+  `], {type: 'application/javascript'})));
+
   worker.onmessage = function(e) {
     if (e.data.progress !== undefined) {
       const stages = ["Generating Data", "Calculating Stats", "Computing Coordinates"];
-      const percent = Math.round(e.data.progress * 100);
-      progressDiv.textContent = `${stages[e.data.stage-1]}... ${percent}%`;
+      progressDiv.textContent = `${stages[e.data.stage-1]}... ${Math.round(e.data.progress * 100)}%`;
     } else if (e.data.results) {
-      progressDiv.textContent = "Rendering...";
+      progressDiv.textContent = "Rendering visualization...";
       
-      // Progressive rendering
-      const chunkSize = 10000;
-      const totalChunks = Math.ceil(size / chunkSize);
-      let currentChunk = 0;
-      
-      function renderNextChunk() {
-        const start = currentChunk * chunkSize;
-        const end = Math.min((currentChunk + 1) * chunkSize, size);
+      // Create initial empty plot
+      Plotly.newPlot('plot', [{
+        x: [], y: [], z: [],
+        mode: 'markers',
+        type: 'scatter3d',
+        marker: {
+          size: 3,
+          opacity: 0.7,
+          color: [],
+          colorscale: 'RdYlGn',
+          line: {width: 0}
+        },
+        hoverinfo: 'text',
+        text: []
+      }], {
+        title: 'Oxygenation Index Dome Effect',
+        scene: {xaxis: {title: 'x'}, yaxis: {title: 'y'}, zaxis: {title: 'OI'}},
+        width: 800, height: 600
+      });
+
+      // Progressive rendering with hover text
+      let renderedPoints = 0;
+      const renderChunk = () => {
+        const end = Math.min(renderedPoints + chunkSize, size);
         
-        const trace = {
-          x: e.data.results.x.subarray(start, end),
-          y: e.data.results.y.subarray(start, end),
-          z: e.data.results.oi.subarray(start, end),
-          mode: 'markers',
-          marker: {
-            color: e.data.results.pao2Norm.subarray(start, end),
-            colorscale: 'RdYlGn',
-            size: 3,
-            opacity: 0.7,
-            line: {width: 0}
-          },
-          type: 'scatter3d',
-          hoverinfo: 'skip'
-        };
+        Plotly.extendTraces('plot', {
+          x: [e.data.results.x.subarray(renderedPoints, end)],
+          y: [e.data.results.y.subarray(renderedPoints, end)],
+          z: [e.data.results.oi.subarray(renderedPoints, end)],
+          text: [e.data.results.text.slice(renderedPoints, end)],
+          'marker.color': [e.data.results.oi.subarray(renderedPoints, end)]
+        }, [0]);
         
-        if (currentChunk === 0) {
-          Plotly.newPlot('plot', [trace], {
-            title: 'Oxygenation Index Dome Effect',
-            scene: {
-              xaxis: { title: 'x' },
-              yaxis: { title: 'y' },
-              zaxis: { title: 'OI' }
-            },
-            width: 800,
-            height: 600,
-            margin: {l: 0, r: 0, b: 0, t: 40}
-          });
+        renderedPoints = end;
+        progressDiv.textContent = `Rendering... ${Math.round((renderedPoints / size) * 100)}%`;
+        
+        if (renderedPoints < size) {
+          setTimeout(renderChunk, 30); // Yield to UI thread
         } else {
-          Plotly.extendTraces('plot', {
-            x: [trace.x],
-            y: [trace.y],
-            z: [trace.z],
-            'marker.color': [trace.marker.color]
-          }, [0]);
-        }
-        
-        currentChunk++;
-        progressDiv.textContent = `Rendering... ${Math.round((currentChunk / totalChunks) * 100)}%`;
-        
-        if (currentChunk < totalChunks) {
-          setTimeout(renderNextChunk, 50); // Yield to UI thread
-        } else {
-          // Finalize with hover events
-          progressDiv.textContent = "Finalizing...";
-          addHoverInteractivity(e.data.results);
+          progressDiv.textContent = "Ready!";
           setTimeout(() => progressDiv.remove(), 1000);
         }
-      }
+      };
       
-      renderNextChunk();
+      setTimeout(renderChunk, 100); // Start rendering
     }
   };
-
-  function addHoverInteractivity(data) {
-    const plotDiv = document.getElementById('plot');
-    plotDiv.on('plotly_hover', function(eventData) {
-      const pts = eventData.points[0];
-      const i = pts.pointNumber;
-      
-      // Create dynamic hover label
-      Plotly.relayout('plot', {
-        annotations: [{
-          x: data.x[i],
-          y: data.y[i],
-          z: data.oi[i],
-          text: `PaO2: ${data.pao2[i]}<br>FiO2: ${data.fio2[i]}<br>MAP: ${data.map[i]}<br>OI: ${data.oi[i]}`,
-          showarrow: true,
-          arrowhead: 1,
-          ax: 0,
-          ay: -40
-        }]
-      });
-    });
-  }
 
   worker.postMessage(size);
 })();
