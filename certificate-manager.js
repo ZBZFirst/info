@@ -358,35 +358,59 @@ class CertificateManager {
   
     this.showStatus('Certificate updated!', 'success');
   }
+
+  processCertificateTemplate(data) {
+    let html = CERTIFICATE_TEMPLATE.template;
+    
+    // Replace all template variables
+    html = html.replace(/{{([^{}]+)}}/g, (match, key) => {
+      // Handle nested objects (like recipient.name)
+      const keys = key.split('.');
+      let value = data;
+      for (const k of keys) {
+        value = value?.[k];
+      }
+      
+      // Fallback to config defaults if not in data
+      if (value === undefined) {
+        value = keys.reduce((obj, k) => obj?.[k], CERTIFICATE_TEMPLATE.fields);
+      }
+      
+      return value !== undefined ? value : match;
+    });
+    
+    // Handle conditionals (simple version)
+    html = html.replace(/{{#if ([^{}]+)}}([\s\S]*?){{\/if}}/g, (match, condition, content) => {
+      const value = condition.split('.').reduce((obj, k) => obj?.[k], data) || 
+                   condition.split('.').reduce((obj, k) => obj?.[k], CERTIFICATE_TEMPLATE.fields);
+      return value ? content : '';
+    });
+    
+    return html;
+  }
   
   printCertificate() {
+    if (!this.currentCertificate) return;
+    
+    // Prepare all template data
+    const templateData = {
+      ...this.currentCertificate,
+      title: CERTIFICATE_TEMPLATE.fields.title,
+      recipient: {
+        name: this.currentCertificate.name,
+        prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
+      },
+      logo: CERTIFICATE_TEMPLATE.fields.logo,
+      background: CERTIFICATE_TEMPLATE.background,
+      container: CERTIFICATE_TEMPLATE.container
+    };
+    
+    // Process the template
+    const certificateHTML = this.processCertificateTemplate(templateData);
+    
+    // Open print window
     const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Certificate</title>
-        <style>
-          body { font-family: Arial; text-align: center; }
-          .certificate { border: 2px solid #000; padding: 20px; margin: 20px; }
-          h1 { color: #1a5276; }
-        </style>
-      </head>
-      <body>
-        <div class="certificate">
-          <h1>Certificate of Completion</h1>
-          <p>This certifies that <strong>${this.currentCertificate.name}</strong></p>
-          <p>has successfully completed <strong>${this.currentCertificate.course}</strong></p>
-          <p>with a score of <strong>${this.currentCertificate.score}</strong></p>
-          <p>on ${this.currentCertificate.date}</p>
-          <p>Certificate ID: ${this.currentCertificate.id}</p>
-        </div>
-        <script>
-          window.onload = function() { window.print(); window.close(); }
-        </script>
-      </body>
-      </html>
-    `);
+    printWindow.document.write(certificateHTML);
     printWindow.document.close();
   }
 
