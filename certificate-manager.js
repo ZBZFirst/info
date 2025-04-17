@@ -113,10 +113,6 @@ class CertificateManager {
         this.generateCertificate();
     });
 
-    // Download Certificate Button
-    this.overlay.querySelector('#cm-download-cert')?.addEventListener('click', () => {
-        this.generatePDF();
-    });
   }
 
   /* UI Control Methods */
