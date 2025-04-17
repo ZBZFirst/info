@@ -100,12 +100,28 @@ export const CERTIFICATE_TEMPLATE = {
     </html>
   `,
   
-  // Data mappings
   fields: {
-    title: 'CERTIFICATE OF COMPLETION',
-    recipient: {
-      prefix: 'This certifies that'
+    title: {
+      content: 'CERTIFICATE OF COMPLETION',
+      editable: false,
+      style: {
+        fontSize: '28px',
+        fontWeight: 'bold'
+      }
     },
-    logo: '/images/company-logo.png'
+    recipient: {
+      prefix: 'This certificate is awarded to ',
+      editable: true,
+      style: {
+        fontSize: '20px'
+      }
+    },
+    logo: {
+      image: '/images/company-logo.png',
+      editable: false,
+      style: {
+        width: '150px'
+      }
+    }
   }
 };
