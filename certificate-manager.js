@@ -5,7 +5,6 @@ class CertificateManager {
     this.isVerified = false;
     this.currentCertificate = null;
     this.overlay = null;
-    this.initEventListeners();
     this.checkConditions();
     this.setupStorageListener();
     this.setupQuizCompletionListener();
@@ -36,16 +35,19 @@ class CertificateManager {
       // More robust state checking
       const isUnlocked = (quizProgress.allComplete === true) || menuScreen;
       
+      // Corrected this line - button should be disabled when NOT unlocked
       certManagerBtn.disabled = !isUnlocked;
+      
       certManagerBtn.title = isUnlocked 
           ? "" 
           : "Complete the quiz to unlock the Certificate Manager";
       
-      // Debug logging
+      // Debug logging - enhanced to show button state
       console.log('Cert Manager State:', {
           allComplete: quizProgress.allComplete,
           menuScreen,
-          isUnlocked
+          isUnlocked,
+          buttonDisabled: certManagerBtn.disabled
       });
   }
 
