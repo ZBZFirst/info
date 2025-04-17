@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        canvas {
+            background-color: #000;
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #deviceList {
+            margin: 20px auto;
+            max-width: 500px;
+        }
+        .device-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            text-align: left;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .device-btn:hover {
+            background-color: #e8e8e8;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Audio Visualizer</h1>
+    
+    <button id="startBtn">Start Audio Visualizer</button>
+    
+    <div id="deviceList" class="hidden"></div>
+    
+    <canvas id="visualizer" width="800" height="400"></canvas>
+
+    <script>
+        // Audio elements
+        let audioContext;
+        let analyser;
+        let audioSource;
+        let animationId;
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const deviceList = document.getElementById('deviceList');
+
+        // Start button handler
+        startBtn.addEventListener('click', async () => {
+            try {
+                startBtn.disabled = true;
+                
+                // Get available audio devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioDevices = devices.filter(device => device.kind === 'audioinput');
+                
+                if (audioDevices.length === 0) {
+                    throw new Error('No audio devices found');
+                }
+                
+                // Show device selection
+                deviceList.innerHTML = '';
+                audioDevices.forEach(device => {
+                    const btn = document.createElement('button');
+                    btn.className = 'device-btn';
+                    btn.textContent = device.label || `Audio Device ${device.deviceId.slice(0, 5)}`;
+                    btn.onclick = () => startVisualizer(device.deviceId);
+                    deviceList.appendChild(btn);
+                });
+                
+                deviceList.classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Could not access audio devices. Please ensure permissions are granted.');
+                resetUI();
+            }
+        });
+
+        // Start visualization with selected device
+        async function startVisualizer(deviceId) {
+            try {
+                deviceList.classList.add('hidden');
+                
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        deviceId: deviceId ? { exact: deviceId } : undefined
+                    }
+                });
+                
+                audioSource = audioContext.createMediaStreamSource(stream);
+                audioSource.connect(analyser);
+                
+                visualize();
+                
+                // Change button to stop
+                startBtn.textContent = 'Stop Visualizer';
+                startBtn.onclick = stopVisualizer;
+                startBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error starting visualizer:', error);
+                alert('Could not access the selected audio device');
+                resetUI();
+            }
+        }
+
+        // Stop visualization
+        function stopVisualizer() {
+            cancelAnimationFrame(animationId);
+            if (audioSource) {
+                audioSource.disconnect();
+                audioSource.mediaStream.getTracks().forEach(track => track.stop());
+                audioSource = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            resetUI();
+            clearCanvas();
+        }
+
+        // Visualization loop
+        function visualize() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            function draw() {
+                animationId = requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+                
+                ctx.fillStyle = 'rgb(0, 0, 0)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const barWidth = (canvas.width / bufferLength) * 2.5;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = dataArray[i] / 2;
+                    
+                    ctx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    
+                    x += barWidth + 1;
+                }
+            }
+            
+            draw();
+        }
+
+        // Clear canvas
+        function clearCanvas() {
+            ctx.fillStyle = 'rgb(0, 0, 0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Reset UI to initial state
+        function resetUI() {
+            startBtn.textContent = 'Start Audio Visualizer';
+            startBtn.onclick = () => startBtn.click(); // Trigger the original click handler
+            startBtn.disabled = false;
+            deviceList.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
