@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Advanced Audio Visualizer</title>
+    <title>Dynamic Audio Visualizer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -10,11 +10,6 @@
             background-color: #222;
             color: #eee;
             text-align: center;
-            overflow-x: hidden;
-        }
-        #container {
-            max-width: 1000px;
-            margin: 0 auto;
         }
         canvas {
             background-color: #000;
@@ -22,7 +17,6 @@
             margin: 20px auto;
             width: 100%;
             max-width: 800px;
-            cursor: pointer;
         }
         .controls {
             display: flex;
@@ -40,20 +34,9 @@
             border: none;
             border-radius: 4px;
             min-width: 120px;
-            transition: all 0.2s;
         }
         button:hover {
             background-color: #45a049;
-            transform: scale(1.05);
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        button.secondary {
-            background-color: #555;
-        }
-        button.danger {
-            background-color: #f44336;
         }
         .control-group {
             background-color: #333;
@@ -71,25 +54,6 @@
             max-width: 300px;
             margin: 10px 0;
         }
-        .visual-options {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-        }
-        .visual-option {
-            background-color: #444;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .visual-option:hover {
-            background-color: #555;
-        }
-        .visual-option.active {
-            background-color: #4CAF50;
-        }
         #deviceList {
             margin: 20px auto;
             max-width: 500px;
@@ -106,78 +70,36 @@
             border-radius: 4px;
             color: #eee;
             cursor: pointer;
-            transition: all 0.2s;
         }
         .device-btn:hover {
             background-color: #555;
-            transform: translateX(5px);
         }
         .hidden {
             display: none;
         }
-        .fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            z-index: 9999;
-            margin: 0;
-            padding: 0;
-        }
-        .fullscreen canvas {
-            width: 100%;
-            height: 100%;
-            max-width: none;
-            margin: 0;
-        }
-        .fullscreen .close-fullscreen {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background-color: rgba(0,0,0,0.7);
-            border: 2px solid #fff;
-        }
     </style>
 </head>
 <body>
-    <div id="container">
-        <h1>Advanced Audio Visualizer</h1>
-        
-        <div class="control-group">
-            <button id="startBtn">Start Visualizer</button>
-            <div id="deviceList" class="hidden"></div>
-        </div>
-        
-        <div class="control-group">
-            <h3>Visualization Controls</h3>
-            <label for="sensitivity">Sensitivity: <span id="sensitivityValue">50</span>%</label>
-            <input type="range" id="sensitivity" min="1" max="100" value="50">
-            
-            <label for="smoothing">Smoothing: <span id="smoothingValue">50</span>%</label>
-            <input type="range" id="smoothing" min="0" max="100" value="50">
-            
-            <label for="colorHue">Color Hue: <span id="colorHueValue">0</span>°</label>
-            <input type="range" id="colorHue" min="0" max="360" value="0">
-        </div>
-        
-        <div class="control-group">
-            <h3>Visual Style</h3>
-            <div class="visual-options">
-                <div class="visual-option active" data-mode="bars">Bars</div>
-                <div class="visual-option" data-mode="wave">Waveform</div>
-                <div class="visual-option" data-mode="circle">Circle</div>
-                <div class="visual-option" data-mode="particles">Particles</div>
-            </div>
-        </div>
-        
-        <button id="fullscreenBtn" class="secondary">Enter Fullscreen</button>
-        <button id="stopBtn" class="danger hidden">Stop Visualizer</button>
-        
-        <canvas id="visualizer" width="800" height="400"></canvas>
+    <h1>Dynamic Audio Visualizer</h1>
+    
+    <div class="control-group">
+        <button id="startBtn">Start Visualizer</button>
+        <div id="deviceList" class="hidden"></div>
     </div>
+    
+    <div class="control-group">
+        <h3>Audio Processing</h3>
+        <label for="sensitivity">Base Sensitivity: <span id="sensitivityValue">50</span>%</label>
+        <input type="range" id="sensitivity" min="1" max="100" value="50">
+        
+        <label for="dynamicRange">Dynamic Range: <span id="dynamicRangeValue">70</span>%</label>
+        <input type="range" id="dynamicRange" min="0" max="100" value="70">
+        
+        <label for="noiseFloor">Noise Reduction: <span id="noiseFloorValue">20</span>%</label>
+        <input type="range" id="noiseFloor" min="0" max="100" value="20">
+    </div>
+    
+    <canvas id="visualizer" width="800" height="400"></canvas>
 
     <script>
         // Audio elements
@@ -190,25 +112,23 @@
         
         // UI Elements
         const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
         const deviceList = document.getElementById('deviceList');
         const sensitivitySlider = document.getElementById('sensitivity');
         const sensitivityValue = document.getElementById('sensitivityValue');
-        const smoothingSlider = document.getElementById('smoothing');
-        const smoothingValue = document.getElementById('smoothingValue');
-        const colorHueSlider = document.getElementById('colorHue');
-        const colorHueValue = document.getElementById('colorHueValue');
-        const visualOptions = document.querySelectorAll('.visual-option');
-        const container = document.getElementById('container');
+        const dynamicRangeSlider = document.getElementById('dynamicRange');
+        const dynamicRangeValue = document.getElementById('dynamicRangeValue');
+        const noiseFloorSlider = document.getElementById('noiseFloor');
+        const noiseFloorValue = document.getElementById('noiseFloorValue');
         
-        // Visualization settings
+        // Audio processing settings
         let settings = {
-            sensitivity: 0.5,
-            smoothing: 0.5,
-            colorHue: 0,
-            visualMode: 'bars',
-            isFullscreen: false
+            baseSensitivity: 0.5,
+            dynamicRange: 0.7,
+            noiseFloor: 0.2,
+            history: [],
+            maxHistory: 10,
+            currentMax: 0,
+            decayRate: 0.95
         };
         
         // Initialize UI
@@ -216,40 +136,20 @@
         
         function setupEventListeners() {
             startBtn.addEventListener('click', startDeviceSelection);
-            stopBtn.addEventListener('click', stopVisualizer);
-            fullscreenBtn.addEventListener('click', toggleFullscreen);
             
-            // Settings sliders
             sensitivitySlider.addEventListener('input', () => {
-                settings.sensitivity = sensitivitySlider.value / 100;
+                settings.baseSensitivity = sensitivitySlider.value / 100;
                 sensitivityValue.textContent = sensitivitySlider.value;
             });
             
-            smoothingSlider.addEventListener('input', () => {
-                settings.smoothing = smoothingSlider.value / 100;
-                smoothingValue.textContent = smoothingSlider.value;
-                if (analyser) analyser.smoothingTimeConstant = settings.smoothing;
+            dynamicRangeSlider.addEventListener('input', () => {
+                settings.dynamicRange = dynamicRangeSlider.value / 100;
+                dynamicRangeValue.textContent = dynamicRangeSlider.value;
             });
             
-            colorHueSlider.addEventListener('input', () => {
-                settings.colorHue = parseInt(colorHueSlider.value);
-                colorHueValue.textContent = colorHueSlider.value;
-            });
-            
-            // Visual mode selection
-            visualOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    visualOptions.forEach(opt => opt.classList.remove('active'));
-                    option.classList.add('active');
-                    settings.visualMode = option.dataset.mode;
-                });
-            });
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (!settings.isFullscreen) {
-                    resizeCanvas();
-                }
+            noiseFloorSlider.addEventListener('input', () => {
+                settings.noiseFloor = noiseFloorSlider.value / 100;
+                noiseFloorValue.textContent = noiseFloorSlider.value;
             });
         }
         
@@ -258,7 +158,7 @@
                 startBtn.disabled = true;
                 
                 // Get available audio devices
-                await navigator.mediaDevices.getUserMedia({ audio: true }); // Prompt for permission first
+                await navigator.mediaDevices.getUserMedia({ audio: true });
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const audioDevices = devices.filter(device => device.kind === 'audioinput');
                 
@@ -292,21 +192,22 @@
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 analyser.fftSize = 2048;
-                analyser.smoothingTimeConstant = settings.smoothing;
+                analyser.smoothingTimeConstant = 0.8;
                 
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: {
-                        deviceId: deviceId ? { exact: deviceId } : undefined
+                        deviceId: deviceId ? { exact: deviceId } : undefined,
+                        noiseSuppression: true,
+                        echoCancellation: false,
+                        autoGainControl: false
                     }
                 });
                 
                 audioSource = audioContext.createMediaStreamSource(stream);
                 audioSource.connect(analyser);
                 
-                // Update UI
-                startBtn.classList.add('hidden');
-                stopBtn.classList.remove('hidden');
-                resizeCanvas();
+                startBtn.textContent = 'Stop Visualizer';
+                startBtn.onclick = stopVisualizer;
                 visualize();
                 
             } catch (error) {
@@ -331,170 +232,108 @@
             clearCanvas();
         }
         
-        function resizeCanvas() {
-            const width = Math.min(800, window.innerWidth - 40);
-            canvas.width = width;
-            canvas.height = width * 0.5; // Maintain aspect ratio
-        }
-        
         function clearCanvas() {
             ctx.fillStyle = 'rgb(0, 0, 0)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
         
-        function toggleFullscreen() {
-            if (settings.isFullscreen) {
-                document.exitFullscreen();
-            } else {
-                canvas.requestFullscreen().catch(err => {
-                    alert(`Error entering fullscreen: ${err.message}`);
-                });
-            }
-        }
-        
-        // Handle fullscreen changes
-        document.addEventListener('fullscreenchange', () => {
-            settings.isFullscreen = !!document.fullscreenElement;
-            if (settings.isFullscreen) {
-                fullscreenBtn.textContent = 'Exit Fullscreen';
-                canvas.classList.add('fullscreen');
-            } else {
-                fullscreenBtn.textContent = 'Enter Fullscreen';
-                canvas.classList.remove('fullscreen');
-                resizeCanvas();
-            }
-        });
-        
         function resetUI() {
+            startBtn.textContent = 'Start Visualizer';
+            startBtn.onclick = startDeviceSelection;
             startBtn.disabled = false;
-            startBtn.classList.remove('hidden');
-            stopBtn.classList.add('hidden');
             deviceList.classList.add('hidden');
         }
         
-        // Visualization functions
+        // Dynamic range adjustment functions
+        function updateDynamicRange(currentValue) {
+            // Add current value to history
+            settings.history.push(currentValue);
+            if (settings.history.length > settings.maxHistory) {
+                settings.history.shift();
+            }
+            
+            // Calculate moving average
+            const avg = settings.history.reduce((sum, val) => sum + val, 0) / settings.history.length;
+            
+            // Update current max with decay
+            settings.currentMax = Math.max(
+                currentValue, 
+                settings.currentMax * settings.decayRate,
+                avg * 1.5
+            );
+            
+            return settings.currentMax > 0 ? currentValue / settings.currentMax : 0;
+        }
+        
+        function applyDynamicProcessing(dataArray) {
+            const processed = new Float32Array(dataArray.length);
+            let currentMax = 0;
+            
+            // First pass to find current max
+            for (let i = 0; i < dataArray.length; i++) {
+                currentMax = Math.max(currentMax, dataArray[i]);
+            }
+            
+            // Apply dynamic range adjustment
+            const rangeAdjustedMax = updateDynamicRange(currentMax);
+            const dynamicScale = rangeAdjustedMax > 0 ? (1 / rangeAdjustedMax) : 1;
+            
+            // Second pass to process all values
+            for (let i = 0; i < dataArray.length; i++) {
+                // Normalize and apply base sensitivity
+                let value = (dataArray[i] / 255) * settings.baseSensitivity;
+                
+                // Apply dynamic scaling
+                value *= dynamicScale;
+                
+                // Apply noise floor
+                value = Math.max(0, value - settings.noiseFloor);
+                
+                // Scale back to 0-255 range
+                processed[i] = Math.min(255, value * 255 * (1 + settings.dynamicRange));
+            }
+            
+            return processed;
+        }
+        
         function visualize() {
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
-            const timeDomainArray = new Uint8Array(bufferLength);
+            const processedArray = new Float32Array(bufferLength);
             
             function draw() {
                 animationId = requestAnimationFrame(draw);
-                
                 analyser.getByteFrequencyData(dataArray);
-                analyser.getByteTimeDomainData(timeDomainArray);
                 
+                // Process the audio data
+                for (let i = 0; i < bufferLength; i++) {
+                    processedArray[i] = dataArray[i];
+                }
+                const dynamicData = applyDynamicProcessing(processedArray);
+                
+                // Visualization
                 ctx.fillStyle = 'rgb(0, 0, 0)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                switch(settings.visualMode) {
-                    case 'bars':
-                        drawBars(dataArray, bufferLength);
-                        break;
-                    case 'wave':
-                        drawWaveform(timeDomainArray, bufferLength);
-                        break;
-                    case 'circle':
-                        drawCircle(dataArray, bufferLength);
-                        break;
-                    case 'particles':
-                        drawParticles(dataArray, bufferLength);
-                        break;
+                const barWidth = (canvas.width / bufferLength) * 2.5;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = dynamicData[i];
+                    
+                    // Create gradient effect
+                    const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+                    gradient.addColorStop(0, `hsl(${200 + (i/bufferLength)*160}, 100%, 50%)`);
+                    gradient.addColorStop(1, `hsl(${200 + (i/bufferLength)*160}, 100%, 20%)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    
+                    x += barWidth + 1;
                 }
             }
             
             draw();
-        }
-        
-        function drawBars(dataArray, bufferLength) {
-            const barWidth = (canvas.width / bufferLength) * 2.5;
-            let x = 0;
-            
-            for (let i = 0; i < bufferLength; i++) {
-                const scaledValue = dataArray[i] * settings.sensitivity;
-                const barHeight = Math.min(scaledValue, canvas.height);
-                
-                // HSL color with hue control
-                ctx.fillStyle = `hsl(${settings.colorHue}, 100%, ${50 + (barHeight / canvas.height) * 50}%)`;
-                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                
-                x += barWidth + 1;
-            }
-        }
-        
-        function drawWaveform(dataArray, bufferLength) {
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = `hsl(${settings.colorHue}, 100%, 50%)`;
-            ctx.beginPath();
-            
-            const sliceWidth = canvas.width / bufferLength;
-            let x = 0;
-            
-            for (let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = v * canvas.height / 2 * settings.sensitivity;
-                
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-                
-                x += sliceWidth;
-            }
-            
-            ctx.lineTo(canvas.width, canvas.height / 2);
-            ctx.stroke();
-        }
-        
-        function drawCircle(dataArray, bufferLength) {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(canvas.width, canvas.height) * 0.4;
-            
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            
-            for (let i = 0; i < bufferLength; i++) {
-                const angle = (i * Math.PI * 2) / bufferLength;
-                const scaledValue = dataArray[i] * settings.sensitivity * 0.5;
-                const pointRadius = radius + scaledValue;
-                
-                const x = centerX + Math.cos(angle) * pointRadius;
-                const y = centerY + Math.sin(angle) * pointRadius;
-                
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            }
-            
-            ctx.closePath();
-            ctx.strokeStyle = `hsl(${settings.colorHue}, 100%, 50%)`;
-            ctx.stroke();
-        }
-        
-        function drawParticles(dataArray, bufferLength) {
-            const particleCount = bufferLength / 2;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const maxRadius = Math.min(canvas.width, canvas.height) * 0.4;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const angle = (i * Math.PI * 2) / particleCount;
-                const value = dataArray[i] * settings.sensitivity * 0.5;
-                const radius = Math.min(maxRadius * 0.2 + value, maxRadius);
-                
-                const x = centerX + Math.cos(angle) * radius;
-                const y = centerY + Math.sin(angle) * radius;
-                const size = 2 + (value / 255) * 8;
-                
-                ctx.fillStyle = `hsl(${(settings.colorHue + i) % 360}, 100%, 50%)`;
-                ctx.beginPath();
-                ctx.arc(x, y, size, 0, Math.PI * 2);
-                ctx.fill();
-            }
         }
     </script>
 </body>
