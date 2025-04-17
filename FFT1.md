@@ -8,6 +8,7 @@ title: Fast Fourier Transform
     
     <div class="control-group">
         <button id="startBtn">Start Visualizer</button>
+        <button id="fullscreenBtn" class="secondary">Enter Fullscreen</button>
         <div id="deviceList" class="hidden"></div>
     </div>
     
@@ -23,8 +24,18 @@ title: Fast Fourier Transform
         <input type="range" id="noiseFloor" min="0" max="100" value="20">
     </div>
     
+    <div class="control-group">
+        <h3>Visualization Mode</h3>
+        <div class="visual-options">
+            <div class="visual-option active" data-mode="bars">Bars</div>
+            <div class="visual-option" data-mode="wave">Waveform</div>
+            <div class="visual-option" data-mode="circle">Circle</div>
+            <div class="visual-option" data-mode="particles">Particles</div>
+        </div>
+    </div>
+    
     <canvas id="visualizer" width="800" height="400"></canvas>
 </div>
 
-<link rel="stylesheet" href="_css/fft.css">
-<script src="js/fft.js" defer></script>
+<link rel="stylesheet" href="/assets/css/fft.css">
+<script src="/assets/js/fft.js" defer></script>
