@@ -1,17 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Certificate Manager Test</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="_css/certificatemanager.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Oxygenation Index Plot</title>
+    <!-- Load Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #plot { width: 100%; height: 100vh; }
+    </style>
 </head>
 <body>
-  <button id="cert-manager-btn" class="cert-manager-btn cert-manager-btn-primary">
-    Open Certificate Manager
-  </button>
-  
-  <script type="module" src="certificate-manager.js"></script>
+    <div id="plot"></div>
+
+    <script>
+        // Generate random data (mimicking your Python code)
+        function generateData() {
+            const numPoints = 100000;
+            const FiO2 = Array.from({ length: numPoints }, () => 0.21 + 0.79 * Math.random());
+            const MAP = Array.from({ length: numPoints }, () => Math.round(5 + 25 * Math.random()));
+            const PaO2 = Array.from({ length: numPoints }, () => Math.round(35 + 65 * Math.random()));
+            const OI = FiO2.map((f, i) => Math.round((f * MAP[i] * 100) / PaO2[i]));
+            const PaO2_normalized = PaO2.map(p => (p - 35) / (100 - 35)); // Normalize to [0,1]
+            const PaO2FiO2 = PaO2.map((p, i) => (p / FiO2[i]).toFixed(2));
+
+            return {
+                FiO2, MAP, PaO2, OI, PaO2_normalized, PaO2FiO2
+            };
+        }
+
+        // Create the 3D scatter plot
+        function createPlot() {
+            const data = generateData();
+
+            const trace = {
+                x: data.FiO2,
+                y: data.MAP,
+                z: data.OI,
+                mode: 'markers',
+                type: 'scatter3d',
+                marker: {
+                    size: 2,
+                    color: data.PaO2_normalized,
+                    colorscale: 'RdYlGn',
+                    opacity: 0.8,
+                    colorbar: {
+                        title: 'Normalized PaO2',
+                        titleside: 'right'
+                    }
+                },
+                hoverinfo: 'text',
+                text: data.PaO2.map((p, i) => 
+                    `PaO2: ${p}<br>FiO2: ${data.FiO2[i].toFixed(2)}<br>MAP: ${data.MAP[i]}<br>OI: ${data.OI[i]}<br>PaO2/FiO2: ${data.PaO2FiO2[i]}`
+                )
+            };
+
+            const layout = {
+                title: 'Oxygenation Index (3D Plot)',
+                scene: {
+                    xaxis: { title: 'FiO2' },
+                    yaxis: { title: 'MAP' },
+                    zaxis: { title: 'OI' }
+                },
+                width: 1920,
+                height: 1280
+            };
+
+            Plotly.newPlot('plot', [trace], layout);
+        }
+
+        // Initialize the plot when the page loads
+        window.onload = createPlot;
+    </script>
 </body>
 </html>
