@@ -5,12 +5,27 @@ class CertificateManager {
     this.isVerified = false;
     this.currentCertificate = null;
     this.overlay = null;
-    this.checkConditions();
+    this.setupCertificateManagerButtonListener();
     this.setupStorageListener();
+    this.checkConditions();
     this.setupQuizCompletionListener();
 
   }
 
+  setupCertificateManagerButtonListener() {
+    const button = document.getElementById('cert-manager-btn');
+    if (!button) {
+      console.error('Certificate manager button not found!');
+      return;
+    }
+    
+    button.addEventListener('click', () => {
+      this.toggleOverlay();
+    });
+    
+    console.log('Certificate button listener initialized');
+  }
+  
   setupStorageListener() {
     window.addEventListener('storage', (e) => {
       if (e.key === 'quizProgress' || e.key === 'MenuScreen') {
