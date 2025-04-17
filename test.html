@@ -21,6 +21,7 @@
             text-align: center;
             line-height: 30px;
             color: white;
+            transition: width 0.3s;
         }
         #debug-console {
             border: 1px solid #ccc;
@@ -30,6 +31,7 @@
             margin-bottom: 20px;
             background-color: #f8f8f8;
             font-family: monospace;
+            white-space: pre-wrap;
         }
         #calculation-steps {
             display: flex;
@@ -47,14 +49,25 @@
             border-collapse: collapse;
             width: 100%;
             margin-top: 10px;
+            font-size: 0.9em;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px;
             text-align: left;
         }
         th {
             background-color: #f2f2f2;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+        }
+        .success {
+            color: green;
         }
     </style>
 </head>
@@ -62,7 +75,7 @@
     <h2>Oxygenation Index Dome Effect - Debug Mode</h2>
     
     <div id="progress-container">
-        <div id="progress-bar">Loading Pyodide...</div>
+        <div id="progress-bar">Initializing...</div>
     </div>
     
     <div id="debug-console"></div>
@@ -70,15 +83,15 @@
     <div id="calculation-steps">
         <div class="step-container" id="step1">
             <h3>Step 1: Raw Data</h3>
-            <div id="raw-data-table"></div>
+            <div id="raw-data-table">Loading...</div>
         </div>
         <div class="step-container" id="step2">
             <h3>Step 2: OI Calculation</h3>
-            <div id="oi-calculation-table"></div>
+            <div id="oi-calculation-table">Loading...</div>
         </div>
         <div class="step-container" id="step3">
             <h3>Step 3: Polar Conversion</h3>
-            <div id="polar-conversion-table"></div>
+            <div id="polar-conversion-table">Loading...</div>
         </div>
     </div>
     
@@ -91,7 +104,7 @@
         function logToConsole(message, type = 'info') {
             const line = document.createElement('div');
             line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            line.style.color = type === 'error' ? 'red' : type === 'warning' ? 'orange' : 'black';
+            line.className = type;
             debugConsole.appendChild(line);
             debugConsole.scrollTop = debugConsole.scrollHeight;
         }
@@ -100,86 +113,106 @@
             const progressBar = document.getElementById('progress-bar');
             progressBar.style.width = percent + '%';
             progressBar.textContent = message;
+            
+            // Change color based on progress
+            if (percent < 30) progressBar.style.backgroundColor = '#ff5722';
+            else if (percent < 70) progressBar.style.backgroundColor = '#ffc107';
+            else progressBar.style.backgroundColor = '#4CAF50';
         }
         
         function createTable(data, containerId) {
             const container = document.getElementById(containerId);
-            container.innerHTML = '';
             
-            if (!data || data.length === 0) return;
-            
-            const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
-            
-            // Create header
-            const headerRow = document.createElement('tr');
-            Object.keys(data[0]).forEach(key => {
-                const th = document.createElement('th');
-                th.textContent = key;
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
-            
-            // Create rows (limit to 10 for display)
-            const displayCount = Math.min(10, data.length);
-            for (let i = 0; i < displayCount; i++) {
-                const row = document.createElement('tr');
-                Object.values(data[i]).forEach(value => {
-                    const td = document.createElement('td');
-                    td.textContent = value;
-                    row.appendChild(td);
-                });
-                tbody.appendChild(row);
+            if (!data || data.length === 0) {
+                container.innerHTML = 'No data available';
+                return;
             }
             
-            table.appendChild(thead);
-            table.appendChild(tbody);
-            container.appendChild(table);
-            
-            if (data.length > displayCount) {
-                const note = document.createElement('div');
-                note.textContent = `Showing ${displayCount} of ${data.length} rows...`;
-                note.style.fontSize = '0.8em';
-                note.style.color = '#666';
-                container.appendChild(note);
+            try {
+                let html = '<table><thead><tr>';
+                
+                // Create header
+                Object.keys(data[0]).forEach(key => {
+                    html += `<th>${key}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                // Create rows (limit to 10 for display)
+                const displayCount = Math.min(10, data.length);
+                for (let i = 0; i < displayCount; i++) {
+                    html += '<tr>';
+                    Object.values(data[i]).forEach(value => {
+                        html += `<td>${value}</td>`;
+                    });
+                    html += '</tr>';
+                }
+                
+                html += '</tbody></table>';
+                
+                if (data.length > displayCount) {
+                    html += `<div style="font-size:0.8em;color:#666;">Showing ${displayCount} of ${data.length} rows...</div>`;
+                }
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `Error creating table: ${error.message}`;
+                logToConsole(`Table creation error: ${error.message}`, 'error');
             }
         }
+        
+        // Store the data globally
+        let plotData = null;
         
         async function main() {
             try {
                 logToConsole('Starting Pyodide initialization...');
-                updateProgress(10, 'Loading Pyodide runtime...');
+                updateProgress(5, 'Loading Pyodide runtime...');
                 
+                // Load Pyodide
                 const pyodide = await loadPyodide({
                     stdout: text => logToConsole(`PY: ${text}`),
                     stderr: text => logToConsole(`PY-ERR: ${text}`, 'error')
                 });
                 
-                logToConsole('Pyodide loaded successfully');
-                updateProgress(30, 'Loading Python packages...');
+                logToConsole('Pyodide loaded successfully', 'success');
+                updateProgress(20, 'Loading Python packages...');
                 
                 // Load required packages
                 await pyodide.loadPackage(['numpy', 'pandas']);
-                logToConsole('Python packages loaded');
-                updateProgress(50, 'Generating data...');
+                logToConsole('Python packages loaded', 'success');
+                updateProgress(30, 'Setting up Python environment...');
                 
-                // Run Python code with intermediate steps exposed
+                // Expose JavaScript functions to Python FIRST
+                pyodide.globals.set('js', {
+                    displayRawData: rawData => {
+                        logToConsole('Displaying raw data sample');
+                        createTable(rawData, 'raw-data-table');
+                    },
+                    displayOICalculation: oiData => {
+                        logToConsole('Displaying OI calculation sample');
+                        createTable(oiData, 'oi-calculation-table');
+                    },
+                    displayPolarConversion: polarData => {
+                        logToConsole('Displaying polar conversion sample');
+                        createTable(polarData, 'polar-conversion-table');
+                    },
+                    updateProgress: updateProgress,
+                    logToConsole: (message, type) => logToConsole(`PY->JS: ${message}`, type)
+                });
+                
+                updateProgress(40, 'Generating data...');
+                
+                // Run Python code with intermediate steps
                 await pyodide.runPythonAsync(`
 import numpy as np
 import pandas as pd
-import js
 
-# Log that we're starting data generation
-print("Generating sample data...")
+js.logToConsole("Starting data generation...", "info")
 
-# Create the DataFrame with intermediate logging
+# Create the DataFrame with logging
 fio2 = np.round(0.21 + 0.79 * np.random.rand(1000), 2)
-print(f"Generated FiO2 values (first 5): {fio2[:5]}")
 map_values = np.round(np.random.uniform(low=5.0, high=50.0, size=1000))
-print(f"Generated MAP values (first 5): {map_values[:5]}")
 pao2 = np.round(np.random.uniform(low=35.0, high=100.0, size=1000))
-print(f"Generated PaO2 values (first 5): {pao2[:5]}")
 
 df = pd.DataFrame({
     'FiO2': fio2,
@@ -187,38 +220,41 @@ df = pd.DataFrame({
     'PaO2': pao2,
 })
 
+js.logToConsole(f"Generated DataFrame with {len(df)} rows", "info")
+js.updateProgress(50, "Processing raw data...")
+
 # Send raw data to JS for display
 raw_data = df.head(10).to_dict('records')
 js.displayRawData(raw_data)
 
-# Calculate OI with logging
-print("Calculating Oxygenation Index...")
+# Calculate OI
+js.logToConsole("Calculating Oxygenation Index...", "info")
 df['OI'] = np.round((df['FiO2'] * df['MAP'] * 100) / df['PaO2'])
-print(f"First 5 OI values: {df['OI'].head(5).tolist()}")
+js.updateProgress(60, "Calculating OI values...")
 
 # Send OI calculation to JS
 oi_data = df[['FiO2', 'MAP', 'PaO2', 'OI']].head(10).to_dict('records')
 js.displayOICalculation(oi_data)
 
 # Normalize PaO2
-print("Normalizing PaO2 values...")
+js.logToConsole("Normalizing PaO2 values...", "info")
 df['PaO2_normalized'] = np.round((df['PaO2'] - df['PaO2'].min()) / (df['PaO2'].max() - df['PaO2'].min()), 2)
-print(f"First 5 normalized PaO2 values: {df['PaO2_normalized'].head(5).tolist()}")
+js.updateProgress(70, "Normalizing values...")
 
-# Convert to polar coordinates with logging
-print("Converting to polar coordinates...")
+# Convert to polar coordinates
+js.logToConsole("Converting to polar coordinates...", "info")
 r = np.round(df['PaO2_normalized'] * 2, 2)
 theta = np.round(df['FiO2'] * 2 * np.pi, 2)
 df['x'] = np.round(r * np.cos(theta), 2)
 df['y'] = np.round(r * np.sin(theta), 2)
-print(f"First 5 x,y coordinates: {list(zip(df['x'].head(5), df['y'].head(5)))}")
+js.updateProgress(80, "Coordinate conversion...")
 
 # Send polar conversion to JS
 polar_data = df[['PaO2_normalized', 'FiO2', 'x', 'y']].head(10).to_dict('records')
 js.displayPolarConversion(polar_data)
 
 # Prepare final data for plotting
-print("Preparing final data for visualization...")
+js.logToConsole("Preparing final data for visualization...", "info")
 data = {
     'x': df['x'].tolist(),
     'y': df['y'].tolist(),
@@ -228,44 +264,49 @@ data = {
              for p, f, m, o in zip(df['PaO2'], df['FiO2'], df['MAP'], df['OI'])]
 }
 
-js.data = data
-js.updateProgress(90, 'Rendering plot...')
-print("Data preparation complete.")
+js.logToConsole("Data preparation complete", "success")
+js.updateProgress(90, "Rendering plot...")
+
+# Store data in a global Python variable that we can access from JS
+final_data = data
                 `);
                 
-                // Expose functions to Python
-                pyodide.globals.set('displayRawData', rawData => {
-                    logToConsole('Displaying raw data sample');
-                    createTable(rawData, 'raw-data-table');
-                });
-                
-                pyodide.globals.set('displayOICalculation', oiData => {
-                    logToConsole('Displaying OI calculation sample');
-                    createTable(oiData, 'oi-calculation-table');
-                });
-                
-                pyodide.globals.set('displayPolarConversion', polarData => {
-                    logToConsole('Displaying polar conversion sample');
-                    createTable(polarData, 'polar-conversion-table');
-                });
-                
-                pyodide.globals.set('updateProgress', updateProgress);
-                
-                logToConsole('Data generation complete');
+                // Get the final data from Python
+                plotData = pyodide.globals.get('final_data').toJs();
+                logToConsole('Data generation complete', 'success');
                 
                 // Create the plot
+                renderPlot();
+                updateProgress(100, 'Complete!');
+                logToConsole('Visualization rendered successfully', 'success');
+                
+            } catch (error) {
+                logToConsole(`Error: ${error.message}`, 'error');
+                updateProgress(0, `Error: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function renderPlot() {
+            if (!plotData) {
+                logToConsole('No data available for plotting', 'error');
+                return;
+            }
+            
+            try {
                 const trace = {
-                    x: data.x,
-                    y: data.y,
-                    z: data.z,
-                    text: data.text,
+                    x: plotData.x,
+                    y: plotData.y,
+                    z: plotData.z,
+                    text: plotData.text,
                     mode: 'markers',
                     marker: {
-                        size: 4,
-                        color: data.color,
+                        size: 5,
+                        color: plotData.color,
                         colorscale: 'RdYlGn',
                         colorbar: { title: 'PaO2 Norm' },
-                        showscale: true
+                        showscale: true,
+                        opacity: 0.8
                     },
                     type: 'scatter3d',
                     hoverinfo: 'text'
@@ -274,25 +315,25 @@ print("Data preparation complete.")
                 const layout = {
                     title: 'Oxygenation Index Dome Effect',
                     scene: {
-                        xaxis: { title: 'x' },
-                        yaxis: { title: 'y' },
-                        zaxis: { title: 'OI' },
+                        xaxis: { title: 'X Coordinate' },
+                        yaxis: { title: 'Y Coordinate' },
+                        zaxis: { title: 'Oxygenation Index' },
+                        camera: {
+                            eye: { x: 1.5, y: 1.5, z: 0.8 }
+                        }
                     },
                     autosize: true,
                     margin: { l: 0, r: 0, b: 0, t: 30 }
                 };
 
                 Plotly.newPlot('plot', [trace], layout);
-                updateProgress(100, 'Complete!');
-                logToConsole('Visualization rendered successfully');
-                
+                logToConsole('3D plot rendered successfully', 'success');
             } catch (error) {
-                logToConsole(`Error: ${error.message}`, 'error');
-                updateProgress(0, `Error: ${error.message}`);
-                console.error(error);
+                logToConsole(`Plot rendering error: ${error.message}`, 'error');
             }
         }
 
+        // Start the application
         main();
     </script>
 </body>
