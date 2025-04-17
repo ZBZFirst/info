@@ -83,3 +83,39 @@
 .audio-visualizer .hidden {
     display: none;
 }
+
+/* Add to existing CSS */
+.secondary {
+    background-color: #555;
+}
+
+.visual-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.visual-option {
+    padding: 10px 15px;
+    background-color: #444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.visual-option:hover {
+    background-color: #555;
+}
+
+.visual-option.active {
+    background-color: #4CAF50;
+}
+
+.fullscreen .visual-options {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+}
