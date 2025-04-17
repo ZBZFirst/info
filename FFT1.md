@@ -27,4 +27,4 @@ title: Fast Fourier Transform
 </div>
 
 <link rel="stylesheet" href="_css/fft.css">
-<script src="fft.js" defer></script>
+<script src="js/fft.js" defer></script>
