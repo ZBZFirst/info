@@ -94,7 +94,6 @@ class CertificateManager {
             
             <div class="cert-manager-actions">
               <button id="cm-generate-cert" class="cert-manager-btn cert-manager-btn-primary" disabled>Generate Certificate</button>
-              <button id="cm-download-cert" class="cert-manager-btn cert-manager-btn-secondary" disabled>Download Certificate</button>
             </div>
           </div>
         </div>
