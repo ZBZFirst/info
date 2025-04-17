@@ -215,56 +215,46 @@ function processAudioData(dataArray) {
     const processed = new Float32Array(dataArray.length);
     let currentMax = 0;
     
-    // Find current max value
     for (let i = 0; i < dataArray.length; i++) {
-        currentMax = Math.max(currentMax, dataArray[i]);
+        const logValue = Math.log1p(dataArray[i]) * 10;
+        currentMax = Math.max(currentMax, logValue);
+        processed[i] = logValue;
     }
     
-    // Update dynamic range scaling
     const rangeAdjustedMax = updateDynamicRange(currentMax);
     const dynamicScale = rangeAdjustedMax > 0 ? (1 / rangeAdjustedMax) : 1;
     
-    // Process all values
     for (let i = 0; i < dataArray.length; i++) {
-        let value = (dataArray[i] / 255) * state.settings.baseSensitivity;
-        value *= dynamicScale;
-        value = Math.max(0, value - state.settings.noiseFloor);
-        processed[i] = Math.min(255, value * 255 * (1 + state.settings.dynamicRange));
+        let value = processed[i];
+        value *= dynamicScale * (1 + state.settings.baseSensitivity * 2);
+        value = Math.max(0, value - (state.settings.noiseFloor * 0.5));
+        processed[i] = Math.min(255, value * 255 * (1 + state.settings.dynamicRange * 2));
     }
-    
     return processed;
 }
 
 function updateDynamicRange(currentValue) {
-    // Maintain history of recent values
-    state.settings.history.push(currentValue);
-    if (state.settings.history.length > state.settings.maxHistory) {
-        state.settings.history.shift();
-    }
+    const weight = 0.3; // How quickly we adapt to changes
+    state.settings.currentMax = state.settings.currentMax > 0 ?
+        (weight * currentValue) + ((1 - weight) * state.settings.currentMax) :
+        currentValue;
     
-    // Calculate adaptive max value
-    const avg = state.settings.history.reduce((sum, val) => sum + val, 0) / state.settings.history.length;
-    state.settings.currentMax = Math.max(
-        currentValue, 
-        state.settings.currentMax * state.settings.decayRate,
-        avg * 1.5
-    );
-    
-    return state.settings.currentMax;
+    return Math.max(state.settings.currentMax, 20);
 }
 
-// Drawing Functions
 function drawBars(dataArray, bufferLength) {
     const barWidth = (canvas.width / bufferLength) * 2.5;
     let x = 0;
     
+    const boost = 1.5 + (state.settings.baseSensitivity * 2);
+    
     for (let i = 0; i < bufferLength; i++) {
-        const barHeight = dataArray[i];
+        const barHeight = Math.max(2, dataArray[i] * boost);
         const hue = state.settings.colorHue + (i/bufferLength)*160;
         
         const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        gradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`);
-        gradient.addColorStop(1, `hsl(${hue}, 100%, 20%)`);
+        gradient.addColorStop(0, `hsl(${hue}, 100%, 70%)`); // Brighter colors
+        gradient.addColorStop(1, `hsl(${hue}, 100%, 30%)`);
         
         ctx.fillStyle = gradient;
         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
@@ -297,14 +287,17 @@ function drawWaveform(dataArray, bufferLength) {
 function drawCircle(dataArray, bufferLength) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = Math.min(canvas.width, canvas.height) * 0.4;
+    const baseRadius = Math.min(canvas.width, canvas.height) * 0.3;
     
-    ctx.lineWidth = 2;
+    // Boost factor for circular visualization
+    const boost = 2 + (state.settings.baseSensitivity * 3);
+    
+    ctx.lineWidth = 3; // Thicker lines for better visibility
     ctx.beginPath();
     
     for (let i = 0; i < bufferLength; i++) {
         const angle = (i * Math.PI * 2) / bufferLength;
-        const pointRadius = radius + (dataArray[i] * state.settings.baseSensitivity * 0.5);
+        const pointRadius = baseRadius + (dataArray[i] * boost * 0.3);
         
         const x = centerX + Math.cos(angle) * pointRadius;
         const y = centerY + Math.sin(angle) * pointRadius;
@@ -314,7 +307,7 @@ function drawCircle(dataArray, bufferLength) {
     }
     
     ctx.closePath();
-    ctx.strokeStyle = `hsl(${state.settings.colorHue}, 100%, 50%)`;
+    ctx.strokeStyle = `hsl(${state.settings.colorHue}, 100%, 60%)`; // Brighter stroke
     ctx.stroke();
 }
 
