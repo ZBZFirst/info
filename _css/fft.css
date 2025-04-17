@@ -1,0 +1,85 @@
+.audio-visualizer {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #222;
+    color: #eee;
+    text-align: center;
+}
+
+.audio-visualizer canvas {
+    background-color: #000;
+    display: block;
+    margin: 20px auto;
+    width: 100%;
+    max-width: 800px;
+}
+
+.audio-visualizer .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.audio-visualizer button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    min-width: 120px;
+}
+
+.audio-visualizer button:hover {
+    background-color: #45a049;
+}
+
+.audio-visualizer .control-group {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.audio-visualizer label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.audio-visualizer input[type="range"] {
+    width: 100%;
+    max-width: 300px;
+    margin: 10px 0;
+}
+
+.audio-visualizer #deviceList {
+    margin: 20px auto;
+    max-width: 500px;
+    text-align: left;
+}
+
+.audio-visualizer .device-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    text-align: left;
+    background-color: #444;
+    border: none;
+    border-radius: 4px;
+    color: #eee;
+    cursor: pointer;
+}
+
+.audio-visualizer .device-btn:hover {
+    background-color: #555;
+}
+
+.audio-visualizer .hidden {
+    display: none;
+}
