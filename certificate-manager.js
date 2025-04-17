@@ -316,7 +316,6 @@ class CertificateManager {
         <div class="certificate-controls">
           <button id="cm-update-cert">Update Certificate</button>
           <button id="cm-print-cert">Print Certificate</button>
-          <button id="cm-pdf-cert">Export as PDF</button>
         </div>
       </div>
     `;
@@ -332,10 +331,7 @@ class CertificateManager {
     document.getElementById('cm-print-cert')?.addEventListener('click', () => {
       this.printCertificate();
     });
-    
-    document.getElementById('cm-pdf-cert')?.addEventListener('click', () => {
-      this.generatePDF();
-    });
+
   }
   
   updateCertificateFromEdits() {
@@ -382,47 +378,6 @@ class CertificateManager {
     printWindow.document.close();
   }
 
-  generatePDF() {
-    if (!this.currentCertificate) return;
-  
-    // Load jsPDF library dynamically
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onload = () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      // Add certificate content
-      doc.setFontSize(20);
-      doc.text('Certificate of Completion', 105, 20, { align: 'center' });
-      
-      doc.setFontSize(16);
-      doc.text(`This certifies that ${this.currentCertificate.name}`, 105, 40, { align: 'center' });
-      doc.text(`has successfully completed ${this.currentCertificate.course}`, 105, 50, { align: 'center' });
-      
-      doc.setFontSize(14);
-      doc.text(`Score: ${this.currentCertificate.score}`, 105, 70, { align: 'center' });
-      doc.text(`Date: ${this.currentCertificate.date}`, 105, 80, { align: 'center' });
-      doc.text(`ID: ${this.currentCertificate.id}`, 105, 90, { align: 'center' });
-      
-      // Add decorative elements
-      doc.setDrawColor(0);
-      doc.setLineWidth(1);
-      doc.line(20, 30, 190, 30);
-      
-      // Save the PDF
-      doc.save(`certificate_${this.currentCertificate.id}.pdf`);
-    };
-    document.head.appendChild(script);
-  }
-  
-  initEventListeners() {
-    document.getElementById('cert-manager-btn')?.addEventListener('click', () => {
-      this.toggleOverlay(); // No need for extra checks; button state is already managed
-    });
-  }
-
-  
 }
 
 // Initialize after DOM loads
