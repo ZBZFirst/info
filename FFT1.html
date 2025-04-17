@@ -1,63 +1,183 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Audio Visualizer</title>
+    <title>Advanced Audio Visualizer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            background-color: #222;
+            color: #eee;
             text-align: center;
+            overflow-x: hidden;
+        }
+        #container {
+            max-width: 1000px;
+            margin: 0 auto;
         }
         canvas {
             background-color: #000;
             display: block;
             margin: 20px auto;
+            width: 100%;
+            max-width: 800px;
+            cursor: pointer;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
         }
         button {
             padding: 10px 20px;
-            margin: 10px;
             font-size: 16px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
+            min-width: 120px;
+            transition: all 0.2s;
         }
         button:hover {
             background-color: #45a049;
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        button.secondary {
+            background-color: #555;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        .control-group {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+        }
+        .visual-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .visual-option {
+            background-color: #444;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .visual-option:hover {
+            background-color: #555;
+        }
+        .visual-option.active {
+            background-color: #4CAF50;
         }
         #deviceList {
             margin: 20px auto;
             max-width: 500px;
+            text-align: left;
         }
         .device-btn {
             display: block;
             width: 100%;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 12px;
+            margin: 8px 0;
             text-align: left;
-            background-color: #f8f8f8;
-            border: 1px solid #ddd;
+            background-color: #444;
+            border: none;
             border-radius: 4px;
+            color: #eee;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .device-btn:hover {
-            background-color: #e8e8e8;
+            background-color: #555;
+            transform: translateX(5px);
         }
         .hidden {
             display: none;
         }
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            margin: 0;
+            padding: 0;
+        }
+        .fullscreen canvas {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            margin: 0;
+        }
+        .fullscreen .close-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background-color: rgba(0,0,0,0.7);
+            border: 2px solid #fff;
+        }
     </style>
 </head>
 <body>
-    <h1>Audio Visualizer</h1>
-    
-    <button id="startBtn">Start Audio Visualizer</button>
-    
-    <div id="deviceList" class="hidden"></div>
-    
-    <canvas id="visualizer" width="800" height="400"></canvas>
+    <div id="container">
+        <h1>Advanced Audio Visualizer</h1>
+        
+        <div class="control-group">
+            <button id="startBtn">Start Visualizer</button>
+            <div id="deviceList" class="hidden"></div>
+        </div>
+        
+        <div class="control-group">
+            <h3>Visualization Controls</h3>
+            <label for="sensitivity">Sensitivity: <span id="sensitivityValue">50</span>%</label>
+            <input type="range" id="sensitivity" min="1" max="100" value="50">
+            
+            <label for="smoothing">Smoothing: <span id="smoothingValue">50</span>%</label>
+            <input type="range" id="smoothing" min="0" max="100" value="50">
+            
+            <label for="colorHue">Color Hue: <span id="colorHueValue">0</span>°</label>
+            <input type="range" id="colorHue" min="0" max="360" value="0">
+        </div>
+        
+        <div class="control-group">
+            <h3>Visual Style</h3>
+            <div class="visual-options">
+                <div class="visual-option active" data-mode="bars">Bars</div>
+                <div class="visual-option" data-mode="wave">Waveform</div>
+                <div class="visual-option" data-mode="circle">Circle</div>
+                <div class="visual-option" data-mode="particles">Particles</div>
+            </div>
+        </div>
+        
+        <button id="fullscreenBtn" class="secondary">Enter Fullscreen</button>
+        <button id="stopBtn" class="danger hidden">Stop Visualizer</button>
+        
+        <canvas id="visualizer" width="800" height="400"></canvas>
+    </div>
 
     <script>
         // Audio elements
@@ -67,15 +187,78 @@
         let animationId;
         const canvas = document.getElementById('visualizer');
         const ctx = canvas.getContext('2d');
+        
+        // UI Elements
         const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
         const deviceList = document.getElementById('deviceList');
-
-        // Start button handler
-        startBtn.addEventListener('click', async () => {
+        const sensitivitySlider = document.getElementById('sensitivity');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const smoothingSlider = document.getElementById('smoothing');
+        const smoothingValue = document.getElementById('smoothingValue');
+        const colorHueSlider = document.getElementById('colorHue');
+        const colorHueValue = document.getElementById('colorHueValue');
+        const visualOptions = document.querySelectorAll('.visual-option');
+        const container = document.getElementById('container');
+        
+        // Visualization settings
+        let settings = {
+            sensitivity: 0.5,
+            smoothing: 0.5,
+            colorHue: 0,
+            visualMode: 'bars',
+            isFullscreen: false
+        };
+        
+        // Initialize UI
+        setupEventListeners();
+        
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startDeviceSelection);
+            stopBtn.addEventListener('click', stopVisualizer);
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
+            // Settings sliders
+            sensitivitySlider.addEventListener('input', () => {
+                settings.sensitivity = sensitivitySlider.value / 100;
+                sensitivityValue.textContent = sensitivitySlider.value;
+            });
+            
+            smoothingSlider.addEventListener('input', () => {
+                settings.smoothing = smoothingSlider.value / 100;
+                smoothingValue.textContent = smoothingSlider.value;
+                if (analyser) analyser.smoothingTimeConstant = settings.smoothing;
+            });
+            
+            colorHueSlider.addEventListener('input', () => {
+                settings.colorHue = parseInt(colorHueSlider.value);
+                colorHueValue.textContent = colorHueSlider.value;
+            });
+            
+            // Visual mode selection
+            visualOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    visualOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                    settings.visualMode = option.dataset.mode;
+                });
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (!settings.isFullscreen) {
+                    resizeCanvas();
+                }
+            });
+        }
+        
+        async function startDeviceSelection() {
             try {
                 startBtn.disabled = true;
                 
                 // Get available audio devices
+                await navigator.mediaDevices.getUserMedia({ audio: true }); // Prompt for permission first
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const audioDevices = devices.filter(device => device.kind === 'audioinput');
                 
@@ -100,9 +283,8 @@
                 alert('Could not access audio devices. Please ensure permissions are granted.');
                 resetUI();
             }
-        });
-
-        // Start visualization with selected device
+        }
+        
         async function startVisualizer(deviceId) {
             try {
                 deviceList.classList.add('hidden');
@@ -110,6 +292,7 @@
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = settings.smoothing;
                 
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: {
@@ -120,12 +303,11 @@
                 audioSource = audioContext.createMediaStreamSource(stream);
                 audioSource.connect(analyser);
                 
+                // Update UI
+                startBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                resizeCanvas();
                 visualize();
-                
-                // Change button to stop
-                startBtn.textContent = 'Stop Visualizer';
-                startBtn.onclick = stopVisualizer;
-                startBtn.disabled = false;
                 
             } catch (error) {
                 console.error('Error starting visualizer:', error);
@@ -133,8 +315,7 @@
                 resetUI();
             }
         }
-
-        // Stop visualization
+        
         function stopVisualizer() {
             cancelAnimationFrame(animationId);
             if (audioSource) {
@@ -149,47 +330,171 @@
             resetUI();
             clearCanvas();
         }
-
-        // Visualization loop
+        
+        function resizeCanvas() {
+            const width = Math.min(800, window.innerWidth - 40);
+            canvas.width = width;
+            canvas.height = width * 0.5; // Maintain aspect ratio
+        }
+        
+        function clearCanvas() {
+            ctx.fillStyle = 'rgb(0, 0, 0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function toggleFullscreen() {
+            if (settings.isFullscreen) {
+                document.exitFullscreen();
+            } else {
+                canvas.requestFullscreen().catch(err => {
+                    alert(`Error entering fullscreen: ${err.message}`);
+                });
+            }
+        }
+        
+        // Handle fullscreen changes
+        document.addEventListener('fullscreenchange', () => {
+            settings.isFullscreen = !!document.fullscreenElement;
+            if (settings.isFullscreen) {
+                fullscreenBtn.textContent = 'Exit Fullscreen';
+                canvas.classList.add('fullscreen');
+            } else {
+                fullscreenBtn.textContent = 'Enter Fullscreen';
+                canvas.classList.remove('fullscreen');
+                resizeCanvas();
+            }
+        });
+        
+        function resetUI() {
+            startBtn.disabled = false;
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+            deviceList.classList.add('hidden');
+        }
+        
+        // Visualization functions
         function visualize() {
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
+            const timeDomainArray = new Uint8Array(bufferLength);
             
             function draw() {
                 animationId = requestAnimationFrame(draw);
+                
                 analyser.getByteFrequencyData(dataArray);
+                analyser.getByteTimeDomainData(timeDomainArray);
                 
                 ctx.fillStyle = 'rgb(0, 0, 0)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                const barWidth = (canvas.width / bufferLength) * 2.5;
-                let x = 0;
-                
-                for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = dataArray[i] / 2;
-                    
-                    ctx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    
-                    x += barWidth + 1;
+                switch(settings.visualMode) {
+                    case 'bars':
+                        drawBars(dataArray, bufferLength);
+                        break;
+                    case 'wave':
+                        drawWaveform(timeDomainArray, bufferLength);
+                        break;
+                    case 'circle':
+                        drawCircle(dataArray, bufferLength);
+                        break;
+                    case 'particles':
+                        drawParticles(dataArray, bufferLength);
+                        break;
                 }
             }
             
             draw();
         }
-
-        // Clear canvas
-        function clearCanvas() {
-            ctx.fillStyle = 'rgb(0, 0, 0)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        function drawBars(dataArray, bufferLength) {
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let x = 0;
+            
+            for (let i = 0; i < bufferLength; i++) {
+                const scaledValue = dataArray[i] * settings.sensitivity;
+                const barHeight = Math.min(scaledValue, canvas.height);
+                
+                // HSL color with hue control
+                ctx.fillStyle = `hsl(${settings.colorHue}, 100%, ${50 + (barHeight / canvas.height) * 50}%)`;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                
+                x += barWidth + 1;
+            }
         }
-
-        // Reset UI to initial state
-        function resetUI() {
-            startBtn.textContent = 'Start Audio Visualizer';
-            startBtn.onclick = () => startBtn.click(); // Trigger the original click handler
-            startBtn.disabled = false;
-            deviceList.classList.add('hidden');
+        
+        function drawWaveform(dataArray, bufferLength) {
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = `hsl(${settings.colorHue}, 100%, 50%)`;
+            ctx.beginPath();
+            
+            const sliceWidth = canvas.width / bufferLength;
+            let x = 0;
+            
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * canvas.height / 2 * settings.sensitivity;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                x += sliceWidth;
+            }
+            
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+        }
+        
+        function drawCircle(dataArray, bufferLength) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) * 0.4;
+            
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < bufferLength; i++) {
+                const angle = (i * Math.PI * 2) / bufferLength;
+                const scaledValue = dataArray[i] * settings.sensitivity * 0.5;
+                const pointRadius = radius + scaledValue;
+                
+                const x = centerX + Math.cos(angle) * pointRadius;
+                const y = centerY + Math.sin(angle) * pointRadius;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.strokeStyle = `hsl(${settings.colorHue}, 100%, 50%)`;
+            ctx.stroke();
+        }
+        
+        function drawParticles(dataArray, bufferLength) {
+            const particleCount = bufferLength / 2;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const maxRadius = Math.min(canvas.width, canvas.height) * 0.4;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i * Math.PI * 2) / particleCount;
+                const value = dataArray[i] * settings.sensitivity * 0.5;
+                const radius = Math.min(maxRadius * 0.2 + value, maxRadius);
+                
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                const size = 2 + (value / 255) * 8;
+                
+                ctx.fillStyle = `hsl(${(settings.colorHue + i) % 360}, 100%, 50%)`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     </script>
 </body>
