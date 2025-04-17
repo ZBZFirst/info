@@ -15,6 +15,8 @@ const dynamicRangeSlider = document.getElementById('dynamicRange');
 const dynamicRangeValue = document.getElementById('dynamicRangeValue');
 const noiseFloorSlider = document.getElementById('noiseFloor');
 const noiseFloorValue = document.getElementById('noiseFloorValue');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const visualOptions = document.querySelectorAll('.visual-option');
 
 // Audio processing settings
 let settings = {
@@ -24,7 +26,9 @@ let settings = {
     history: [],
     maxHistory: 10,
     currentMax: 0,
-    decayRate: 0.95
+    decayRate: 0.95,
+    visualMode: 'bars',
+    isFullscreen: false
 };
 
 // Initialize UI
@@ -47,6 +51,16 @@ function setupEventListeners() {
         settings.noiseFloor = noiseFloorSlider.value / 100;
         noiseFloorValue.textContent = noiseFloorSlider.value;
     });
+}
+
+function toggleFullscreen() {
+    if (settings.isFullscreen) {
+        document.exitFullscreen();
+    } else {
+        canvas.requestFullscreen().catch(err => {
+            alert(`Error entering fullscreen: ${err.message}`);
+        });
+    }
 }
 
 async function startDeviceSelection() {
@@ -177,38 +191,130 @@ function applyDynamicProcessing(dataArray) {
     return processed;
 }
 
+// Enhanced visualize() function
 function visualize() {
     const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    const processedArray = new Float32Array(bufferLength);
+    const freqData = new Uint8Array(bufferLength);
+    const timeData = new Uint8Array(bufferLength);
     
     function draw() {
         animationId = requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray);
+        analyser.getByteFrequencyData(freqData);
+        analyser.getByteTimeDomainData(timeData);
         
-        for (let i = 0; i < bufferLength; i++) {
-            processedArray[i] = dataArray[i];
-        }
-        const dynamicData = applyDynamicProcessing(processedArray);
+        const dynamicData = applyDynamicProcessing(freqData);
         
         ctx.fillStyle = 'rgb(0, 0, 0)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        const barWidth = (canvas.width / bufferLength) * 2.5;
-        let x = 0;
-        
-        for (let i = 0; i < bufferLength; i++) {
-            const barHeight = dynamicData[i];
-            const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-            gradient.addColorStop(0, `hsl(${200 + (i/bufferLength)*160}, 100%, 50%)`);
-            gradient.addColorStop(1, `hsl(${200 + (i/bufferLength)*160}, 100%, 20%)`);
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-            
-            x += barWidth + 1;
+        switch(settings.visualMode) {
+            case 'bars':
+                drawBars(dynamicData, bufferLength);
+                break;
+            case 'wave':
+                drawWaveform(timeData, bufferLength);
+                break;
+            case 'circle':
+                drawCircle(dynamicData, bufferLength);
+                break;
+            case 'particles':
+                drawParticles(dynamicData, bufferLength);
+                break;
         }
     }
     
     draw();
+}
+
+// Visualization mode functions
+function drawBars(dataArray, bufferLength) {
+    const barWidth = (canvas.width / bufferLength) * 2.5;
+    let x = 0;
+    
+    for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i];
+        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+        gradient.addColorStop(0, `hsl(${200 + (i/bufferLength)*160}, 100%, 50%)`);
+        gradient.addColorStop(1, `hsl(${200 + (i/bufferLength)*160}, 100%, 20%)`);
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        
+        x += barWidth + 1;
+    }
+}
+
+function drawWaveform(dataArray, bufferLength) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = `hsl(${settings.colorHue}, 100%, 50%)`;
+    ctx.beginPath();
+    
+    const sliceWidth = canvas.width / bufferLength;
+    let x = 0;
+    
+    for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2 * settings.sensitivity;
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+        
+        x += sliceWidth;
+    }
+    
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+}
+
+function drawCircle(dataArray, bufferLength) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(canvas.width, canvas.height) * 0.4;
+    
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    for (let i = 0; i < bufferLength; i++) {
+        const angle = (i * Math.PI * 2) / bufferLength;
+        const scaledValue = dataArray[i] * settings.sensitivity * 0.5;
+        const pointRadius = radius + scaledValue;
+        
+        const x = centerX + Math.cos(angle) * pointRadius;
+        const y = centerY + Math.sin(angle) * pointRadius;
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    
+    ctx.closePath();
+    ctx.strokeStyle = `hsl(${settings.colorHue}, 100%, 50%)`;
+    ctx.stroke();
+}
+
+function drawParticles(dataArray, bufferLength) {
+    const particleCount = bufferLength / 2;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxRadius = Math.min(canvas.width, canvas.height) * 0.4;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const angle = (i * Math.PI * 2) / particleCount;
+        const value = dataArray[i] * settings.sensitivity * 0.5;
+        const radius = Math.min(maxRadius * 0.2 + value, maxRadius);
+        
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        const size = 2 + (value / 255) * 8;
+        
+        ctx.fillStyle = `hsl(${(settings.colorHue + i) % 360}, 100%, 50%)`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
 }
