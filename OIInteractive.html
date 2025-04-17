@@ -1,222 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oxygenation Index Dome Visualization</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        #container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        #plot {
-            width: 100%;
-            height: 700px;
-        }
-        .legend {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin: 0 15px;
-        }
-        .legend-color {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            margin-right: 5px;
-            border: 1px solid #333;
-        }
-    </style>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <div id="container">
-        <h1>Oxygenation Index Dome Visualization</h1>
-        <div class="legend">
-            <div class="legend-item"><div class="legend-color" style="background-color: #00aa00;"></div> Green (OI < 15)</div>
-            <div class="legend-item"><div class="legend-color" style="background-color: #ffff00;"></div> Yellow (15 ≤ OI < 25)</div>
-            <div class="legend-item"><div class="legend-color" style="background-color: #ff0000;"></div> Red (25 ≤ OI < 40)</div>
-            <div class="legend-item"><div class="legend-color" style="background-color: #000000;"></div> Black (OI ≥ 40)</div>
-        </div>
-        <div id="plot"></div>
-        <div style="text-align: center; margin-top: 10px; font-style: italic;">
-            OI = (MAP × FiO₂ × 100) / PaO₂
-        </div>
-    </div>
+  <div id="plot"></div>
 
-    <script>
-        // Configuration for clinical zones
-        const ZONES = {
-            OI: [
-                { max: 15, color: '#00aa00', name: 'Green (OI < 15)' },
-                { max: 25, color: '#ffff00', name: 'Yellow (15 ≤ OI < 25)' },
-                { max: 40, color: '#ff0000', name: 'Red (25 ≤ OI < 40)' },
-                { max: Infinity, color: '#000000', name: 'Black (OI ≥ 40)' }
-            ],
-            MAP: [
-                { max: 10, color: '#00aa00' },
-                { max: 15, color: '#ffff00' },
-                { max: 20, color: '#ff0000' },
-                { max: 50, color: '#000000' }
-            ],
-            FiO2: [
-                { max: 0.3, color: '#00aa00' },
-                { max: 0.6, color: '#ffff00' },
-                { max: 1.0, color: '#ff0000' }
-            ],
-            PaO2: [
-                { max: 60, color: '#ff0000' },
-                { max: 80, color: '#ffff00' },
-                { max: 760, color: '#00aa00' }
-            ]
-        };
-
-        // Generate synthetic clinical data
-        function generateClinicalData(nSamples = 10000) {
-            const data = [];
-            
-            for (let i = 0; i < nSamples; i++) {
-                // Generate correlated data where higher FiO2/MAP with lower PaO2 gives higher OI
-                const fio2 = Math.max(0.21, Math.min(1, gaussianRand(0.4, 0.15)));
-                const map = Math.max(5, Math.min(50, gaussianRand(15, 5)));
-                const pao2 = Math.max(35, Math.min(760, gaussianRand(80, 20)));
-                
-                // Calculate OI
-                const oi = (fio2 * map * 100) / pao2;
-                
-                // Get zone colors
-                const oiColor = getZoneColor(oi, ZONES.OI);
-                const mapColor = getZoneColor(map, ZONES.MAP);
-                const fio2Color = getZoneColor(fio2, ZONES.FiO2);
-                const pao2Color = getZoneColor(pao2, ZONES.PaO2);
-                
-                // Create polar coordinates for dome effect
-                const radius = Math.sqrt(map / 50 + fio2); // Combined effect of MAP and FiO2
-                const angle = fio2 * 2 * Math.PI; // Full circle based on FiO2
-                const x = radius * Math.cos(angle);
-                const y = radius * Math.sin(angle);
-                
-                data.push({
-                    x: x,
-                    y: y,
-                    oi: oi,
-                    map: map,
-                    fio2: fio2,
-                    pao2: pao2,
-                    oiColor: oiColor,
-                    mapColor: mapColor,
-                    fio2Color: fio2Color,
-                    pao2Color: pao2Color
-                });
-            }
-            
-            return data;
-        }
-
-        // Helper function for normal distribution
-        function gaussianRand(mean, stdDev) {
-            let u = 0, v = 0;
-            while(u === 0) u = Math.random();
-            while(v === 0) v = Math.random();
-            const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-            return num * stdDev + mean;
-        }
-
-        // Get color for a value based on zones
-        function getZoneColor(value, zones) {
-            for (const zone of zones) {
-                if (value <= zone.max) {
-                    return zone.color;
-                }
-            }
-            return '#888888'; // Default gray
-        }
-
-        // Generate the data
-        const clinicalData = generateClinicalData(5000);
-
-        // Prepare traces for each OI zone
-        const traces = ZONES.OI.map(zone => {
-            const zoneData = clinicalData.filter(d => d.oi <= zone.max);
-            return {
-                x: zoneData.map(d => d.x),
-                y: zoneData.map(d => d.y),
-                z: zoneData.map(d => d.oi),
-                mode: 'markers',
-                type: 'scatter3d',
-                name: zone.name,
-                marker: {
-                    size: 3,
-                    color: zoneData.map(d => d.oiColor),
-                    opacity: 0.7
-                },
-                hovertemplate: 
-                    '<b>MAP</b>: %{customdata[0]:.1f}<br>' +
-                    '<b>FiO<sub>2</sub></b>: %{customdata[1]:.2f}<br>' +
-                    '<b>PaO<sub>2</sub></b>: %{customdata[2]:.1f}<br>' +
-                    '<b>OI</b>: %{customdata[3]:.1f}<extra></extra>',
-                customdata: zoneData.map(d => [d.map, d.fio2, d.pao2, d.oi])
-            };
-        });
-
-        // Add reference plane at OI=25 (ARDS threshold)
-        const planeSize = 2;
-        const planeZ = 25;
-        traces.push({
-            type: 'surface',
-            x: [[-planeSize, -planeSize], [planeSize, planeSize]],
-            y: [[-planeSize, planeSize], [-planeSize, planeSize]],
-            z: [[planeZ, planeZ], [planeZ, planeZ]],
-            colorscale: [[0, 'rgba(255, 255, 0, 0.2)'], [1, 'rgba(255, 255, 0, 0.2)']],
-            showscale: false,
-            name: 'OI=25 Threshold',
-            hoverinfo: 'skip'
-        });
-
-        // Create the plot
-        const layout = {
-            title: 'Oxygenation Index Dome Visualization<br><sub>Color shows OI clinical zones</sub>',
-            scene: {
-                xaxis: { title: 'X (MAP/FiO₂ composite)' },
-                yaxis: { title: 'Y (MAP/FiO₂ composite)' },
-                zaxis: { title: 'Oxygenation Index (OI)', range: [0, 50] },
-                camera: {
-                    eye: { x: 1.5, y: 1.5, z: 0.8 }
-                }
-            },
-            margin: { l: 0, r: 0, b: 80, t: 100 },
-            legend: {
-                orientation: 'h',
-                y: -0.2
-            },
-            height: 700
-        };
-
-        Plotly.newPlot('plot', traces, layout);
-
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            Plotly.Plots.resize('plot');
-        });
-    </script>
+  <script>
+    // Generate random data
+    const size = 100000;
+    const fio2 = Array(size).fill().map(() => Math.round((0.21 + 0.79 * Math.random()) * 100) / 100);
+    const map = Array(size).fill().map(() => Math.round(5 + 45 * Math.random()));
+    const pao2 = Array(size).fill().map(() => Math.round(35 + 65 * Math.random()));
+    
+    // Calculate derived values
+    const oi = fio2.map((f, i) => Math.round((f * map[i] * 100) / pao2[i]));
+    const pao2Norm = pao2.map(p => {
+      const min = Math.min(...pao2);
+      const max = Math.max(...pao2);
+      return Math.round(((p - min) / (max - min)) * 100) / 100;
+    });
+    
+    // Convert to Cartesian coordinates
+    const x = pao2Norm.map((r, i) => Math.round(r * 2 * Math.cos(fio2[i] * 2 * Math.PI) * 100) / 100);
+    const y = pao2Norm.map((r, i) => Math.round(r * 2 * Math.sin(fio2[i] * 2 * Math.PI) * 100) / 100);
+    
+    // Create plot
+    const trace = {
+      x, y, z: oi,
+      mode: 'markers',
+      marker: {
+        color: pao2Norm,
+        colorscale: 'RdYlGn',
+        size: 2,
+        opacity: 0.5
+      },
+      type: 'scatter3d',
+      hoverinfo: 'text',
+      text: pao2.map((p, i) => `PaO2: ${p}<br>FiO2: ${fio2[i]}<br>MAP: ${map[i]}<br>OI: ${oi[i]}`)
+    };
+    
+    const layout = {
+      title: 'Oxygenation Index Dome Effect',
+      scene: {
+        xaxis: { title: 'x' },
+        yaxis: { title: 'y' },
+        zaxis: { title: 'OI' }
+      },
+      width: 800,
+      height: 600
+    };
+    
+    Plotly.newPlot('plot', [trace], layout);
+  </script>
 </body>
 </html>
