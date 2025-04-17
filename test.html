@@ -1,77 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Oxygenation Index Plot</title>
-    <!-- Load Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        #plot { width: 100%; height: 100vh; }
-    </style>
+    <title>Oxygenation Index Dome Effect</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 </head>
 <body>
-    <div id="plot"></div>
+    <h2>Oxygenation Index Dome Effect</h2>
+    <div id="plot" style="width: 100%; height: 600px;"></div>
 
-    <script>
-        // Generate random data (mimicking your Python code)
-        function generateData() {
-            const numPoints = 100000;
-            const FiO2 = Array.from({ length: numPoints }, () => 0.21 + 0.79 * Math.random());
-            const MAP = Array.from({ length: numPoints }, () => Math.round(5 + 25 * Math.random()));
-            const PaO2 = Array.from({ length: numPoints }, () => Math.round(35 + 65 * Math.random()));
-            const OI = FiO2.map((f, i) => Math.round((f * MAP[i] * 100) / PaO2[i]));
-            const PaO2_normalized = PaO2.map(p => (p - 35) / (100 - 35)); // Normalize to [0,1]
-            const PaO2FiO2 = PaO2.map((p, i) => (p / FiO2[i]).toFixed(2));
+    <script type="text/javascript">
+        async function main() {
+            const pyodide = await loadPyodide();
 
-            return {
-                FiO2, MAP, PaO2, OI, PaO2_normalized, PaO2FiO2
-            };
-        }
+            await pyodide.loadPackage(['numpy', 'pandas']);
 
-        // Create the 3D scatter plot
-        function createPlot() {
-            const data = generateData();
+            await pyodide.runPythonAsync(`
+import numpy as np
+import pandas as pd
+import js
+
+# Create the DataFrame
+df = pd.DataFrame({
+    'FiO2': np.round(0.21 + 0.79 * np.random.rand(1000), 2),
+    'MAP': np.round(np.random.uniform(low=5.0, high=50.0, size=1000)),
+    'PaO2': np.round(np.random.uniform(low=35.0, high=100.0, size=1000)),
+})
+
+df['OI'] = np.round((df['FiO2'] * df['MAP'] * 100) / df['PaO2'])
+df['PaO2_normalized'] = np.round((df['PaO2'] - df['PaO2'].min()) / (df['PaO2'].max() - df['PaO2'].min()), 2)
+
+r = np.round(df['PaO2_normalized'] * 2, 2)
+theta = np.round(df['FiO2'] * 2 * np.pi, 2)
+df['x'] = np.round(r * np.cos(theta), 2)
+df['y'] = np.round(r * np.sin(theta), 2)
+
+# Convert DataFrame to dictionary for JS
+data = {
+    'x': df['x'].tolist(),
+    'y': df['y'].tolist(),
+    'z': df['OI'].tolist(),
+    'color': df['PaO2_normalized'].tolist(),
+    'text': ['PaO2: ' + str(p) + '<br>FiO2: ' + str(f) + '<br>MAP: ' + str(m) + '<br>OI: ' + str(o)
+             for p, f, m, o in zip(df['PaO2'], df['FiO2'], df['MAP'], df['OI'])]
+}
+
+js.data = data
+            `);
 
             const trace = {
-                x: data.FiO2,
-                y: data.MAP,
-                z: data.OI,
+                x: data.x,
+                y: data.y,
+                z: data.z,
+                text: data.text,
                 mode: 'markers',
-                type: 'scatter3d',
                 marker: {
-                    size: 2,
-                    color: data.PaO2_normalized,
+                    size: 4,
+                    color: data.color,
                     colorscale: 'RdYlGn',
-                    opacity: 0.8,
-                    colorbar: {
-                        title: 'Normalized PaO2',
-                        titleside: 'right'
-                    }
+                    colorbar: { title: 'PaO2 Norm' },
                 },
-                hoverinfo: 'text',
-                text: data.PaO2.map((p, i) => 
-                    `PaO2: ${p}<br>FiO2: ${data.FiO2[i].toFixed(2)}<br>MAP: ${data.MAP[i]}<br>OI: ${data.OI[i]}<br>PaO2/FiO2: ${data.PaO2FiO2[i]}`
-                )
+                type: 'scatter3d',
+                hoverinfo: 'text'
             };
 
             const layout = {
-                title: 'Oxygenation Index (3D Plot)',
+                title: 'Oxygenation Index Dome Effect',
                 scene: {
-                    xaxis: { title: 'FiO2' },
-                    yaxis: { title: 'MAP' },
-                    zaxis: { title: 'OI' }
+                    xaxis: { title: 'x' },
+                    yaxis: { title: 'y' },
+                    zaxis: { title: 'OI' },
                 },
-                width: 1920,
-                height: 1280
+                autosize: true
             };
 
             Plotly.newPlot('plot', [trace], layout);
         }
 
-        // Initialize the plot when the page loads
-        window.onload = createPlot;
+        main();
     </script>
 </body>
 </html>
