@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oxygenation Index Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #graph-container {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+        #cartesian-container, #polar-container {
+            flex: 1;
+            position: relative;
+        }
+        #controls {
+            padding: 10px;
+            background: #f0f0f0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #data-table {
+            height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #ccc;
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        .color-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        button, select {
+            padding: 5px 10px;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="controls">
+            <div class="control-group">
+                <label for="view-type">View:</label>
+                <select id="view-type">
+                    <option value="cartesian">Cartesian</option>
+                    <option value="polar">Polar</option>
+                    <option value="both">Both</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="fixed-param">Fixed Parameter:</label>
+                <select id="fixed-param">
+                    <option value="map">MAP</option>
+                    <option value="fio2">FiO₂</option>
+                    <option value="pao2">PaO₂</option>
+                </select>
+                <input type="number" id="fixed-value" min="5" max="50" step="1" value="10">
+            </div>
+            <button id="toggle-table">Show Data Table</button>
+            <div class="legend">
+                <div class="legend-item"><span class="color-dot" style="background-color: #00aa00;"></span>Green</div>
+                <div class="legend-item"><span class="color-dot" style="background-color: #ffff00;"></span>Yellow</div>
+                <div class="legend-item"><span class="color-dot" style="background-color: #ff0000;"></span>Red</div>
+                <div class="legend-item"><span class="color-dot" style="background-color: #000000;"></span>Black</div>
+            </div>
+        </div>
+        <div id="graph-container">
+            <div id="cartesian-container"></div>
+            <div id="polar-container"></div>
+        </div>
+        <div id="data-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>MAP</th>
+                        <th>FiO₂</th>
+                        <th>PaO₂</th>
+                        <th>OI</th>
+                        <th>MAP Zone</th>
+                        <th>FiO₂ Zone</th>
+                        <th>PaO₂ Zone</th>
+                        <th>OI Zone</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Configuration
+        const config = {
+            MAP: {
+                min: 5,
+                max: 50,
+                step: 1,
+                zones: [
+                    { max: 10, color: '#00aa00' },  // Green
+                    { max: 15, color: '#ffff00' },  // Yellow
+                    { max: 20, color: '#ff0000' },  // Red
+                    { max: 50, color: '#000000' }   // Black (intensity increases)
+                ]
+            },
+            FiO2: {
+                min: 0.21,
+                max: 1,
+                step: 0.01,
+                zones: [
+                    { max: 0.3, color: '#00aa00' }, // Green
+                    { max: 0.6, color: '#ffff00' }, // Yellow
+                    { max: 1, color: '#ff0000' }    // Red (intensity increases)
+                ]
+            },
+            PaO2: {
+                min: 0,
+                max: 760,
+                step: 1,
+                zones: [
+                    { max: 60, color: '#ff0000' },  // Red
+                    { max: 80, color: '#ffff00' },  // Yellow
+                    { max: 760, color: '#00aa00' }  // Green
+                ]
+            },
+            OI: {
+                zones: [
+                    { max: 15, color: '#00aa00' },  // Green
+                    { max: 25, color: '#ffff00' },  // Yellow
+                    { max: 40, color: '#ff0000' },  // Red
+                    { max: Infinity, color: '#000000' } // Black
+                ]
+            }
+        };
+
+        // Global variables
+        let dataset = [];
+        let currentFixedParam = 'map';
+        let currentFixedValue = 10;
+        let cartesianScene, cartesianCamera, cartesianRenderer, cartesianControls;
+        let polarScene, polarCamera, polarRenderer, polarControls;
+        let cartesianChart, polarChart;
+
+        // Initialize the application
+        init();
+
+        function init() {
+            setup3DViews();
+            setupEventListeners();
+            generateDataset();
+            updateVisualizations();
+        }
+
+        function setup3DViews() {
+            // Cartesian View
+            cartesianScene = new THREE.Scene();
+            cartesianScene.background = new THREE.Color(0xf0f0f0);
+            cartesianCamera = new THREE.PerspectiveCamera(75, window.innerWidth / 2 / window.innerHeight, 0.1, 1000);
+            cartesianCamera.position.set(30, 30, 30);
+            cartesianRenderer = new THREE.WebGLRenderer({ antialias: true });
+            cartesianRenderer.setSize(window.innerWidth / 2, window.innerHeight - 200);
+            document.getElementById('cartesian-container').appendChild(cartesianRenderer.domElement);
+            cartesianControls = new THREE.OrbitControls(cartesianCamera, cartesianRenderer.domElement);
+            cartesianControls.enableDamping = true;
+
+            // Polar View
+            polarScene = new THREE.Scene();
+            polarScene.background = new THREE.Color(0xf0f0f0);
+            polarCamera = new THREE.PerspectiveCamera(75, window.innerWidth / 2 / window.innerHeight, 0.1, 1000);
+            polarCamera.position.set(0, 0, 50);
+            polarRenderer = new THREE.WebGLRenderer({ antialias: true });
+            polarRenderer.setSize(window.innerWidth / 2, window.innerHeight - 200);
+            document.getElementById('polar-container').appendChild(polarRenderer.domElement);
+            polarControls = new THREE.OrbitControls(polarCamera, polarRenderer.domElement);
+            polarControls.enableDamping = true;
+
+            // Add axes helpers
+            const cartesianAxes = new THREE.AxesHelper(20);
+            cartesianScene.add(cartesianAxes);
+            const polarAxes = new THREE.AxesHelper(20);
+            polarScene.add(polarAxes);
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('view-type').addEventListener('change', updateViewType);
+            document.getElementById('fixed-param').addEventListener('change', function() {
+                currentFixedParam = this.value;
+                updateFixedValueInput();
+                generateDataset();
+                updateVisualizations();
+            });
+            document.getElementById('fixed-value').addEventListener('input', function() {
+                currentFixedValue = parseFloat(this.value);
+                generateDataset();
+                updateVisualizations();
+            });
+            document.getElementById('toggle-table').addEventListener('click', toggleDataTable);
+        }
+
+        function updateFixedValueInput() {
+            const input = document.getElementById('fixed-value');
+            const paramConfig = currentFixedParam === 'map' ? config.MAP : 
+                              currentFixedParam === 'fio2' ? config.FiO2 : config.PaO2;
+            
+            input.min = paramConfig.min;
+            input.max = paramConfig.max;
+            input.step = paramConfig.step;
+            input.value = currentFixedValue;
+        }
+
+        function generateDataset() {
+            dataset = [];
+            const fixedValue = currentFixedValue;
+
+            if (currentFixedParam === 'map') {
+                // Fixed MAP, vary FiO2 and PaO2
+                for (let fio2 = config.FiO2.min; fio2 <= config.FiO2.max; fio2 += config.FiO2.step) {
+                    for (let pao2 = config.PaO2.min; pao2 <= config.PaO2.max; pao2 += config.PaO2.step * 10) { // Step by 10 for performance
+                        if (pao2 === 0) continue; // Avoid division by zero
+                        const oi = calculateOI(fixedValue, fio2, pao2);
+                        dataset.push(createDataPoint(fixedValue, fio2, pao2, oi));
+                    }
+                }
+            } else if (currentFixedParam === 'fio2') {
+                // Fixed FiO2, vary MAP and PaO2
+                for (let map = config.MAP.min; map <= config.MAP.max; map += config.MAP.step) {
+                    for (let pao2 = config.PaO2.min; pao2 <= config.PaO2.max; pao2 += config.PaO2.step * 10) {
+                        if (pao2 === 0) continue;
+                        const oi = calculateOI(map, fixedValue, pao2);
+                        dataset.push(createDataPoint(map, fixedValue, pao2, oi));
+                    }
+                }
+            } else {
+                // Fixed PaO2, vary MAP and FiO2
+                for (let map = config.MAP.min; map <= config.MAP.max; map += config.MAP.step) {
+                    for (let fio2 = config.FiO2.min; fio2 <= config.FiO2.max; fio2 += config.FiO2.step) {
+                        if (fixedValue === 0) continue;
+                        const oi = calculateOI(map, fio2, fixedValue);
+                        dataset.push(createDataPoint(map, fio2, fixedValue, oi));
+                    }
+                }
+            }
+
+            updateDataTable();
+        }
+
+        function calculateOI(map, fio2, pao2) {
+            return (map * fio2 * 100) / pao2;
+        }
+
+        function createDataPoint(map, fio2, pao2, oi) {
+            return {
+                map,
+                fio2,
+                pao2,
+                oi,
+                mapColor: getColor(map, config.MAP.zones, true),
+                fio2Color: getColor(fio2, config.FiO2.zones, true),
+                pao2Color: getColor(pao2, config.PaO2.zones),
+                oiColor: getColor(oi, config.OI.zones, true)
+            };
+        }
+
+        function getColor(value, zones, intensity = false) {
+            for (let i = 0; i < zones.length; i++) {
+                if (value <= zones[i].max) {
+                    if (!intensity) return zones[i].color;
+                    
+                    // Calculate intensity for MAP and FiO2
+                    if (i === zones.length - 1) {
+                        // Last zone - increase intensity
+                        const prevZone = zones[i-1];
+                        const range = zones[i].max - prevZone.max;
+                        const position = Math.min((value - prevZone.max) / range, 1);
+                        return interpolateColor(zones[i-1].color, zones[i].color, position);
+                    }
+                    return zones[i].color;
+                }
+            }
+            return '#888888'; // Gray fallback
+        }
+
+        function interpolateColor(color1, color2, factor) {
+            const hex = color => color.replace('#', '');
+            const r1 = parseInt(hex(color1).substring(0, 2), 16);
+            const g1 = parseInt(hex(color1).substring(2, 4), 16);
+            const b1 = parseInt(hex(color1).substring(4, 6), 16);
+            const r2 = parseInt(hex(color2).substring(0, 2), 16);
+            const g2 = parseInt(hex(color2).substring(2, 4), 16);
+            const b2 = parseInt(hex(color2).substring(4, 6), 16);
+            
+            const r = Math.round(r1 + factor * (r2 - r1));
+            const g = Math.round(g1 + factor * (g2 - g1));
+            const b = Math.round(b1 + factor * (b2 - b1));
+            
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        }
+
+        function updateVisualizations() {
+            updateCartesianView();
+            updatePolarView();
+        }
+
+        function updateCartesianView() {
+            // Clear previous objects
+            while(cartesianScene.children.length > 0) { 
+                cartesianScene.remove(cartesianScene.children[0]); 
+            }
+
+            // Add axes helper
+            const axesHelper = new THREE.AxesHelper(20);
+            cartesianScene.add(axesHelper);
+
+            // Create points
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+
+            dataset.forEach(data => {
+                let x, y, z;
+                
+                if (currentFixedParam === 'map') {
+                    x = data.fio2;
+                    y = data.pao2;
+                    z = data.oi;
+                } else if (currentFixedParam === 'fio2') {
+                    x = data.map;
+                    y = data.pao2;
+                    z = data.oi;
+                } else {
+                    x = data.map;
+                    y = data.fio2;
+                    z = data.oi;
+                }
+
+                positions.push(x, y, z);
+                
+                const color = new THREE.Color(data.oiColor);
+                colors.push(color.r, color.g, color.b);
+                sizes.push(3);
+            });
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+            const material = new THREE.PointsMaterial({
+                size: 3,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const points = new THREE.Points(geometry, material);
+            cartesianScene.add(points);
+
+            // Add labels
+            addCartesianLabels();
+        }
+
+        function addCartesianLabels() {
+            // Implementation similar to previous example
+            // Would add axis labels based on currentFixedParam
+        }
+
+        function updatePolarView() {
+            // Clear previous objects
+            while(polarScene.children.length > 0) { 
+                polarScene.remove(polarScene.children[0]); 
+            }
+
+            // Add axes helper
+            const axesHelper = new THREE.AxesHelper(20);
+            polarScene.add(axesHelper);
+
+            // Create polar plot
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+
+            dataset.forEach(data => {
+                // Convert to polar coordinates
+                const radius = data.oi / 5; // Scale factor for visualization
+                let angle;
+                
+                if (currentFixedParam === 'map') {
+                    angle = data.fio2 * Math.PI * 2; // FiO2 determines angle
+                } else if (currentFixedParam === 'fio2') {
+                    angle = data.map / config.MAP.max * Math.PI * 2; // MAP determines angle
+                } else {
+                    angle = data.map / config.MAP.max * Math.PI * 2; // MAP determines angle
+                }
+
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+                const z = 0;
+
+                positions.push(x, y, z);
+                
+                const color = new THREE.Color(data.oiColor);
+                colors.push(color.r, color.g, color.b);
+                sizes.push(3);
+            });
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+            const material = new THREE.PointsMaterial({
+                size: 3,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const points = new THREE.Points(geometry, material);
+            polarScene.add(points);
+
+            // Add polar grid
+            addPolarGrid();
+        }
+
+        function addPolarGrid() {
+            // Add concentric circles for OI values
+            for (let oi = 5; oi <= 40; oi += 5) {
+                const radius = oi / 5;
+                const circleGeometry = new THREE.BufferGeometry();
+                const vertices = [];
+                
+                for (let i = 0; i <= 64; i++) {
+                    const angle = (i / 64) * Math.PI * 2;
+                    vertices.push(radius * Math.cos(angle), radius * Math.sin(angle), 0);
+                }
+                
+                circleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                const circleMaterial = new THREE.LineBasicMaterial({ color: 0x888888 });
+                const circle = new THREE.Line(circleGeometry, circleMaterial);
+                polarScene.add(circle);
+                
+                // Add label
+                addPolarLabel(radius, 0, 0, oi.toString());
+            }
+        }
+
+        function addPolarLabel(x, y, z, text) {
+            // Similar to previous label implementation
+        }
+
+        function updateDataTable() {
+            const tableBody = document.querySelector('#data-table tbody');
+            tableBody.innerHTML = '';
+
+            // Show a subset of data for performance
+            const displayData = dataset.length > 500 ? dataset.filter((_, i) => i % 10 === 0) : dataset;
+            
+            displayData.forEach(data => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${data.map}</td>
+                    <td>${data.fio2.toFixed(2)}</td>
+                    <td>${data.pao2}</td>
+                    <td>${data.oi.toFixed(1)}</td>
+                    <td><span class="color-dot" style="background-color: ${data.mapColor};"></span>${getZoneName(data.map, config.MAP.zones)}</td>
+                    <td><span class="color-dot" style="background-color: ${data.fio2Color};"></span>${getZoneName(data.fio2, config.FiO2.zones)}</td>
+                    <td><span class="color-dot" style="background-color: ${data.pao2Color};"></span>${getZoneName(data.pao2, config.PaO2.zones)}</td>
+                    <td><span class="color-dot" style="background-color: ${data.oiColor};"></span>${getZoneName(data.oi, config.OI.zones)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function getZoneName(value, zones) {
+            for (const zone of zones) {
+                if (value <= zone.max) {
+                    if (zone.color === '#00aa00') return 'Green';
+                    if (zone.color === '#ffff00') return 'Yellow';
+                    if (zone.color === '#ff0000') return 'Red';
+                    if (zone.color === '#000000') return 'Black';
+                }
+            }
+            return 'Unknown';
+        }
+
+        function updateViewType() {
+            const viewType = document.getElementById('view-type').value;
+            document.getElementById('cartesian-container').style.display = 
+                (viewType === 'cartesian' || viewType === 'both') ? 'block' : 'none';
+            document.getElementById('polar-container').style.display = 
+                (viewType === 'polar' || viewType === 'both') ? 'block' : 'none';
+        }
+
+        function toggleDataTable() {
+            const table = document.getElementById('data-table');
+            table.style.display = table.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function onWindowResize() {
+            const width = window.innerWidth / 2;
+            const height = window.innerHeight - 200;
+            
+            cartesianCamera.aspect = width / height;
+            cartesianCamera.updateProjectionMatrix();
+            cartesianRenderer.setSize(width, height);
+            
+            polarCamera.aspect = width / height;
+            polarCamera.updateProjectionMatrix();
+            polarRenderer.setSize(width, height);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            cartesianControls.update();
+            polarControls.update();
+            cartesianRenderer.render(cartesianScene, cartesianCamera);
+            polarRenderer.render(polarScene, polarCamera);
+        }
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
