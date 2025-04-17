@@ -253,38 +253,28 @@ class CertificateManager {
     );
   }
   
-  generatePDF() {
-    if (!this.currentCertificate) return;
+  /* Certificate Methods */
+  generateCertificate() {
+    // Disable the button immediately
+    const generateBtn = document.getElementById('cm-generate-cert');
+    if (generateBtn) {
+      generateBtn.disabled = true;
+      generateBtn.classList.add('disabled');
+    }
   
-    // Load jsPDF library dynamically
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onload = () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      // Add certificate content
-      doc.setFontSize(20);
-      doc.text('Certificate of Completion', 105, 20, { align: 'center' });
-      
-      doc.setFontSize(16);
-      doc.text(`This certifies that ${this.currentCertificate.name}`, 105, 40, { align: 'center' });
-      doc.text(`has successfully completed ${this.currentCertificate.course}`, 105, 50, { align: 'center' });
-      
-      doc.setFontSize(14);
-      doc.text(`Score: ${this.currentCertificate.score}`, 105, 70, { align: 'center' });
-      doc.text(`Date: ${this.currentCertificate.date}`, 105, 80, { align: 'center' });
-      doc.text(`ID: ${this.currentCertificate.id}`, 105, 90, { align: 'center' });
-      
-      // Add decorative elements
-      doc.setDrawColor(0);
-      doc.setLineWidth(1);
-      doc.line(20, 30, 190, 30);
-      
-      // Save the PDF
-      doc.save(`certificate_${this.currentCertificate.id}.pdf`);
+    if (!this.isVerified) return;
+    
+    // Create editable certificate data
+    this.currentCertificate = {
+      id: this.currentCertificate?.ID || `cert-${Date.now()}`,
+      name: this.currentCertificate?.User || 'Verified User',
+      date: new Date().toLocaleDateString(),
+      course: this.currentCertificate?.CourseID || 'Unknown Course',
+      score: '100%',
+      customFields: {}
     };
-    document.head.appendChild(script);
+  
+    this.showEditableCertificate(this.currentCertificate);
   }
   
   showEditableCertificate(cert) {
