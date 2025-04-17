@@ -6,128 +6,132 @@ let animationId;
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 
-// DOM Elements
-const elements = {
-    startBtn: document.getElementById('startBtn'),
-    deviceList: document.getElementById('deviceList'),
-    sensitivitySlider: document.getElementById('sensitivity'),
-    sensitivityValue: document.getElementById('sensitivityValue'),
-    dynamicRangeSlider: document.getElementById('dynamicRange'),
-    dynamicRangeValue: document.getElementById('dynamicRangeValue'),
-    noiseFloorSlider: document.getElementById('noiseFloor'),
-    noiseFloorValue: document.getElementById('noiseFloorValue'),
-    fullscreenBtn: document.getElementById('fullscreenBtn'),
-    visualOptions: document.querySelectorAll('.visual-option')
+// UI Elements
+const startBtn = document.getElementById('startBtn');
+const deviceList = document.getElementById('deviceList');
+const sensitivitySlider = document.getElementById('sensitivity');
+const sensitivityValue = document.getElementById('sensitivityValue');
+const dynamicRangeSlider = document.getElementById('dynamicRange');
+const dynamicRangeValue = document.getElementById('dynamicRangeValue');
+const noiseFloorSlider = document.getElementById('noiseFloor');
+const noiseFloorValue = document.getElementById('noiseFloorValue');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const visualOptions = document.querySelectorAll('.visual-option');
+
+// Audio processing settings
+let settings = {
+    baseSensitivity: 0.5,
+    dynamicRange: 0.7,
+    noiseFloor: 0.2,
+    history: [],
+    maxHistory: 10,
+    currentMax: 0,
+    decayRate: 0.95,
+    visualMode: 'bars',
+    isFullscreen: false
 };
 
-// Application state
-const state = {
-    audio: {
-        context: null,
-        analyser: null,
-        source: null
-    },
-    settings: {
-        baseSensitivity: 0.5,
-        dynamicRange: 0.7,
-        noiseFloor: 0.2,
-        visualMode: 'bars',
-        colorHue: 200,
-        history: [],
-        maxHistory: 10,
-        currentMax: 0,
-        decayRate: 0.95
-    },
-    ui: {
-        isFullscreen: false,
-        isVisualizing: false
-    }
-};
+// Initialize UI
+setupEventListeners();
 
-// Initialization
-function init() {
-    setupEventListeners();
-    resizeCanvas();
-}
-
-// Event Listeners
 function setupEventListeners() {
-    // Button events
-    elements.startBtn.addEventListener('click', handleStartButton);
-    elements.fullscreenBtn.addEventListener('click', toggleFullscreen);
-
-    // Slider events
-    elements.sensitivitySlider.addEventListener('input', () => updateSlider('sensitivity'));
-    elements.dynamicRangeSlider.addEventListener('input', () => updateSlider('dynamicRange'));
-    elements.noiseFloorSlider.addEventListener('input', () => updateSlider('noiseFloor'));
-
-    // Visualization mode selection
-    elements.visualOptions.forEach(option => {
+    startBtn.addEventListener('click', startDeviceSelection);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    
+    sensitivitySlider.addEventListener('input', () => {
+        settings.baseSensitivity = sensitivitySlider.value / 100;
+        sensitivityValue.textContent = sensitivitySlider.value;
+    });
+    
+    dynamicRangeSlider.addEventListener('input', () => {
+        settings.dynamicRange = dynamicRangeSlider.value / 100;
+        dynamicRangeValue.textContent = dynamicRangeSlider.value;
+    });
+    
+    noiseFloorSlider.addEventListener('input', () => {
+        settings.noiseFloor = noiseFloorSlider.value / 100;
+        noiseFloorValue.textContent = noiseFloorSlider.value;
+    });
+    
+    visualOptions.forEach(option => {
         option.addEventListener('click', () => {
-            setVisualizationMode(option.dataset.mode);
-            elements.visualOptions.forEach(opt => opt.classList.remove('active'));
+            visualOptions.forEach(opt => opt.classList.remove('active'));
             option.classList.add('active');
+            settings.visualMode = option.dataset.mode;
         });
     });
-
-    // Window events
-    window.addEventListener('resize', handleResize);
+    
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('keydown', handleKeyDown);
 }
 
-// Core Functions
-async function handleStartButton() {
-    if (state.ui.isVisualizing) {
-        stopVisualizer();
+function handleFullscreenChange() {
+    settings.isFullscreen = !!document.fullscreenElement || !!document.webkitFullscreenElement;
+    fullscreenBtn.textContent = settings.isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen';
+    
+    if (settings.isFullscreen) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     } else {
-        await startDeviceSelection();
+        resizeCanvas();
+    }
+}
+
+function resizeCanvas() {
+    const width = Math.min(800, window.innerWidth - 40);
+    canvas.width = width;
+    canvas.height = width * 0.5;
+}
+
+function toggleFullscreen() {
+    if (settings.isFullscreen) {
+        document.exitFullscreen();
+    } else {
+        canvas.requestFullscreen().catch(err => {
+            alert(`Error entering fullscreen: ${err.message}`);
+        });
     }
 }
 
 async function startDeviceSelection() {
     try {
-        elements.startBtn.disabled = true;
+        startBtn.disabled = true;
         
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        await navigator.mediaDevices.getUserMedia({ audio: true });
         const devices = await navigator.mediaDevices.enumerateDevices();
         const audioDevices = devices.filter(device => device.kind === 'audioinput');
         
-        if (audioDevices.length === 0) throw new Error('No audio devices found');
+        if (audioDevices.length === 0) {
+            throw new Error('No audio devices found');
+        }
         
-        renderDeviceList(audioDevices);
-        elements.deviceList.classList.remove('hidden');
+        deviceList.innerHTML = '';
+        audioDevices.forEach(device => {
+            const btn = document.createElement('button');
+            btn.className = 'device-btn';
+            btn.textContent = device.label || `Audio Device ${device.deviceId.slice(0, 5)}`;
+            btn.onclick = () => startVisualizer(device.deviceId);
+            deviceList.appendChild(btn);
+        });
+        
+        deviceList.classList.remove('hidden');
         
     } catch (error) {
-        console.error('Device access error:', error);
-        showError('Could not access audio devices. Please ensure permissions are granted.');
+        console.error('Error:', error);
+        alert('Could not access audio devices. Please ensure permissions are granted.');
         resetUI();
     }
 }
 
-function renderDeviceList(devices) {
-    elements.deviceList.innerHTML = '';
-    devices.forEach(device => {
-        const btn = document.createElement('button');
-        btn.className = 'device-btn';
-        btn.textContent = device.label || `Audio Device ${device.deviceId.slice(0, 5)}`;
-        btn.onclick = () => startVisualizer(device.deviceId);
-        elements.deviceList.appendChild(btn);
-    });
-}
-
 async function startVisualizer(deviceId) {
     try {
-        elements.deviceList.classList.add('hidden');
+        deviceList.classList.add('hidden');
         
-        // Initialize audio context
-        state.audio.context = new (window.AudioContext || window.webkitAudioContext)();
-        state.audio.analyser = state.audio.context.createAnalyser();
-        state.audio.analyser.fftSize = 2048;
-        state.audio.analyser.smoothingTimeConstant = 0.8;
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.8;
         
-        // Get audio stream
         const stream = await navigator.mediaDevices.getUserMedia({
             audio: {
                 deviceId: deviceId ? { exact: deviceId } : undefined,
@@ -137,73 +141,111 @@ async function startVisualizer(deviceId) {
             }
         });
         
-        // Connect audio nodes
-        state.audio.source = state.audio.context.createMediaStreamSource(stream);
-        state.audio.source.connect(state.audio.analyser);
+        audioSource = audioContext.createMediaStreamSource(stream);
+        audioSource.connect(analyser);
         
-        // Update UI
-        elements.startBtn.textContent = 'Stop Visualizer';
-        state.ui.isVisualizing = true;
-        
-        // Start visualization
+        startBtn.textContent = 'Stop Visualizer';
+        startBtn.onclick = stopVisualizer;
         visualize();
         
     } catch (error) {
-        console.error('Visualizer error:', error);
-        showError('Could not access the selected audio device');
+        console.error('Error starting visualizer:', error);
+        alert('Could not access the selected audio device');
         resetUI();
     }
 }
 
 function stopVisualizer() {
     cancelAnimationFrame(animationId);
-    
-    // Clean up audio resources
-    if (state.audio.source) {
-        state.audio.source.disconnect();
-        state.audio.source.mediaStream.getTracks().forEach(track => track.stop());
-        state.audio.source = null;
+    if (audioSource) {
+        audioSource.disconnect();
+        audioSource.mediaStream.getTracks().forEach(track => track.stop());
+        audioSource = null;
     }
-    
-    if (state.audio.context) {
-        state.audio.context.close().catch(console.error);
-        state.audio.context = null;
+    if (audioContext) {
+        audioContext.close();
+        audioContext = null;
     }
-    
-    // Reset state
-    state.ui.isVisualizing = false;
     resetUI();
     clearCanvas();
 }
 
-// Visualization Functions
+function clearCanvas() {
+    ctx.fillStyle = 'rgb(0, 0, 0)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function resetUI() {
+    startBtn.textContent = 'Start Visualizer';
+    startBtn.onclick = startDeviceSelection;
+    startBtn.disabled = false;
+    deviceList.classList.add('hidden');
+}
+
+function updateDynamicRange(currentValue) {
+    settings.history.push(currentValue);
+    if (settings.history.length > settings.maxHistory) {
+        settings.history.shift();
+    }
+    
+    const avg = settings.history.reduce((sum, val) => sum + val, 0) / settings.history.length;
+    settings.currentMax = Math.max(
+        currentValue, 
+        settings.currentMax * settings.decayRate,
+        avg * 1.5
+    );
+    
+    return settings.currentMax > 0 ? currentValue / settings.currentMax : 0;
+}
+
+function applyDynamicProcessing(dataArray) {
+    const processed = new Float32Array(dataArray.length);
+    let currentMax = 0;
+    
+    for (let i = 0; i < dataArray.length; i++) {
+        currentMax = Math.max(currentMax, dataArray[i]);
+    }
+    
+    const rangeAdjustedMax = updateDynamicRange(currentMax);
+    const dynamicScale = rangeAdjustedMax > 0 ? (1 / rangeAdjustedMax) : 1;
+    
+    for (let i = 0; i < dataArray.length; i++) {
+        let value = (dataArray[i] / 255) * settings.baseSensitivity;
+        value *= dynamicScale;
+        value = Math.max(0, value - settings.noiseFloor);
+        processed[i] = Math.min(255, value * 255 * (1 + settings.dynamicRange));
+    }
+    
+    return processed;
+}
+
 function visualize() {
-    const bufferLength = state.audio.analyser.frequencyBinCount;
+    const bufferLength = analyser.frequencyBinCount;
     const freqData = new Uint8Array(bufferLength);
     const timeData = new Uint8Array(bufferLength);
     
     function draw() {
         animationId = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(freqData);
+        analyser.getByteTimeDomainData(timeData);
         
-        // Get fresh audio data
-        state.audio.analyser.getByteFrequencyData(freqData);
-        state.audio.analyser.getByteTimeDomainData(timeData);
+        const dynamicData = applyDynamicProcessing(freqData);
         
-        // Process and visualize
-        clearCanvas();
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        switch(state.settings.visualMode) {
+        switch(settings.visualMode) {
             case 'bars':
-                drawBars(processAudioData(freqData), bufferLength);
+                drawBars(dynamicData, bufferLength);
                 break;
             case 'wave':
                 drawWaveform(timeData, bufferLength);
                 break;
             case 'circle':
-                drawCircle(processAudioData(freqData), bufferLength);
+                drawCircle(dynamicData, bufferLength);
                 break;
             case 'particles':
-                drawParticles(processAudioData(freqData), bufferLength);
+                drawParticles(dynamicData, bufferLength);
                 break;
         }
     }
@@ -211,50 +253,15 @@ function visualize() {
     draw();
 }
 
-function processAudioData(dataArray) {
-    const processed = new Float32Array(dataArray.length);
-    let currentMax = 0;
-    
-    for (let i = 0; i < dataArray.length; i++) {
-        const logValue = Math.log1p(dataArray[i]) * 10;
-        currentMax = Math.max(currentMax, logValue);
-        processed[i] = logValue;
-    }
-    
-    const rangeAdjustedMax = updateDynamicRange(currentMax);
-    const dynamicScale = rangeAdjustedMax > 0 ? (1 / rangeAdjustedMax) : 1;
-    
-    for (let i = 0; i < dataArray.length; i++) {
-        let value = processed[i];
-        value *= dynamicScale * (1 + state.settings.baseSensitivity * 2);
-        value = Math.max(0, value - (state.settings.noiseFloor * 0.5));
-        processed[i] = Math.min(255, value * 255 * (1 + state.settings.dynamicRange * 2));
-    }
-    return processed;
-}
-
-function updateDynamicRange(currentValue) {
-    const weight = 0.3; // How quickly we adapt to changes
-    state.settings.currentMax = state.settings.currentMax > 0 ?
-        (weight * currentValue) + ((1 - weight) * state.settings.currentMax) :
-        currentValue;
-    
-    return Math.max(state.settings.currentMax, 20);
-}
-
 function drawBars(dataArray, bufferLength) {
     const barWidth = (canvas.width / bufferLength) * 2.5;
     let x = 0;
     
-    const boost = 1.5 + (state.settings.baseSensitivity * 2);
-    
     for (let i = 0; i < bufferLength; i++) {
-        const barHeight = Math.max(2, dataArray[i] * boost);
-        const hue = state.settings.colorHue + (i/bufferLength)*160;
-        
+        const barHeight = dataArray[i];
         const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        gradient.addColorStop(0, `hsl(${hue}, 100%, 70%)`); // Brighter colors
-        gradient.addColorStop(1, `hsl(${hue}, 100%, 30%)`);
+        gradient.addColorStop(0, `hsl(${200 + (i/bufferLength)*160}, 100%, 50%)`);
+        gradient.addColorStop(1, `hsl(${200 + (i/bufferLength)*160}, 100%, 20%)`);
         
         ctx.fillStyle = gradient;
         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
@@ -264,18 +271,22 @@ function drawBars(dataArray, bufferLength) {
 }
 
 function drawWaveform(dataArray, bufferLength) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = `hsl(200, 100%, 50%)`;
+    ctx.beginPath();
+    
     const sliceWidth = canvas.width / bufferLength;
     let x = 0;
     
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = `hsl(${state.settings.colorHue}, 100%, 50%)`;
-    ctx.beginPath();
-    
     for (let i = 0; i < bufferLength; i++) {
-        const y = (dataArray[i] / 128.0) * canvas.height / 2 * state.settings.baseSensitivity;
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2;
         
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
         
         x += sliceWidth;
     }
@@ -287,27 +298,28 @@ function drawWaveform(dataArray, bufferLength) {
 function drawCircle(dataArray, bufferLength) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const baseRadius = Math.min(canvas.width, canvas.height) * 0.3;
+    const radius = Math.min(canvas.width, canvas.height) * 0.4;
     
-    // Boost factor for circular visualization
-    const boost = 2 + (state.settings.baseSensitivity * 3);
-    
-    ctx.lineWidth = 3; // Thicker lines for better visibility
+    ctx.lineWidth = 2;
     ctx.beginPath();
     
     for (let i = 0; i < bufferLength; i++) {
         const angle = (i * Math.PI * 2) / bufferLength;
-        const pointRadius = baseRadius + (dataArray[i] * boost * 0.3);
+        const scaledValue = dataArray[i] * 0.5;
+        const pointRadius = radius + scaledValue;
         
         const x = centerX + Math.cos(angle) * pointRadius;
         const y = centerY + Math.sin(angle) * pointRadius;
         
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
     }
     
     ctx.closePath();
-    ctx.strokeStyle = `hsl(${state.settings.colorHue}, 100%, 60%)`; // Brighter stroke
+    ctx.strokeStyle = `hsl(200, 100%, 50%)`;
     ctx.stroke();
 }
 
@@ -319,88 +331,16 @@ function drawParticles(dataArray, bufferLength) {
     
     for (let i = 0; i < particleCount; i++) {
         const angle = (i * Math.PI * 2) / particleCount;
-        const radius = Math.min(maxRadius * 0.2 + (dataArray[i] * state.settings.baseSensitivity * 0.5), maxRadius);
+        const value = dataArray[i] * 0.5;
+        const radius = Math.min(maxRadius * 0.2 + value, maxRadius);
         
         const x = centerX + Math.cos(angle) * radius;
         const y = centerY + Math.sin(angle) * radius;
-        const size = 2 + (dataArray[i] / 255) * 8;
+        const size = 2 + (value / 255) * 8;
         
-        ctx.fillStyle = `hsl(${(state.settings.colorHue + i) % 360}, 100%, 50%)`;
+        ctx.fillStyle = `hsl(${(200 + i) % 360}, 100%, 50%)`;
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
     }
 }
-
-// UI Functions
-function updateSlider(setting) {
-    state.settings[setting] = elements[`${setting}Slider`].value / 100;
-    elements[`${setting}Value`].textContent = elements[`${setting}Slider`].value;
-}
-
-function setVisualizationMode(mode) {
-    state.settings.visualMode = mode;
-}
-
-function toggleFullscreen() {
-    if (state.ui.isFullscreen) {
-        document.exitFullscreen();
-    } else {
-        canvas.requestFullscreen().catch(err => {
-            console.error('Fullscreen error:', err);
-            showError(`Fullscreen error: ${err.message}`);
-        });
-    }
-}
-
-function handleFullscreenChange() {
-    state.ui.isFullscreen = !!document.fullscreenElement || !!document.webkitFullscreenElement;
-    
-    elements.fullscreenBtn.textContent = state.ui.isFullscreen ? 
-        'Exit Fullscreen' : 'Enter Fullscreen';
-    
-    if (state.ui.isFullscreen) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    } else {
-        resizeCanvas();
-    }
-}
-
-function handleResize() {
-    if (!state.ui.isFullscreen) {
-        resizeCanvas();
-    }
-}
-
-function handleKeyDown(e) {
-    if (state.ui.isFullscreen && e.key === 'Escape') {
-        toggleFullscreen();
-    }
-}
-
-// Utility Functions
-function resizeCanvas() {
-    const width = Math.min(800, window.innerWidth - 40);
-    canvas.width = width;
-    canvas.height = width * 0.5;
-}
-
-function clearCanvas() {
-    ctx.fillStyle = 'rgb(0, 0, 0)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-function resetUI() {
-    elements.startBtn.textContent = 'Start Visualizer';
-    elements.startBtn.disabled = false;
-    elements.deviceList.classList.add('hidden');
-    state.ui.isVisualizing = false;
-}
-
-function showError(message) {
-    alert(message);
-}
-
-// Initialize the application
-init();
