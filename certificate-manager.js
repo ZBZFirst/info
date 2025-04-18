@@ -221,7 +221,7 @@ class CertificateManager {
   }
 
   async fetchCertificateData(token) {
-    const API_URL = "https://api.github.com/repos/ZBZFirst/LockBox/contents/testauth.csv";
+    const API_URL = "https://api.github.com/repos/ZBZFirst/LockBox/contents/MinuteVentilationKeys.csv";
     
     const response = await fetch(API_URL, {
       headers: {
