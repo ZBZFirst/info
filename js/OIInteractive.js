@@ -95,10 +95,10 @@
         console.log(`[Main] Rendering points ${renderedPoints} to ${end}`);
   
         Plotly.extendTraces('plot', {
-          x: [e.data.results.x.slice(renderedPoints, end)],
-          y: [e.data.results.y.slice(renderedPoints, end)],
-          z: [e.data.results.oi.slice(renderedPoints, end)],
-          'marker.color': [e.data.results.oi.slice(renderedPoints, end)],
+          x: [Array.from(e.data.results.x.subarray(renderedPoints, end))],
+          y: [Array.from(e.data.results.y.subarray(renderedPoints, end))],
+          z: [Array.from(e.data.results.oi.subarray(renderedPoints, end))],
+          'marker.color': [Array.from(e.data.results.oi.subarray(renderedPoints, end))],
           text: [e.data.results.text.slice(renderedPoints, end)]
         }, [0]);
   
