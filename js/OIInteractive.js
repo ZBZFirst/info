@@ -197,7 +197,7 @@
       currentLayer++;
       
       // Update progress
-      progressDiv.textContent = `Rendering OI ${oi} (${Math.round((totalRendered/size)*100}%)`;
+      progressDiv.textContent = \`Rendering OI ${oi} (\${Math.round((totalRendered/size)*100)}%)\`;
       
       // Schedule next layer with dynamic timing
       const delay = Math.max(10, Math.min(100, 5000/layerSize));
