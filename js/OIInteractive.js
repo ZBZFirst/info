@@ -144,7 +144,7 @@
         progressDiv.textContent = `Rendering... ${Math.round((renderedPoints / size) * 100)}% (OI=${oiValue})`;
         
         // Schedule next layer with a small delay for smooth rendering
-        setTimeout(renderNextOILayer, 50);
+        setTimeout(renderNextOILayer, 25);
       };
       
       // Start rendering layers
