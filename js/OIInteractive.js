@@ -1,4 +1,4 @@
-// OIInteractive.js
+  // OIInteractive.js
 (function() {
   const size = 100000;
   const chunkSize = 10000; // Points rendered per frame
@@ -52,69 +52,78 @@
       return results;
     };
     self.onmessage = (e) => {
+    console.log("[Worker] Starting calculation...");
       try {
         const results = calculate(e.data);
+        console.log("[Worker] Calculation complete, sending results back.");
         self.postMessage({results});
       } catch (error) {
+        console.error("[Worker] Error:", error);
         self.postMessage({error: error.message});
       }
     };
   `], {type: 'application/javascript'})));
 
+  
   worker.onmessage = function(e) {
-    if (e.data.progress !== undefined) {
-      const stages = ["Generating Data", "Calculating Stats", "Computing Coordinates"];
-      progressDiv.textContent = `${stages[e.data.stage-1]}... ${Math.round(e.data.progress * 100)}%`;
-    } else if (e.data.results) {
+    if (e.data.progress) {
+      console.log(`[Main] Progress: ${Math.round(e.data.progress * 100)}% (Stage ${e.data.stage})`);
+      progressDiv.textContent = `Progress: ${Math.round(e.data.progress * 100)}%`;
+    } 
+    else if (e.data.results) {
+      console.log("[Main] Worker finished! Rendering...");
       progressDiv.textContent = "Rendering visualization...";
       
-      // Create initial empty plot
+      // Debug: Log the first 5 points to verify data
+      console.log("[Main] Sample data:", {
+        x: e.data.results.x.slice(0, 5),
+        y: e.data.results.y.slice(0, 5),
+        oi: e.data.results.oi.slice(0, 5),
+        text: e.data.results.text.slice(0, 3)
+      });
+  
       Plotly.newPlot('plot', [{
         x: [], y: [], z: [],
         mode: 'markers',
         type: 'scatter3d',
-        marker: {
-          size: 3,
-          opacity: 0.7,
-          color: [],
-          colorscale: 'RdYlGn',
-          line: {width: 0}
-        },
-        hoverinfo: 'text',
-        text: []
-      }], {
-        title: 'Oxygenation Index Dome Effect',
-        scene: {xaxis: {title: 'x'}, yaxis: {title: 'y'}, zaxis: {title: 'OI'}},
-        width: 800, height: 600
-      });
-
-      // Progressive rendering with hover text
+        marker: { size: 3, opacity: 0.7, color: [] }
+      }]);
+  
       let renderedPoints = 0;
       const renderChunk = () => {
         const end = Math.min(renderedPoints + chunkSize, size);
-        
+        console.log(`[Main] Rendering points ${renderedPoints} to ${end}`);
+  
         Plotly.extendTraces('plot', {
-          x: [e.data.results.x.subarray(renderedPoints, end)],
-          y: [e.data.results.y.subarray(renderedPoints, end)],
-          z: [e.data.results.oi.subarray(renderedPoints, end)],
-          text: [e.data.results.text.slice(renderedPoints, end)],
-          'marker.color': [e.data.results.oi.subarray(renderedPoints, end)]
+          x: [e.data.results.x.slice(renderedPoints, end)],
+          y: [e.data.results.y.slice(renderedPoints, end)],
+          z: [e.data.results.oi.slice(renderedPoints, end)],
+          'marker.color': [e.data.results.oi.slice(renderedPoints, end)],
+          text: [e.data.results.text.slice(renderedPoints, end)]
         }, [0]);
-        
+  
         renderedPoints = end;
         progressDiv.textContent = `Rendering... ${Math.round((renderedPoints / size) * 100)}%`;
-        
+  
         if (renderedPoints < size) {
-          setTimeout(renderChunk, 30); // Yield to UI thread
+          setTimeout(renderChunk, 30);
         } else {
+          console.log("[Main] Rendering complete!");
           progressDiv.textContent = "Ready!";
-          setTimeout(() => progressDiv.remove(), 1000);
         }
       };
-      
-      setTimeout(renderChunk, 100); // Start rendering
+      renderChunk();
+    }
+    else if (e.data.error) {
+      console.error("[Main] Worker error:", e.data.error);
+      progressDiv.textContent = `Error: ${e.data.error}`;
     }
   };
-
+  
+  worker.onerror = function(error) {
+    console.error("[Main] Worker crashed:", error);
+    progressDiv.textContent = "Worker crashed! Check console.";
+  };
   worker.postMessage(size);
 })();
+
