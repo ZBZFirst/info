@@ -62,7 +62,7 @@
         results.buffer[baseIdx+2] = oi;                          // z
         results.buffer[baseIdx+3] = oi;                          // color
         
-        results.text[i] = \`PaO2: \${pao2.toFixed(1)}<br>FiO2: \${fio2.toFixed(2)}<br>MAP: \${map.toFixed(1)}<br>OI: \${oi.toFixed(1)}\`;
+        results.text[i] = 'PaO2: ' + pao2.toFixed(1) + '<br>FiO2: ' + fio2.toFixed(2) + '<br>MAP: ' + map.toFixed(1) + '<br>OI: ' + oi.toFixed(1);
         
         // Group by rounded OI
         if (!results.oiGroups[roundedOI]) {
@@ -105,13 +105,13 @@
     if (e.data.progress) {
       const progress = Math.round(e.data.progress * 100);
       const stages = ["Generating Data", "Calculating Range", "Computing Coordinates"];
-      progressDiv.textContent = `${stages[e.data.stage-1]}: ${progress}%`;
+      progressDiv.textContent = stages[e.data.stage-1] + ': ' + progress + '%';
       return;
     }
     
     if (e.data.error) {
       console.error("Worker Error:", e.data.error);
-      progressDiv.textContent = `Error: ${e.data.error}`;
+      progressDiv.textContent = "Error: " + e.data.error;
       return;
     }
     
@@ -197,7 +197,7 @@
       currentLayer++;
       
       // Update progress
-      progressDiv.textContent = \`Rendering OI ${oi} (\${Math.round((totalRendered/size)*100)}%)\`;
+      progressDiv.textContent = 'Rendering OI ' + oi + ' (' + Math.round((totalRendered/size)*100) + '%)';
       
       // Schedule next layer with dynamic timing
       const delay = Math.max(10, Math.min(100, 5000/layerSize));
