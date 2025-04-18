@@ -1,7 +1,7 @@
   // OIInteractive.js
 (function() {
   const size = 100000;
-  const chunkSize = 10000; // Points rendered per frame
+  const chunkSize = 1000; // Points rendered per frame
   const progressDiv = document.createElement('div');
   progressDiv.style.cssText = `
     position: fixed; top: 20px; left: 20px; padding: 10px;
