@@ -22,7 +22,7 @@
         y: new Float32Array(size),
         text: new Array(size)
       };
-
+  
       // Generate base data
       for (let i = 0; i < size; i++) {
         results.fio2[i] = Math.round((0.21 + 0.79 * Math.random()) * 100) / 100;
@@ -30,16 +30,20 @@
         results.pao2[i] = Math.round(35 + 65 * Math.random());
         if (i % 5000 === 0) self.postMessage({progress: i/size, stage: 1});
       }
-
-      // Calculate min/max
-      const min = Math.min(...results.pao2);
-      const max = Math.max(...results.pao2);
+  
+      // Calculate min/max more efficiently
+      let min = Infinity, max = -Infinity;
+      for (let i = 0; i < size; i++) {
+        if (results.pao2[i] < min) min = results.pao2[i];
+        if (results.pao2[i] > max) max = results.pao2[i];
+      }
       self.postMessage({progress: 1, stage: 2});
-
+  
       // Compute derived values and hover text
+      const range = max - min;
       for (let i = 0; i < size; i++) {
         results.oi[i] = Math.round((results.fio2[i] * results.map[i] * 100) / results.pao2[i]);
-        const norm = Math.round(((results.pao2[i] - min) / (max - min)) * 100) / 100;
+        const norm = range ? Math.round(((results.pao2[i] - min) / range) * 100) / 100 : 0;
         results.x[i] = Math.round(norm * 2 * Math.cos(results.fio2[i] * 2 * Math.PI) * 100) / 100;
         results.y[i] = Math.round(norm * 2 * Math.sin(results.fio2[i] * 2 * Math.PI) * 100) / 100;
         results.text[i] = \`PaO2: \${results.pao2[i]}<br>FiO2: \${results.fio2[i]}<br>MAP: \${results.map[i]}<br>OI: \${results.oi[i]}\`;
@@ -47,7 +51,14 @@
       }
       return results;
     };
-    self.onmessage = (e) => self.postMessage({results: calculate(e.data)});
+    self.onmessage = (e) => {
+      try {
+        const results = calculate(e.data);
+        self.postMessage({results});
+      } catch (error) {
+        self.postMessage({error: error.message});
+      }
+    };
   `], {type: 'application/javascript'})));
 
   worker.onmessage = function(e) {
