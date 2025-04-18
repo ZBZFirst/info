@@ -1,7 +1,6 @@
-  // OIInteractive.js
+// OIInteractive.js
 (function() {
   const size = 100000;
-  const chunkSize = 1000; // Points rendered per frame
   const progressDiv = document.createElement('div');
   progressDiv.style.cssText = `
     position: fixed; top: 20px; left: 20px; padding: 10px;
@@ -10,7 +9,7 @@
   `;
   document.body.appendChild(progressDiv);
 
-  // Web Worker for computation
+  // Web Worker for computation (modified to include OI grouping)
   const worker = new Worker(URL.createObjectURL(new Blob([`
     const calculate = (size) => {
       const results = {
@@ -20,7 +19,8 @@
         oi: new Float32Array(size),
         x: new Float32Array(size),
         y: new Float32Array(size),
-        text: new Array(size)
+        text: new Array(size),
+        oiGroups: {} // New: Store indices by OI value
       };
   
       // Generate base data
@@ -47,12 +47,20 @@
         results.x[i] = Math.round(norm * 2 * Math.cos(results.fio2[i] * 2 * Math.PI) * 100) / 100;
         results.y[i] = Math.round(norm * 2 * Math.sin(results.fio2[i] * 2 * Math.PI) * 100) / 100;
         results.text[i] = \`PaO2: \${results.pao2[i]}<br>FiO2: \${results.fio2[i]}<br>MAP: \${results.map[i]}<br>OI: \${results.oi[i]}\`;
+        
+        // Group by OI value
+        const oiKey = Math.floor(results.oi[i]);
+        if (!results.oiGroups[oiKey]) {
+          results.oiGroups[oiKey] = [];
+        }
+        results.oiGroups[oiKey].push(i);
+        
         if (i % 5000 === 0) self.postMessage({progress: i/size, stage: 3});
       }
       return results;
     };
     self.onmessage = (e) => {
-    console.log("[Worker] Starting calculation...");
+      console.log("[Worker] Starting calculation...");
       try {
         const results = calculate(e.data);
         console.log("[Worker] Calculation complete, sending results back.");
@@ -64,24 +72,19 @@
     };
   `], {type: 'application/javascript'})));
 
-  
   worker.onmessage = function(e) {
     if (e.data.progress) {
       console.log(`[Main] Progress: ${Math.round(e.data.progress * 100)}% (Stage ${e.data.stage})`);
       progressDiv.textContent = `Progress: ${Math.round(e.data.progress * 100)}%`;
     } 
     else if (e.data.results) {
-      console.log("[Main] Worker finished! Rendering...");
-      progressDiv.textContent = "Rendering visualization...";
+      console.log("[Main] Worker finished! Rendering by OI layers...");
+      progressDiv.textContent = "Rendering visualization by OI layers...";
       
-      // Debug: Log the first 5 points to verify data
-      console.log("[Main] Sample data:", {
-        x: e.data.results.x.slice(0, 5),
-        y: e.data.results.y.slice(0, 5),
-        oi: e.data.results.oi.slice(0, 5),
-        text: e.data.results.text.slice(0, 3)
-      });
-  
+      const results = e.data.results;
+      console.log("[Main] OI Groups:", Object.keys(results.oiGroups).sort((a,b) => a-b));
+      
+      // Initialize plot
       Plotly.newPlot('plot', [{
         x: [], 
         y: [], 
@@ -95,33 +98,57 @@
           colorscale: 'RdYlGn'
         },
         hoverinfo: 'text',
-        text: [] // ← Initialize empty text array
+        text: []
       }]);
-  
+      
+      // Get sorted OI groups
+      const oiGroups = Object.keys(results.oiGroups)
+        .map(Number)
+        .sort((a,b) => a - b);
+      
+      let currentGroupIndex = 0;
       let renderedPoints = 0;
-      const renderChunk = () => {
-        const end = Math.min(renderedPoints + chunkSize, size);
-        console.log(`[Main] Rendering points ${renderedPoints} to ${end}`);
-  
-        Plotly.extendTraces('plot', {
-          x: [Array.from(e.data.results.x.subarray(renderedPoints, end))],
-          y: [Array.from(e.data.results.y.subarray(renderedPoints, end))],
-          z: [Array.from(e.data.results.oi.subarray(renderedPoints, end))],
-          'marker.color': [Array.from(e.data.results.oi.subarray(renderedPoints, end))],
-          text: [e.data.results.text.slice(renderedPoints, end)]
-        }, [0]);
-  
-        renderedPoints = end;
-        progressDiv.textContent = `Rendering... ${Math.round((renderedPoints / size) * 100)}%`;
-  
-        if (renderedPoints < size) {
-          setTimeout(renderChunk, 30);
-        } else {
+      
+      const renderNextOILayer = () => {
+        if (currentGroupIndex >= oiGroups.length) {
           console.log("[Main] Rendering complete!");
           progressDiv.textContent = "Ready!";
+          return;
         }
+        
+        const oiValue = oiGroups[currentGroupIndex];
+        const indices = results.oiGroups[oiValue];
+        const pointsInLayer = indices.length;
+        
+        console.log(`[Main] Rendering OI=${oiValue} with ${pointsInLayer} points`);
+        
+        // Extract data for this OI layer
+        const x = indices.map(i => results.x[i]);
+        const y = indices.map(i => results.y[i]);
+        const z = indices.map(i => results.oi[i]);
+        const colors = indices.map(i => results.oi[i]);
+        const texts = indices.map(i => results.text[i]);
+        
+        // Add this OI layer to the plot
+        Plotly.extendTraces('plot', {
+          x: [x],
+          y: [y],
+          z: [z],
+          'marker.color': [colors],
+          text: [texts]
+        }, [0]);
+        
+        renderedPoints += pointsInLayer;
+        currentGroupIndex++;
+        
+        progressDiv.textContent = `Rendering... ${Math.round((renderedPoints / size) * 100)}% (OI=${oiValue})`;
+        
+        // Schedule next layer with a small delay for smooth rendering
+        setTimeout(renderNextOILayer, 50);
       };
-      renderChunk();
+      
+      // Start rendering layers
+      renderNextOILayer();
     }
     else if (e.data.error) {
       console.error("[Main] Worker error:", e.data.error);
@@ -133,6 +160,6 @@
     console.error("[Main] Worker crashed:", error);
     progressDiv.textContent = "Worker crashed! Check console.";
   };
+  
   worker.postMessage(size);
 })();
-
