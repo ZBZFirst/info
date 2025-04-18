@@ -83,10 +83,19 @@
       });
   
       Plotly.newPlot('plot', [{
-        x: [], y: [], z: [],
+        x: [], 
+        y: [], 
+        z: [],
         mode: 'markers',
         type: 'scatter3d',
-        marker: { size: 3, opacity: 0.7, color: [] }
+        marker: {
+          size: 3,
+          opacity: 0.7,
+          color: [],
+          colorscale: 'RdYlGn'
+        },
+        hoverinfo: 'text',
+        text: [] // ← Initialize empty text array
       }]);
   
       let renderedPoints = 0;
