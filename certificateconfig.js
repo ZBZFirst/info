@@ -1,7 +1,7 @@
 export const CERTIFICATE_TEMPLATE = {
   // Layout configuration
   background: {
-    image: '/images/cert-bg.jpg', // Path to background image
+    image: 'company-logo.jpg', // Path to background image
     size: 'cover', // CSS background-size
     position: 'center', // CSS background-position
     repeat: 'no-repeat', // CSS background-repeat
