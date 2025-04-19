@@ -117,7 +117,7 @@ export const CERTIFICATE_TEMPLATE = {
       }
     },
     logo: {
-      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.png',
+      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg',
       editable: false,
       style: {
         width: '150px'
