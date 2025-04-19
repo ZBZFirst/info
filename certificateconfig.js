@@ -1,7 +1,7 @@
 export const CERTIFICATE_TEMPLATE = {
   // Layout configuration
   background: {
-    image: 'company-logo.jpg', // Path to background image
+    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg', // Path to background image
     size: 'cover', // CSS background-size
     position: 'center', // CSS background-position
     repeat: 'no-repeat', // CSS background-repeat
@@ -117,7 +117,7 @@ export const CERTIFICATE_TEMPLATE = {
       }
     },
     logo: {
-      image: 'company-logo.png',
+      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.png',
       editable: false,
       style: {
         width: '150px'
