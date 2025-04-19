@@ -326,9 +326,9 @@ class CertificateManager {
           <p>ID: <span contenteditable="true" class="editable-field" data-field="id">${cert.id}</span></p>
         
           <!-- Logo if defined -->
-          ${CERTIFICATE_TEMPLATE.fields.logo ? `
-            <img src="${CERTIFICATE_TEMPLATE.fields.logo}" alt="Logo" style="width: 150px; margin-top: 20px;">
-          ` : ''}
+          ${CERTIFICATE_TEMPLATE.fields.logo?.image ? `
+        <img src="${CERTIFICATE_TEMPLATE.fields.logo.image}" alt="Logo" style="width: 150px; margin-top: 20px;">
+      ` : ''}
         
           <div class="certificate-controls">
             <button id="cm-update-cert">Update Certificate</button>
@@ -406,7 +406,7 @@ class CertificateManager {
         name: this.currentCertificate.name,
         prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
       },
-      logo: CERTIFICATE_TEMPLATE.fields.logo,
+      logo: CERTIFICATE_TEMPLATE.fields.logo.image,
       background: CERTIFICATE_TEMPLATE.background,
       container: CERTIFICATE_TEMPLATE.container
     };
