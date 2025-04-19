@@ -304,7 +304,7 @@ class CertificateManager {
       <div class="certificate-editor">
         <div class="cert-preview" id="cert-preview">
           <!-- Title (non-editable) -->
-          <h3>${CERTIFICATE_TEMPLATE.fields.title}</h3>
+          <h3>${CERTIFICATE_TEMPLATE.fields.title.content}</h3>
           
           <!-- Recipient (editable) -->
           <p>${CERTIFICATE_TEMPLATE.fields.recipient.prefix}
