@@ -117,7 +117,7 @@ export const CERTIFICATE_TEMPLATE = {
       }
     },
     logo: {
-      image: '/images/company-logo.png',
+      image: 'company-logo.png',
       editable: false,
       style: {
         width: '150px'
