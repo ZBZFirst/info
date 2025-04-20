@@ -13,8 +13,8 @@ export const CERTIFICATE_TEMPLATE = {
     border: '2px solid #1a5276',
     padding: '40px',
     margin: '20px auto',
-    width: '600px',
-    minHeight: '400px',
+    width: '800px',
+    minHeight: '600px',
     position: 'relative',
     backgroundColor: 'rgba(255,255,255,0.9)'
   },
