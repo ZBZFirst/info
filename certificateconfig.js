@@ -30,7 +30,7 @@ export const CERTIFICATE_TEMPLATE = {
           font-family: 'Arial', sans-serif; 
           margin: 0;
           padding: 20px;
-          {{#if background.image}}
+          {{#if background}}
           background: url('{{background.image}}') {{background.repeat}} {{background.position}}/{{background.size}};
           {{/if}}
         }
