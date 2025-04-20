@@ -398,7 +398,6 @@ class CertificateManager {
   printCertificate() {
     if (!this.currentCertificate) return;
     
-    // Prepare all template data - ensure background is properly structured
     const templateData = {
       ...this.currentCertificate,
       title: CERTIFICATE_TEMPLATE.fields.title.content,
@@ -407,22 +406,24 @@ class CertificateManager {
         prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
       },
       logo: CERTIFICATE_TEMPLATE.fields.logo.image,
-      background: { // Ensure this matches the structure expected by the template
-        image: CERTIFICATE_TEMPLATE.background.image,
-        repeat: CERTIFICATE_TEMPLATE.background.repeat,
-        position: CERTIFICATE_TEMPLATE.background.position,
-        size: CERTIFICATE_TEMPLATE.background.size
-      },
+      background: CERTIFICATE_TEMPLATE.background,
       container: CERTIFICATE_TEMPLATE.container
     };
     
-    // Process the template
     const certificateHTML = this.processCertificateTemplate(templateData);
-    
-    // Open print window
     const printWindow = window.open('', '_blank');
+    
+    // Ensure CSS file is accessible
     printWindow.document.write(certificateHTML);
     printWindow.document.close();
+    
+    // Fallback in case images don't trigger onload
+    setTimeout(() => {
+      if (!printWindow.closed) {
+        printWindow.print();
+        setTimeout(() => printWindow.close(), 1000);
+      }
+    }, 3000);
   }
 
 }
