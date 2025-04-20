@@ -8,14 +8,13 @@ body {
 }
 
 .certificate {
-  border: 2px solid #1a5276;
-  padding: 40px;
-  margin: 20px auto;
-  width: 800px;
-  min-height: 600px;
-  position: relative;
-  background-color: rgba(255,255,255,0.9);
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  aspect-ratio: 1/1; /* Perfect square */
+  width: 80vmin; /* Scales with viewport (print-safe) */
+  min-width: 600px; /* Fallback */
+  max-width: 100%; /* Prevent overflow */
+  margin: 0 auto; /* Center */
+  padding: 2%; /* Proportional padding */
+  box-sizing: border-box; /* Include padding in dimensions */
 }
 
 .certificate h1 {
@@ -61,24 +60,18 @@ body {
   font-weight: bold;
 }
 
-/* Print-specific styles */
+/* Print-specific fixes */
 @media print {
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  @page {
+    size: auto; /* Respect paper size */
+    margin: 5mm; /* Minimal margin */
   }
   
   .certificate {
-    border: 2px solid #1a5276 !important;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
-    background-color: rgba(255,255,255,0.9) !important;
-    width: 100% !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    margin: 0 !important;
-    padding: 40px !important;
+    width: 90vmin; /* Use most of page */
+    height: 90vmin;
+    margin: 5vmin auto; /* Center with whitespace */
+    page-break-inside: avoid; /* No splitting */
   }
 
   /* Ensure text colors print properly */
