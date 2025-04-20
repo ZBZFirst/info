@@ -8,16 +8,13 @@ export const CERTIFICATE_TEMPLATE = {
     opacity: 0.1 // Watermark effect
   },
   
-  // Certificate container styling
   container: {
     border: '2px solid #1a5276',
-    padding: '40px',
-    margin: '20px auto',
-    width: '800px',
-    minHeight: '600px',
-    position: 'relative',
+    /* Remove fixed width/height/padding */
+    padding: '2%', // Proportional padding
+    margin: '0 auto', // Center
     backgroundColor: 'rgba(255,255,255,0.9)'
-  },
+  }
   
   // HTML template with placeholders
   template: `
