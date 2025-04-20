@@ -1,0 +1,85 @@
+/* certificate.css */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: url('https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg') no-repeat center/cover;
+  background-opacity: 0.1;
+}
+
+.certificate {
+  border: 2px solid #1a5276;
+  padding: 40px;
+  margin: 20px auto;
+  width: 800px;
+  min-height: 600px;
+  position: relative;
+  background-color: rgba(255,255,255,0.9);
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.certificate h1 {
+  color: #1a5276;
+  font-size: 28px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.certificate p {
+  margin: 10px 0;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.certificate h2 {
+  color: #1a5276;
+  font-size: 24px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.logo {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.signature {
+  margin-top: 60px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.signature-line {
+  border-top: 1px solid #333;
+  width: 200px;
+  display: inline-block;
+  margin-top: 40px;
+}
+
+.certificate-id {
+  margin-top: 30px;
+  font-weight: bold;
+}
+
+/* Print-specific styles */
+@media print {
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .certificate {
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+  
+  .logo img {
+    max-width: 150px !important;
+  }
+}
