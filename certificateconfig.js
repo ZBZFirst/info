@@ -1,11 +1,11 @@
 export const CERTIFICATE_TEMPLATE = {
   // Layout configuration
   background: {
-    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg',
-    size: 'cover',
-    position: 'center',
-    repeat: 'no-repeat',
-    opacity: 0.1
+    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg', // Path to background image
+    size: 'cover', // CSS background-size
+    position: 'center', // CSS background-position
+    repeat: 'no-repeat', // CSS background-repeat
+    opacity: 0.1 // Watermark effect
   },
   
   // Certificate container styling
@@ -32,7 +32,6 @@ export const CERTIFICATE_TEMPLATE = {
           padding: 20px;
           {{#if background}}
           background: url('{{background.image}}') {{background.repeat}} {{background.position}}/{{background.size}};
-          background-opacity: {{background.opacity}};
           {{/if}}
         }
         .certificate {
@@ -61,22 +60,6 @@ export const CERTIFICATE_TEMPLATE = {
           display: inline-block;
           margin-top: 40px;
         }
-
-        @media print {
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            {{#if background}}
-            background: url('{{background.image}}') {{background.repeat}} {{background.position}}/{{background.size}} !important;
-            opacity: {{background.opacity}} !important;
-            {{/if}}
-          }
-          .certificate {
-            box-shadow: none;
-            margin: 0;
-            border: none;
-          }
-        }
       </style>
     </head>
     <body>
@@ -100,7 +83,7 @@ export const CERTIFICATE_TEMPLATE = {
         <div class="signature">
           <div>
             <div class="signature-line"></div>
-            <p>Signature</p>
+            <p>Authorized Signature</p>
           </div>
           <div>
             <div class="signature-line"></div>
