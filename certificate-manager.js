@@ -401,13 +401,13 @@ class CertificateManager {
     // Prepare all template data
     const templateData = {
       ...this.currentCertificate,
-      title: CERTIFICATE_TEMPLATE.fields.title,
+      title: CERTIFICATE_TEMPLATE.fields.title.content,
       recipient: {
         name: this.currentCertificate.name,
         prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
       },
       logo: CERTIFICATE_TEMPLATE.fields.logo.image,
-      background: CERTIFICATE_TEMPLATE.background,
+      background: CERTIFICATE_TEMPLATE.background.image,
       container: CERTIFICATE_TEMPLATE.container
     };
     
