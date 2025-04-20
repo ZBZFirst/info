@@ -25,40 +25,14 @@ export const CERTIFICATE_TEMPLATE = {
     <html>
     <head>
       <title>{{title}}</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="certificate.css">
       <style>
-        body { 
-          font-family: 'Arial', sans-serif; 
+        /* Inline critical CSS for print reliability */
+        @page {
+          size: auto;
           margin: 0;
-          padding: 20px;
-          {{#if background}}
-          background: url('{{background.image}}') {{background.repeat}} {{background.position}}/{{background.size}};
-          {{/if}}
-        }
-        .certificate {
-          border: {{container.border}};
-          padding: {{container.padding}};
-          margin: {{container.margin}};
-          width: {{container.width}};
-          min-height: {{container.minHeight}};
-          position: {{container.position}};
-          background-color: {{container.backgroundColor}};
-          box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        h1 { 
-          color: #1a5276;
-          font-size: 28px;
-          margin-bottom: 30px;
-        }
-        .signature {
-          margin-top: 60px;
-          display: flex;
-          justify-content: space-between;
-        }
-        .signature-line {
-          border-top: 1px solid #333;
-          width: 200px;
-          display: inline-block;
-          margin-top: 40px;
         }
       </style>
     </head>
@@ -76,14 +50,14 @@ export const CERTIFICATE_TEMPLATE = {
         
         {{#if logo}}
         <div class="logo">
-          <img src="{{logo}}" alt="Logo" width="150">
+          <img src="{{logo}}" alt="Logo" width="150" onload="window.print()">
         </div>
         {{/if}}
         
         <div class="signature">
           <div>
             <div class="signature-line"></div>
-            <p>Authorized Signature</p>
+            <p>Signature</p>
           </div>
           <div>
             <div class="signature-line"></div>
@@ -94,7 +68,34 @@ export const CERTIFICATE_TEMPLATE = {
         <p class="certificate-id">Certificate ID: {{id}}</p>
       </div>
       <script>
-        window.onload = function() { window.print(); setTimeout(() => window.close(), 1000); }
+        // Improved print handling
+        window.onload = function() {
+          // Check if all images are loaded
+          const images = document.images;
+          let loaded = images.length;
+          
+          if (loaded === 0) {
+            window.print();
+            setTimeout(() => window.close(), 1000);
+            return;
+          }
+          
+          for (let i = 0; i < images.length; i++) {
+            if (images[i].complete) loaded--;
+            images[i].onload = function() {
+              if (--loaded <= 0) {
+                window.print();
+                setTimeout(() => window.close(), 1000);
+              }
+            };
+            images[i].onerror = function() {
+              if (--loaded <= 0) {
+                window.print();
+                setTimeout(() => window.close(), 1000);
+              }
+            };
+          }
+        };
       </script>
     </body>
     </html>
