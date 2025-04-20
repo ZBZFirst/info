@@ -71,12 +71,20 @@ body {
   }
   
   .certificate {
-    border: none !important;
-    box-shadow: none !important;
+    border: 2px solid #1a5276 !important;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+    background-color: rgba(255,255,255,0.9) !important;
     width: 100% !important;
     min-height: 100vh !important;
     margin: 0 !important;
-    padding: 20px !important;
+    padding: 40px !important;
+  }
+
+  /* Ensure text colors print properly */
+  * {
+    color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
   .logo img {
