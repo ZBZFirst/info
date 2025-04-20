@@ -398,7 +398,7 @@ class CertificateManager {
   printCertificate() {
     if (!this.currentCertificate) return;
     
-    // Prepare all template data
+    // Prepare all template data - ensure background is properly structured
     const templateData = {
       ...this.currentCertificate,
       title: CERTIFICATE_TEMPLATE.fields.title.content,
@@ -407,7 +407,12 @@ class CertificateManager {
         prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
       },
       logo: CERTIFICATE_TEMPLATE.fields.logo.image,
-      background: CERTIFICATE_TEMPLATE.background,
+      background: { // Ensure this matches the structure expected by the template
+        image: CERTIFICATE_TEMPLATE.background.image,
+        repeat: CERTIFICATE_TEMPLATE.background.repeat,
+        position: CERTIFICATE_TEMPLATE.background.position,
+        size: CERTIFICATE_TEMPLATE.background.size
+      },
       container: CERTIFICATE_TEMPLATE.container
     };
     
