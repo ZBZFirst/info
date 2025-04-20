@@ -417,13 +417,17 @@ class CertificateManager {
     printWindow.document.write(certificateHTML);
     printWindow.document.close();
     
-    // Fallback in case images don't trigger onload
-    setTimeout(() => {
-      if (!printWindow.closed) {
+    // Single print attempt after ensuring content loads
+    printWindow.onload = function() {
+      setTimeout(() => {
         printWindow.print();
-        setTimeout(() => printWindow.close(), 1000);
-      }
-    }, 3000);
+        setTimeout(() => {
+          if (!printWindow.closed) {
+            printWindow.close();
+          }
+        }, 500);
+      }, 500);
+    };
   }
 
 }
