@@ -34,7 +34,7 @@ export const CERTIFICATE_TEMPLATE = {
       </style>
     </head>
     <body>
-      <div class="certificate">
+      <div class="certificate" style="aspect-ratio:1/1; width:80vmin;">
         <h1>{{title}}</h1>
         
         <p>{{recipient.prefix}} <strong>{{recipient.name}}</strong></p>
