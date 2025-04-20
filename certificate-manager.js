@@ -407,7 +407,7 @@ class CertificateManager {
         prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
       },
       logo: CERTIFICATE_TEMPLATE.fields.logo.image,
-      background: CERTIFICATE_TEMPLATE.background.image,
+      background: CERTIFICATE_TEMPLATE.background,
       container: CERTIFICATE_TEMPLATE.container
     };
     
