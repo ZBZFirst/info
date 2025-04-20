@@ -14,7 +14,7 @@ export const CERTIFICATE_TEMPLATE = {
     padding: '2%', // Proportional padding
     margin: '0 auto', // Center
     backgroundColor: 'rgba(255,255,255,0.9)'
-  }
+  },
   
   // HTML template with placeholders
   template: `
