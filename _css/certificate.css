@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 20px;
   background: 
-    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5)),
+    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.8)),
     url('https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg') no-repeat center/cover;
 }
 
