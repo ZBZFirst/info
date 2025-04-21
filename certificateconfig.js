@@ -1,22 +1,22 @@
+  // certificateconfig.js
+
+
 export const CERTIFICATE_TEMPLATE = {
-  // Layout configuration
   background: {
-    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg', // Path to background image
-    size: 'cover', // CSS background-size
-    position: 'center', // CSS background-position
-    repeat: 'no-repeat', // CSS background-repeat
-    opacity: 0.1 // Watermark effect
+    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg',
+    size: 'cover', 
+    position: 'center',
+    repeat: 'no-repeat',
+    opacity: 0.1 
   },
   
   container: {
     border: '2px solid #1a5276',
-    /* Remove fixed width/height/padding */
-    padding: '2%', // Proportional padding
-    margin: '0 auto', // Center
+    padding: '2%', 
+    margin: '0 auto',
     backgroundColor: 'rgba(255,255,255,0.9)'
   },
   
-  // HTML template with placeholders
   template: `
     <!DOCTYPE html>
     <html>
