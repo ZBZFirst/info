@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 20px;
   background: url('https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg') no-repeat center/cover;
-  background-opacity: 0.1;
+  background-opacity: 0.9;
 }
 
 .certificate {
