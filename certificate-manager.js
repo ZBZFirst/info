@@ -417,17 +417,6 @@ class CertificateManager {
     printWindow.document.write(certificateHTML);
     printWindow.document.close();
     
-    // Single print attempt after ensuring content loads
-    printWindow.onload = function() {
-      setTimeout(() => {
-        printWindow.print();
-        setTimeout(() => {
-          if (!printWindow.closed) {
-            printWindow.close();
-          }
-        }, 500);
-      }, 500);
-    };
   }
 
 }
