@@ -5,11 +5,27 @@ class CertificateManager {
     this.isVerified = false;
     this.currentCertificate = null;
     this.overlay = null;
+
+
+
+
+    this.constructionWorker = null;
+    this.constructionStages = [
+      "Initializing Template",
+      "Loading Base Structure",
+      "Applying CSS Transforms",
+      "Positioning Elements",
+      "Finalizing Design",
+      "Ready for Printing"
+    ];
+
+
+
+
     this.setupCertificateManagerButtonListener();
     this.setupStorageListener();
     this.checkConditions();
     this.setupQuizCompletionListener();
-
   }
 
   setupCertificateManagerButtonListener() {
@@ -130,6 +146,7 @@ class CertificateManager {
 
   hideOverlay() {
     if (this.overlay) {
+      this.cleanupVisualization();
       this.overlay.classList.remove('active');
       setTimeout(() => this.removeHTML(), 300);
     }
@@ -221,6 +238,120 @@ class CertificateManager {
       record.PublicKey && record.PublicKey.trim() === publicKey
     );
   }
+
+
+  /* Visualization Methods */
+  visualizeConstruction() {
+    const workerCode = `
+      const stages = ${JSON.stringify(this.constructionStages)};
+      const duration = 10000;
+      const startTime = Date.now();
+      
+      function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const stageIndex = Math.floor(progress * (stages.length - 1));
+        
+        self.postMessage({
+          progress,
+          stage: stages[stageIndex],
+          currentStage: stageIndex
+        });
+        
+        if (progress < 1) {
+          setTimeout(animate, 50);
+        } else {
+          self.postMessage({ completed: true });
+        }
+      }
+      
+      self.onmessage = function(e) {
+        if (e.data.start) animate();
+      };
+    `;
+  
+    this.constructionWorker = new Worker(
+      URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'}))
+    );
+  
+    this.constructionWorker.onmessage = (e) => {
+      if (e.data.completed) {
+        this.showStatus("Certificate fully constructed!", "success");
+        return;
+      }
+      this.updateVisualizationProgress(e.data);
+    };
+  
+    this.constructionWorker.postMessage({ start: true });
+  }
+  
+  updateVisualizationProgress(data) {
+    // Add progress bar if not exists
+    if (!document.getElementById('construction-progress')) {
+      const progressHTML = `
+        <div class="construction-visualizer">
+          <div class="progress-container">
+            <div id="construction-progress-bar" class="progress-bar"></div>
+          </div>
+          <div id="construction-stage-text" class="stage-text">${data.stage}</div>
+        </div>
+      `;
+      document.getElementById('cm-certificate-display').insertAdjacentHTML('beforeend', progressHTML);
+    }
+  
+    // Update progress
+    const progressBar = document.getElementById('construction-progress-bar');
+    const stageText = document.getElementById('construction-stage-text');
+    if (progressBar) progressBar.style.width = `${data.progress * 100}%`;
+    if (stageText) stageText.textContent = data.stage;
+  
+    // Apply visual transformations
+    this.applyStageTransformation(data.currentStage, data.progress);
+  }
+  
+  applyStageTransformation(stageIndex, progress) {
+    const certPreview = document.getElementById('cert-preview');
+    if (!certPreview) return;
+  
+    // Initial state
+    if (stageIndex === 0) {
+      certPreview.style.opacity = '0';
+      certPreview.style.transform = 'scale(0.8)';
+      certPreview.style.transition = 'none';
+    }
+  
+    // Progressive enhancements
+    switch(stageIndex) {
+      case 1: // Base Structure
+        certPreview.style.opacity = `${0.2 + (progress * 0.3)}`;
+        break;
+      case 2: // CSS Transforms
+        certPreview.style.transition = 'all 0.5s ease-out';
+        certPreview.style.opacity = `${0.5 + (progress * 0.3)}`;
+        break;
+      case 3: // Positioning
+        certPreview.style.transform = `scale(${0.9 + (progress * 0.1)})`;
+        certPreview.style.opacity = `${0.8 + (progress * 0.2)}`;
+        break;
+      case 4: // Finalizing
+        certPreview.style.opacity = '1';
+        certPreview.style.transform = 'scale(1)';
+        break;
+    }
+  }
+  
+  cleanupVisualization() {
+    if (this.constructionWorker) {
+      this.constructionWorker.terminate();
+      this.constructionWorker = null;
+    }
+    const visualizer = document.querySelector('.construction-visualizer');
+    if (visualizer) visualizer.remove();
+  }
+
+
+
+
   
   /* Certificate Methods */
   generateCertificate() {
@@ -239,6 +370,8 @@ class CertificateManager {
       customFields: {}
     };
     this.showEditableCertificate(this.currentCertificate);
+    this.visualizeConstruction(); // Add this line
+
   }
   
   showEditableCertificate(cert) {
@@ -324,6 +457,9 @@ class CertificateManager {
   }
   
   printCertificate() {
+    this.cleanupVisualization(); // Add this line
+
+    
     if (!this.currentCertificate) return;
     const templateData = {
       ...this.currentCertificate,
