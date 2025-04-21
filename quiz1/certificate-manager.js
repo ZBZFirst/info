@@ -370,8 +370,6 @@ class CertificateManager {
       customFields: {}
     };
     this.showEditableCertificate(this.currentCertificate);
-    this.visualizeConstruction(); // Add this line
-
   }
   
   showEditableCertificate(cert) {
