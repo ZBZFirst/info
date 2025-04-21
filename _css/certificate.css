@@ -94,24 +94,22 @@ body {
   text-align: center;
 }
 
-/* Print-specific fixes */
 @media print {
   @page {
-    size: auto; /* Respect paper size */
-    margin: 5mm; /* Minimal margin */
+    size: auto;
+    margin: 5mm;
   }
   
   .certificate {
-    width: 90vmin; /* Use most of page */
+    width: 90vmin;
     height: 90vmin;
-    margin: 5vmin auto; /* Center with whitespace */
-    page-break-inside: avoid; /* No splitting */
+    margin: 5vmin auto;
+    page-break-inside: avoid;
     border: 20px solid #1a5276 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Ensure text colors print properly */
   * {
     color: #000 !important;
     -webkit-print-color-adjust: exact !important;
