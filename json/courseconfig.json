@@ -1,4 +1,4 @@
-// certificates/courseconfig.json
+// info/json/courseconfig.json
 {
   "templates": {
     "minute-ventilation": {
