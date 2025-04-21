@@ -9,7 +9,7 @@ export const CERTIFICATE_TEMPLATE = {
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: '15px', // Optional: Add rounded corners
     boxShadow: '0 0 20px rgba(0,0,0,0.3)' // Optional: Add shadow for depth
-  }
+  },
   
   template: `
     <!DOCTYPE html>
