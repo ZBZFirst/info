@@ -2,14 +2,6 @@
 
 
 export const CERTIFICATE_TEMPLATE = {
-  background: {
-    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg',
-    size: 'cover', 
-    position: 'center',
-    repeat: 'no-repeat',
-    opacity: 0.9 
-  },
-  
   container: {
     border: '2px solid #1a5276',
     padding: '2%', 
