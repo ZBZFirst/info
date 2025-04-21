@@ -3,8 +3,9 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 20px;
-  background: url('https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg') no-repeat center/cover;
-  background-opacity: 0.9;
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5)),
+    url('https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg') no-repeat center/cover;
 }
 
 .certificate {
