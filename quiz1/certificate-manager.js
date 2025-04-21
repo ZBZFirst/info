@@ -457,10 +457,9 @@ class CertificateManager {
   }
   
   printCertificate() {
-    this.cleanupVisualization(); // Add this line
-
-    
     if (!this.currentCertificate) return;
+    
+    // Prepare template data
     const templateData = {
       ...this.currentCertificate,
       title: CERTIFICATE_TEMPLATE.fields.title.content,
@@ -472,12 +471,141 @@ class CertificateManager {
       background: CERTIFICATE_TEMPLATE.background,
       container: CERTIFICATE_TEMPLATE.container
     };
-    const certificateHTML = this.processCertificateTemplate(templateData);
+  
+    // Create print window
     const printWindow = window.open('', '_blank');
-    printWindow.document.write(certificateHTML);
+    
+    // Generate the final certificate HTML
+    const certificateHTML = this.processCertificateTemplate(templateData);
+    
+    // Write the construction animation HTML
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Certificate Construction</title>
+        <style>
+          .construction-visualizer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+          }
+          .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+          }
+          .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease-out;
+          }
+          .stage-text {
+            font-size: 14px;
+            text-align: center;
+            margin: 5px 0;
+            font-weight: bold;
+          }
+          #certificate-container {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s ease-out;
+            margin-top: 60px;
+          }
+          ${CERTIFICATE_TEMPLATE.template.match(/<style>([\s\S]*?)<\/style>/)?.[1] || ''}
+        </style>
+      </head>
+      <body>
+        <div class="construction-visualizer">
+          <h3>Building Your Certificate</h3>
+          <div class="progress-container">
+            <div class="progress-bar" id="print-progress-bar"></div>
+          </div>
+          <div class="stage-text" id="print-stage-text">Initializing...</div>
+        </div>
+        <div id="certificate-container"></div>
+        
+        <script>
+          const stages = [
+            "Initializing Template",
+            "Loading Base Structure", 
+            "Applying CSS Transforms",
+            "Positioning Elements",
+            "Finalizing Design",
+            "Ready for Printing"
+          ];
+          
+          async function animateConstruction() {
+            const container = document.getElementById('certificate-container');
+            const progressBar = document.getElementById('print-progress-bar');
+            const stageText = document.getElementById('print-stage-text');
+            
+            // Stage 1: Initialize
+            updateProgress(0, stages[0]);
+            await delay(500);
+            
+            // Stage 2: Load base HTML
+            updateProgress(0.2, stages[1]);
+            container.innerHTML = \`${certificateHTML}\`;
+            await delay(800);
+            
+            // Stage 3: Apply CSS
+            updateProgress(0.4, stages[2]);
+            container.style.opacity = '0.5';
+            container.style.transform = 'scale(0.9)';
+            await delay(800);
+            
+            // Stage 4: Position elements
+            updateProgress(0.6, stages[3]);
+            container.style.opacity = '0.8';
+            container.style.transform = 'scale(0.95)';
+            await delay(800);
+            
+            // Stage 5: Finalize
+            updateProgress(0.8, stages[4]);
+            container.style.opacity = '1';
+            container.style.transform = 'scale(1)';
+            await delay(800);
+            
+            // Complete
+            updateProgress(1, stages[5]);
+            await delay(1000);
+            
+            // Hide visualizer and print
+            document.querySelector('.construction-visualizer').style.opacity = '0';
+            setTimeout(() => {
+              window.print();
+            }, 500);
+          }
+          
+          function updateProgress(percent, stage) {
+            document.getElementById('print-progress-bar').style.width = \`\${percent * 100}%\`;
+            document.getElementById('print-stage-text').textContent = stage;
+          }
+          
+          function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+          }
+          
+          // Start animation when window loads
+          window.addEventListener('load', animateConstruction);
+        </script>
+      </body>
+      </html>
+    `);
+    
     printWindow.document.close();
   }
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
