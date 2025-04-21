@@ -64,36 +64,6 @@ export const CERTIFICATE_TEMPLATE = {
         
         <p class="certificate-id">Certificate ID: {{id}}</p>
       </div>
-      <script>
-        // Improved print handling
-        window.onload = function() {
-          // Check if all images are loaded
-          const images = document.images;
-          let loaded = images.length;
-          
-          if (loaded === 0) {
-            window.print();
-            setTimeout(() => window.close(), 1000);
-            return;
-          }
-          
-          for (let i = 0; i < images.length; i++) {
-            if (images[i].complete) loaded--;
-            images[i].onload = function() {
-              if (--loaded <= 0) {
-                window.print();
-                setTimeout(() => window.close(), 1000);
-              }
-            };
-            images[i].onerror = function() {
-              if (--loaded <= 0) {
-                window.print();
-                setTimeout(() => window.close(), 1000);
-              }
-            };
-          }
-        };
-      </script>
     </body>
     </html>
   `,
