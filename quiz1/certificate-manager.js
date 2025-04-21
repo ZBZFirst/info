@@ -342,7 +342,8 @@ class CertificateManager {
     
     // Generate the final certificate HTML
     const certificateHTML = this.processCertificateTemplate(templateData);
-    
+    printWindow.document.write(certificateHTML);
+
     printWindow.document.close();
   }
 }
