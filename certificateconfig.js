@@ -47,7 +47,7 @@ export const CERTIFICATE_TEMPLATE = {
         
         {{#if logo}}
         <div class="logo">
-          <img src="{{logo}}" alt="Logo" width="150" onload="window.print()">
+          <img src="{{logo}}" alt="Logo" width="150">
         </div>
         {{/if}}
         
