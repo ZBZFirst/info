@@ -60,6 +60,34 @@ body {
   font-weight: bold;
 }
 
+.construction-visualizer {
+  margin: 20px 0;
+  padding: 10px;
+  background: rgba(0,0,0,0.05);
+   border-radius: 4px;
+}
+
+.progress-container {
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+  }
+
+.progress-bar {
+  height: 100%;
+  background: #4CAF50;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.stage-text {
+  margin-top: 5px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
 /* Print-specific fixes */
 @media print {
   @page {
