@@ -3,11 +3,13 @@
 
 export const CERTIFICATE_TEMPLATE = {
   container: {
-    border: '2px solid #1a5276',
+    border: '20px solid #1a5276', // Changed from 2px to 20px for thicker border
     padding: '2%', 
     margin: '0 auto',
-    backgroundColor: 'rgba(255,255,255,0.9)'
-  },
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: '15px', // Optional: Add rounded corners
+    boxShadow: '0 0 20px rgba(0,0,0,0.3)' // Optional: Add shadow for depth
+  }
   
   template: `
     <!DOCTYPE html>
