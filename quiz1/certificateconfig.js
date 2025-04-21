@@ -3,7 +3,7 @@
 
 export const CERTIFICATE_TEMPLATE = {
   background: {
-    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg',
+    image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg',
     size: 'cover', 
     position: 'center',
     repeat: 'no-repeat',
@@ -24,7 +24,7 @@ export const CERTIFICATE_TEMPLATE = {
       <title>{{title}}</title>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="_css/certificate.css">
+      <link rel="stylesheet" href="/info/_css/certificate.css">
       <style>
         /* Inline critical CSS for print reliability */
         @page {
@@ -85,7 +85,7 @@ export const CERTIFICATE_TEMPLATE = {
       }
     },
     logo: {
-      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/company-logo.jpg',
+      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg',
       editable: false,
       style: {
         width: '150px'
