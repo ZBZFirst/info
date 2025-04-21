@@ -9,17 +9,18 @@ body {
 }
 
 .certificate {
-  aspect-ratio: 1/1; 
-  width: 80vmin; 
-  min-width: 600px; 
+  aspect-ratio: 1/1;
+  width: 80vmin;
+  min-width: 600px;
   max-width: 100%;
-  margin: 0 auto; 
-  padding: 2%; 
+  margin: 0 auto;
+  padding: 2%;
   box-sizing: border-box;
-  border: var(--cert-border, 20px solid #1a5276);
-  border-radius: inherit; 
-  box-shadow: inherit; 
-  background-color: var(--cert-bg, rgba(255,255,255,0.9)); 
+
+  border: 20px solid #1a5276;
+  background-color: rgba(255,255,255,0.9);
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
 }
 
 .certificate h1 {
