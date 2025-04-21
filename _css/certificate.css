@@ -9,13 +9,17 @@ body {
 }
 
 .certificate {
-  aspect-ratio: 1/1; /* Perfect square */
-  width: 80vmin; /* Scales with viewport (print-safe) */
-  min-width: 600px; /* Fallback */
-  max-width: 100%; /* Prevent overflow */
-  margin: 0 auto; /* Center */
-  padding: 2%; /* Proportional padding */
-  box-sizing: border-box; /* Include padding in dimensions */
+  aspect-ratio: 1/1; 
+  width: 80vmin; 
+  min-width: 600px; 
+  max-width: 100%;
+  margin: 0 auto; 
+  padding: 2%; 
+  box-sizing: border-box;
+  border: inherit;
+  border-radius: inherit; 
+  box-shadow: inherit; 
+  background-color: inherit; 
 }
 
 .certificate h1 {
@@ -101,6 +105,9 @@ body {
     height: 90vmin;
     margin: 5vmin auto; /* Center with whitespace */
     page-break-inside: avoid; /* No splitting */
+    border: 20px solid #1a5276 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Ensure text colors print properly */
