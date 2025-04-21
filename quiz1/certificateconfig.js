@@ -7,7 +7,7 @@ export const CERTIFICATE_TEMPLATE = {
     size: 'cover', 
     position: 'center',
     repeat: 'no-repeat',
-    opacity: 0.1 
+    opacity: 0.9 
   },
   
   container: {
