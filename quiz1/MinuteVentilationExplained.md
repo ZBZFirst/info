@@ -17,6 +17,10 @@ title: "What Is Minute Ventilation?"
     <div class="embed-container">
         <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
+    <div class="video-completion">
+        <input type="checkbox" id="video-check-1" disabled>
+        <label for="video-check-1">Video 1 completed</label>
+    </div>
 </div>
 
 <div class="resource-card">
@@ -24,6 +28,10 @@ title: "What Is Minute Ventilation?"
     <p>A slow walk through of the equation and how the variables are input into the equation is shown with a few examples.</p>
     <div class="embed-container">
         <iframe src="https://www.youtube.com/embed/PnH4ExmrIV4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="video-completion">
+        <input type="checkbox" id="video-check-2" disabled>
+        <label for="video-check-2">Video 2 completed</label>
     </div>
 </div>
 
@@ -33,6 +41,10 @@ title: "What Is Minute Ventilation?"
     <div class="embed-container">
         <iframe src="https://www.youtube.com/embed/ytD4F0awEKc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
+    <div class="video-completion">
+        <input type="checkbox" id="video-check-3" disabled>
+        <label for="video-check-3">Video 3 completed</label>
+    </div>
 </div>
 
 <div class="resource-card">
@@ -40,5 +52,9 @@ title: "What Is Minute Ventilation?"
     <p>Since the input parameters are constrained to a narrow range, a full set of values can be graphed and plotted, graphing 100+ values with conditional formatting allows for a dataset to be visualized that more easily allows for analysis.</p>
     <div class="embed-container">
         <iframe src="https://www.youtube.com/embed/phbpRBO9Rkk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="video-completion">
+        <input type="checkbox" id="video-check-4" disabled>
+        <label for="video-check-4">Video 4 completed</label>
     </div>
 </div>
