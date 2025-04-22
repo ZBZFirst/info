@@ -36,13 +36,13 @@ export const CERTIFICATE_TEMPLATE = {
         </div>
         {{/if}}
         
-        <div class="signature">
+        <div class="signature-line">
           <div>
-            <div class="signature-line"></div>
-            <p>Signature</p>
+            <div class="educator-signature-line"></div>
+            <p>Educator Signature</p>
           </div>
           <div>
-            <div class="signature-line"></div>
+            <div class="date-line"></div>
             <p>Date</p>
           </div>
         </div>
