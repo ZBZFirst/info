@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: gatekeeper
 title: "What Is Minute Ventilation?"
 ---
 
