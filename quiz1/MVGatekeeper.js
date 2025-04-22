@@ -15,89 +15,118 @@ document.addEventListener('DOMContentLoaded', function() {
                        iframe.src.split('youtu.be/')[1]?.split('?')[0];
         console.log('Video ID:', videoId);
         
-        // Get URL parameters
-        const urlParams = new URL(iframe.src).searchParams;
-        console.log('URL Parameters:', Object.fromEntries(urlParams.entries()));
-        
-        // Get computed dimensions
-        const computedStyle = window.getComputedStyle(iframe);
-        console.log('Computed dimensions:', {
-            width: computedStyle.width,
-            height: computedStyle.height,
-            aspectRatio: parseFloat(computedStyle.width) / parseFloat(computedStyle.height) || 'N/A'
-        });
-        
-        // Setup postMessage listener for this iframe
-        setupPostMessageListener(iframe, videoId);
+        // Start tracking progress bar attributes
+        trackProgressBar(iframe, videoId);
         
         console.groupEnd();
     });
 });
 
-function setupPostMessageListener(iframe, videoId) {
-    console.log(`Setting up postMessage listener for video: ${videoId}`);
+function trackProgressBar(iframe, videoId) {
+    console.log(`Starting progress tracker for video: ${videoId}`);
     
-    let lastUpdate = 0;
-    
-    const messageHandler = function(event) {
-        // Only process messages from our iframe
-        if (event.source !== iframe.contentWindow) return;
-        
-        try {
-            const data = JSON.parse(event.data);
-            if (data && data.info) {
-                const now = Date.now();
+    let previousValues = {
+        valuemin: 0,
+        valuemax: 0,
+        valuenow: 0
+    };
+
+    // Create a MutationObserver to watch for attribute changes
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName.includes('aria-valuenow')) {
+                const progressBar = mutation.target;
+                const currentValues = {
+                    valuemin: parseInt(progressBar.getAttribute('aria-valuemin') || '0'),
+                    valuemax: parseInt(progressBar.getAttribute('aria-valuemax') || '0'),
+                    valuenow: parseInt(progressBar.getAttribute('aria-valuenow') || '0')
+                };
                 
-                // Throttle updates to once per second
-                if (now - lastUpdate > 1000) {
-                    console.group(`Video ${videoId} Update`);
-                    console.log('Player info:', data.info);
+                // Only log if values changed
+                if (currentValues.valuenow !== previousValues.valuenow ||
+                    currentValues.valuemax !== previousValues.valuemax) {
                     
-                    if (data.info.currentTime !== undefined && data.info.duration !== undefined) {
-                        const percentage = (data.info.currentTime / data.info.duration * 100).toFixed(2);
-                        console.log(`Progress: ${percentage}%`);
-                        
-                        if (data.info.currentTime >= data.info.duration * 0.99) {
-                            console.log('EVENT: Video nearly completed');
-                        }
+                    console.group(`Video ${videoId} Progress Update`);
+                    console.log('Current Time (aria-valuenow):', currentValues.valuenow);
+                    console.log('Duration (aria-valuemax):', currentValues.valuemax);
+                    console.log('Minimum (aria-valuemin):', currentValues.valuemin);
+                    console.log('Progress:', 
+                        currentValues.valuemax > 0 
+                            ? `${(currentValues.valuenow / currentValues.valuemax * 100).toFixed(1)}%`
+                            : '0%');
+                    
+                    // Detect important events
+                    if (previousValues.valuemax === 0 && currentValues.valuemax > 0) {
+                        console.log('EVENT: Video duration loaded');
+                    }
+                    if (currentValues.valuenow === currentValues.valuemax && currentValues.valuemax > 0) {
+                        console.log('EVENT: Video completed');
                     }
                     
                     console.groupEnd();
-                    lastUpdate = now;
+                    
+                    previousValues = currentValues;
+                }
+            }
+        });
+    });
+
+    // Try to set up the observer immediately
+    try {
+        const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const progressBar = innerDoc.querySelector('.ytp-progress-bar');
+        
+        if (progressBar) {
+            observer.observe(progressBar, {
+                attributes: true,
+                attributeFilter: ['aria-valuenow', 'aria-valuemax', 'aria-valuemin'],
+                subtree: false
+            });
+            console.log('Direct progress bar observer established');
+            return;
+        }
+    } catch (e) {
+        console.log('CORS prevented direct access, falling back to polling...');
+    }
+
+    // Fallback to polling if direct observation fails
+    const pollInterval = setInterval(() => {
+        try {
+            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const progressBar = innerDoc.querySelector('.ytp-progress-bar');
+            
+            if (progressBar) {
+                const currentValues = {
+                    valuemin: parseInt(progressBar.getAttribute('aria-valuemin') || '0'),
+                    valuemax: parseInt(progressBar.getAttribute('aria-valuemax') || '0'),
+                    valuenow: parseInt(progressBar.getAttribute('aria-valuenow') || '0')
+                };
+                
+                if (currentValues.valuenow !== previousValues.valuenow ||
+                    currentValues.valuemax !== previousValues.valuemax) {
+                    
+                    console.group(`Video ${videoId} Polled Update`);
+                    console.log('Current Time:', currentValues.valuenow);
+                    console.log('Duration:', currentValues.valuemax);
+                    console.log('Progress:', 
+                        currentValues.valuemax > 0 
+                            ? `${(currentValues.valuenow / currentValues.valuemax * 100).toFixed(1)}%`
+                            : '0%');
+                    console.groupEnd();
+                    
+                    previousValues = currentValues;
                 }
             }
         } catch (e) {
-            // Not a JSON message we care about
+            console.log(`Polling attempt failed for ${videoId}`);
         }
-    };
-
-    window.addEventListener('message', messageHandler);
-    
-    // Periodically request player state
-    const requestInterval = setInterval(() => {
-        try {
-            iframe.contentWindow.postMessage(
-                '{"event":"command","func":"getPlayerState","args":""}',
-                '*'
-            );
-            iframe.contentWindow.postMessage(
-                '{"event":"command","func":"getCurrentTime","args":""}',
-                '*'
-            );
-            iframe.contentWindow.postMessage(
-                '{"event":"command","func":"getDuration","args":""}',
-                '*'
-            );
-        } catch (e) {
-            console.warn('postMessage failed:', e);
-        }
-    }, 1500);
+    }, 1000);
 
     // Clean up when iframe is removed
     const cleanupObserver = new MutationObserver(() => {
         if (!document.contains(iframe)) {
-            clearInterval(requestInterval);
-            window.removeEventListener('message', messageHandler);
+            observer.disconnect();
+            clearInterval(pollInterval);
             cleanupObserver.disconnect();
             console.log(`Cleanup complete for video ${videoId}`);
         }
