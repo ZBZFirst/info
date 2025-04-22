@@ -333,6 +333,8 @@ class CertificateManager {
         prefix: CERTIFICATE_TEMPLATE.fields.recipient.prefix
       },
       logo: CERTIFICATE_TEMPLATE.fields.logo.image,
+      secondLogo: CERTIFICATE_TEMPLATE.fields.secondLogo.image,
+      educatorSignature: CERTIFICATE_TEMPLATE.fields.educatorSignature.image,
       background: CERTIFICATE_TEMPLATE.background,
       container: CERTIFICATE_TEMPLATE.container
     };
