@@ -42,8 +42,9 @@ export const CERTIFICATE_TEMPLATE = {
       <p>Educator Signature</p>
     </div>
     <div class="signature-block">
+      <div class="date-line">
       <p>{{date}}</p>
-      <div class="date-line"></div>
+      </div>
       <p>Date</p>
     </div>
   </div>
