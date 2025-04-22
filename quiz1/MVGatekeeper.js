@@ -1,135 +1,103 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
     
+    // Load YouTube API if not already loaded
+    if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
     // Find all YouTube iframes
     const youtubeIframes = Array.from(document.querySelectorAll('iframe'))
         .filter(iframe => iframe.src.includes('youtube.com/embed/') || iframe.src.includes('youtu.be/'));
     
     console.log(`Found ${youtubeIframes.length} YouTube video embeds`);
 
-    youtubeIframes.forEach((iframe, index) => {
-        console.groupCollapsed(`YouTube Video #${index + 1}`);
-        
-        // Extract video ID
-        const videoId = iframe.src.split('/embed/')[1]?.split('?')[0] || 
-                       iframe.src.split('youtu.be/')[1]?.split('?')[0];
-        console.log('Video ID:', videoId);
-        
-        // Start tracking progress bar attributes
-        trackProgressBar(iframe, videoId);
-        
-        console.groupEnd();
-    });
-});
+    // Store player instances and tracking data
+    const players = [];
+    const videoData = [];
 
-function trackProgressBar(iframe, videoId) {
-    console.log(`Starting progress tracker for video: ${videoId}`);
-    
-    let previousValues = {
-        valuemin: 0,
-        valuemax: 0,
-        valuenow: 0
-    };
-
-    // Create a MutationObserver to watch for attribute changes
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName.includes('aria-valuenow')) {
-                const progressBar = mutation.target;
-                const currentValues = {
-                    valuemin: parseInt(progressBar.getAttribute('aria-valuemin') || '0'),
-                    valuemax: parseInt(progressBar.getAttribute('aria-valuemax') || '0'),
-                    valuenow: parseInt(progressBar.getAttribute('aria-valuenow') || '0')
-                };
+    // This function will be called when YouTube API is ready
+    window.onYouTubeIframeAPIReady = function() {
+        youtubeIframes.forEach((iframe, index) => {
+            try {
+                const videoId = iframe.src.split('/embed/')[1]?.split('?')[0] || 
+                               iframe.src.split('youtu.be/')[1]?.split('?')[0];
                 
-                // Only log if values changed
-                if (currentValues.valuenow !== previousValues.valuenow ||
-                    currentValues.valuemax !== previousValues.valuemax) {
-                    
-                    console.group(`Video ${videoId} Progress Update`);
-                    console.log('Current Time (aria-valuenow):', currentValues.valuenow);
-                    console.log('Duration (aria-valuemax):', currentValues.valuemax);
-                    console.log('Minimum (aria-valuemin):', currentValues.valuemin);
-                    console.log('Progress:', 
-                        currentValues.valuemax > 0 
-                            ? `${(currentValues.valuenow / currentValues.valuemax * 100).toFixed(1)}%`
-                            : '0%');
-                    
-                    // Detect important events
-                    if (previousValues.valuemax === 0 && currentValues.valuemax > 0) {
-                        console.log('EVENT: Video duration loaded');
+                videoData[index] = {
+                    id: videoId,
+                    duration: 0,
+                    currentTime: 0,
+                    percentWatched: 0
+                };
+
+                players[index] = new YT.Player(iframe, {
+                    events: {
+                        'onReady': (event) => onPlayerReady(event, index),
+                        'onStateChange': (event) => onPlayerStateChange(event, index)
                     }
-                    if (currentValues.valuenow === currentValues.valuemax && currentValues.valuemax > 0) {
-                        console.log('EVENT: Video completed');
-                    }
-                    
-                    console.groupEnd();
-                    
-                    previousValues = currentValues;
-                }
+                });
+            } catch (e) {
+                console.error(`Failed to initialize player ${index + 1}:`, e);
             }
         });
-    });
+    };
 
-    // Try to set up the observer immediately
-    try {
-        const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const progressBar = innerDoc.querySelector('.ytp-progress-bar');
+    function onPlayerReady(event, index) {
+        const player = event.target;
+        const duration = player.getDuration();
+        videoData[index].duration = duration;
         
-        if (progressBar) {
-            observer.observe(progressBar, {
-                attributes: true,
-                attributeFilter: ['aria-valuenow', 'aria-valuemax', 'aria-valuemin'],
-                subtree: false
-            });
-            console.log('Direct progress bar observer established');
-            return;
-        }
-    } catch (e) {
-        console.log('CORS prevented direct access, falling back to polling...');
+        console.log(`Player ${index + 1} ready (Video ID: ${videoData[index].id}, Duration: ${duration}s)`);
+        
+        // Start progress tracking
+        videoData[index].interval = setInterval(() => updateProgress(player, index), 1000);
     }
 
-    // Fallback to polling if direct observation fails
-    const pollInterval = setInterval(() => {
+    function onPlayerStateChange(event, index) {
+        const states = ['UNSTARTED', 'ENDED', 'PLAYING', 'PAUSED', 'BUFFERING', 'CUED'];
+        console.log(`Player ${index + 1} state: ${states[event.data]}`);
+        
+        if (event.data === YT.PlayerState.ENDED) {
+            console.log(`Video ${index + 1} completed`);
+        }
+    }
+
+    function updateProgress(player, index) {
         try {
-            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-            const progressBar = innerDoc.querySelector('.ytp-progress-bar');
+            const currentTime = player.getCurrentTime();
+            const duration = videoData[index].duration || player.getDuration();
+            const percentWatched = (currentTime / duration * 100).toFixed(2);
             
-            if (progressBar) {
-                const currentValues = {
-                    valuemin: parseInt(progressBar.getAttribute('aria-valuemin') || '0'),
-                    valuemax: parseInt(progressBar.getAttribute('aria-valuemax') || '0'),
-                    valuenow: parseInt(progressBar.getAttribute('aria-valuenow') || '0')
-                };
+            // Only log if progress changed significantly
+            if (Math.abs(videoData[index].percentWatched - percentWatched) > 0.5) {
+                videoData[index].currentTime = currentTime;
+                videoData[index].percentWatched = percentWatched;
                 
-                if (currentValues.valuenow !== previousValues.valuenow ||
-                    currentValues.valuemax !== previousValues.valuemax) {
-                    
-                    console.group(`Video ${videoId} Polled Update`);
-                    console.log('Current Time:', currentValues.valuenow);
-                    console.log('Duration:', currentValues.valuemax);
-                    console.log('Progress:', 
-                        currentValues.valuemax > 0 
-                            ? `${(currentValues.valuenow / currentValues.valuemax * 100).toFixed(1)}%`
-                            : '0%');
-                    console.groupEnd();
-                    
-                    previousValues = currentValues;
+                console.group(`Video ${index + 1} Progress`);
+                console.log('Current Time:', currentTime.toFixed(1) + 's');
+                console.log('Duration:', duration.toFixed(1) + 's');
+                console.log('Percent Watched:', percentWatched + '%');
+                console.groupEnd();
+                
+                // You can add additional logic here when certain thresholds are reached
+                if (percentWatched >= 90) {
+                    console.log(`Video ${index + 1} nearly completed (${percentWatched}%)`);
                 }
             }
         } catch (e) {
-            console.log(`Polling attempt failed for ${videoId}`);
+            console.warn(`Error updating progress for player ${index + 1}:`, e);
         }
-    }, 1000);
+    }
 
-    // Clean up when iframe is removed
-    const cleanupObserver = new MutationObserver(() => {
-        if (!document.contains(iframe)) {
-            observer.disconnect();
-            clearInterval(pollInterval);
-            cleanupObserver.disconnect();
-            console.log(`Cleanup complete for video ${videoId}`);
-        }
+    // Clean up when page unloads
+    window.addEventListener('beforeunload', function() {
+        videoData.forEach((data, index) => {
+            if (data.interval) {
+                clearInterval(data.interval);
+            }
+        });
     });
-    cleanupObserver.observe(document.body, { childList: true, subtree: true });
-}
+});
