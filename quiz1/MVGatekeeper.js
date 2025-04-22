@@ -3,15 +3,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Track video completion status
     const videos = [
-        { id: 'g38HMU4Pjlk', completed: false, element: null, checkbox: null, duration: 0 },
-        { id: 'PnH4ExmrIV4', completed: false, element: null, checkbox: null, duration: 0 },
-        { id: 'ytD4F0awEKc', completed: false, element: null, checkbox: null, duration: 0 },
-        { id: 'phbpRBO9Rkk', completed: false, element: null, checkbox: null, duration: 0 }
+        { id: 'g38HMU4Pjlk', completed: false, element: null, checkbox: null, duration: 0, player: null },
+        { id: 'PnH4ExmrIV4', completed: false, element: null, checkbox: null, duration: 0, player: null },
+        { id: 'ytD4F0awEKc', completed: false, element: null, checkbox: null, duration: 0, player: null },
+        { id: 'phbpRBO9Rkk', completed: false, element: null, checkbox: null, duration: 0, player: null }
     ];
     
     let scrolledToBottom = false;
     let videoCheckIntervals = [];
-    let players = [];
     
     // Debug function to log video states
     function logVideoStates() {
@@ -19,28 +18,17 @@ document.addEventListener('DOMContentLoaded', function() {
         videos.forEach((video, index) => {
             console.log(`Video ${index + 1} (${video.id}): 
                 Completed: ${video.completed}, 
-                Duration: ${video.duration} seconds`);
+                Duration: ${video.duration} seconds,
+                Player State: ${video.player ? getPlayerState(video.player.getPlayerState()) : 'Not loaded'}`);
         });
     }
     
-    // Check if YouTube API is already loaded
-    if (window.YT && YT.loaded) {
-        console.log('YouTube API already loaded');
-        initializePlayers();
-    } else {
-        console.log('Loading YouTube API');
-        // Create the YouTube API script tag
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        
-        window.onYouTubeIframeAPIReady = function() {
-            console.log('YouTube API ready');
-            initializePlayers();
-        };
+    function getPlayerState(stateCode) {
+        const states = ['UNSTARTED', 'ENDED', 'PLAYING', 'PAUSED', 'BUFFERING', 'CUED'];
+        return states[stateCode] || 'UNKNOWN';
     }
     
+    // Initialize YouTube players
     function initializePlayers() {
         console.log('Initializing players');
         const iframes = document.querySelectorAll('iframe');
@@ -50,13 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
             videos[index].checkbox = document.getElementById(`video-check-${index+1}`);
             
             try {
-                const player = new YT.Player(iframe, {
+                videos[index].player = new YT.Player(iframe, {
                     events: {
                         'onReady': (event) => onPlayerReady(event, index),
-                        'onStateChange': (event) => onPlayerStateChange(event, index)
+                        'onStateChange': (event) => onPlayerStateChange(event, index),
+                        'onError': (event) => console.error(`Player ${index+1} error:`, event.data)
                     }
                 });
-                players[index] = player;
                 console.log(`Player ${index + 1} initialized for video ${videos[index].id}`);
             } catch (e) {
                 console.error(`Error initializing player ${index + 1}:`, e);
@@ -69,16 +57,21 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Player ${index + 1} ready`);
         const player = event.target;
         
+        // Get video duration once player is ready
+        videos[index].duration = player.getDuration();
+        console.log(`Video ${index + 1} duration: ${videos[index].duration} seconds`);
+        
         // Start tracking play time
         videoCheckIntervals[index] = setInterval(() => {
             trackVideoProgress(index);
         }, 1000);
+        
+        logVideoStates();
     }
     
     // Track player state changes
     function onPlayerStateChange(event, index) {
-        const states = ['UNSTARTED', 'ENDED', 'PLAYING', 'PAUSED', 'BUFFERING', 'CUED'];
-        console.log(`Player ${index + 1} state changed to: ${states[event.data]}`);
+        console.log(`Player ${index + 1} state changed to: ${getPlayerState(event.data)}`);
         
         if (event.data === YT.PlayerState.ENDED) {
             console.log(`Video ${index + 1} ended`);
@@ -89,19 +82,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Track video progress
     function trackVideoProgress(index) {
         try {
-            const player = players[index];
+            const player = videos[index].player;
             const currentTime = player.getCurrentTime();
-            const duration = player.getDuration();
-            
-            videos[index].duration = duration;
             
             // Log progress every 10 seconds for debugging
             if (Math.floor(currentTime) % 10 === 0) {
-                console.log(`Video ${index + 1} progress: ${currentTime.toFixed(1)}/${duration.toFixed(1)} seconds`);
+                console.log(`Video ${index + 1} progress: ${currentTime.toFixed(1)}/${videos[index].duration.toFixed(1)} seconds (${(currentTime/videos[index].duration*100).toFixed(1)}%)`);
             }
             
             // Mark as completed if watched at least 90% of the video
-            if (duration > 0 && currentTime / duration >= 0.9) {
+            if (videos[index].duration > 0 && currentTime / videos[index].duration >= 0.9) {
                 console.log(`Video ${index + 1} reached 90% completion`);
                 completeVideo(index);
             }
@@ -171,6 +161,13 @@ document.addEventListener('DOMContentLoaded', function() {
         link.style.cursor = 'not-allowed';
     });
     
-    // Initial state log
-    logVideoStates();
+    // Initialize players after a short delay to ensure YT API is ready
+    setTimeout(() => {
+        if (window.YT && YT.loaded) {
+            initializePlayers();
+        } else {
+            console.log('Waiting for YouTube API to load...');
+            window.onYouTubeIframeAPIReady = initializePlayers;
+        }
+    }, 500);
 });
