@@ -49,7 +49,7 @@ export const CERTIFICATE_TEMPLATE = {
     </div>
   </div>
         
-        <p class="certificate-id">Certificate ID: {{id}}</p>
+        <p class="certificate-id">{{recipient.name}} License ID: {{id}}</p>
       </div>
     </body>
     </html>
