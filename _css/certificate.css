@@ -59,6 +59,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 150px; /* Give space for signature image */
+  justify-content: flex-end;
 }
 
 .signature-block p {
@@ -69,15 +71,34 @@ body {
 .date-line {
   border-top: 1px solid #333;
   width: 200px;
-  margin: 0 0 5px 0; 
+  margin: 5px 0;
+  display: block;
 }
 
-.date-line {
-  border-top: 1px solid #333;
-  width: 200px;
-  display: inline-block;
-  margin-top: 5px;
+.logos-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  width: 100%;
 }
+
+.logo.left-logo {
+  text-align: left;
+  margin-right: auto;
+}
+
+.logo.right-logo {
+  text-align: right;
+  margin-left: auto;
+}
+
+.signature-image {
+  width: 150px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
 
 .certificate-id {
   margin-top: 30px;
