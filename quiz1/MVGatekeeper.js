@@ -1,68 +1,66 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
     
-    // Find all YouTube iframes on the page
-    const youtubeIframes = document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtu.be"]');
+    // Find all YouTube iframes
+    const youtubeIframes = Array.from(document.querySelectorAll('iframe'))
+        .filter(iframe => iframe.src.includes('youtube.com/embed/') || iframe.src.includes('youtu.be/'));
     
-    console.log(`Found ${youtubeIframes.length} YouTube video(s) on this page`);
-    
-    // Analyze each YouTube iframe
+    console.log(`Found ${youtubeIframes.length} YouTube video embeds`);
+
     youtubeIframes.forEach((iframe, index) => {
         console.groupCollapsed(`YouTube Video #${index + 1}`);
         
-        // Extract video ID from URL
-        const videoId = extractVideoId(iframe.src);
+        // Extract video ID
+        const videoId = iframe.src.split('/embed/')[1]?.split('?')[0] || 
+                       iframe.src.split('youtu.be/')[1]?.split('?')[0];
         console.log('Video ID:', videoId);
         
-        // Basic iframe information
-        console.log('iframe dimensions:', {
-            width: iframe.width,
-            height: iframe.height,
-            aspectRatio: iframe.width / iframe.height
+        // Get URL parameters
+        const urlParams = new URL(iframe.src).searchParams;
+        console.log('URL Parameters:', Object.fromEntries(urlParams.entries()));
+        
+        // Get computed dimensions
+        const computedStyle = window.getComputedStyle(iframe);
+        console.log('Computed dimensions:', {
+            width: computedStyle.width,
+            height: computedStyle.height,
+            aspectRatio: parseFloat(computedStyle.width) / parseFloat(computedStyle.height) || 'N/A'
         });
         
-        // Attempt to access internal YouTube player elements
-        try {
-            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-            
-            // Get player container
-            const player = innerDoc.querySelector('.html5-video-player');
-            console.log('Player element:', player ? 'Found' : 'Not found');
-            
-            // Get video title
-            const titleElement = innerDoc.querySelector('.ytp-title-link');
-            const videoTitle = titleElement ? titleElement.textContent : 'Unknown';
-            console.log('Video title:', videoTitle);
-            
-            // Get progress information
-            const progressBar = innerDoc.querySelector('.ytp-progress-bar');
-            if (progressBar) {
-                console.log('Progress bar:', {
-                    currentTime: progressBar.getAttribute('aria-valuenow'),
-                    duration: progressBar.getAttribute('aria-valuemax'),
-                    percentage: (progressBar.getAttribute('aria-valuenow') / progressBar.getAttribute('aria-valuemax') * 100).toFixed(1) + '%'
-                });
-            }
-            
-            // Check player state
-            const playButton = innerDoc.querySelector('.ytp-play-button');
-            console.log('Player state:', playButton ? playButton.getAttribute('aria-label') : 'Unknown');
-            
-        } catch (e) {
-            console.log('Could not access iframe internals due to CORS policy:', e.message);
-            console.log('Try these alternative approaches:');
-            console.log('- Use the YouTube Iframe API for authorized access');
-            console.log('- Look for postMessage communication from the iframe');
-            console.log('- Check for changes in the iframe URL parameters');
-        }
+        // Attempt to detect player state via indirect methods
+        detectPlayerState(iframe, videoId);
         
         console.groupEnd();
     });
-    
-    // Helper function to extract YouTube video ID
-    function extractVideoId(url) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+
+    function detectPlayerState(iframe, videoId) {
+        // Method 1: Check for title attribute changes
+        const titleObserver = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.attributeName === 'title') {
+                    console.log('Player state changed (title):', iframe.title);
+                }
+            });
+        });
+        titleObserver.observe(iframe, { attributes: true });
+        
+        // Method 2: Check for class changes
+        const classObserver = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.attributeName === 'class') {
+                    console.log('Player class changed:', iframe.className);
+                }
+            });
+        });
+        classObserver.observe(iframe, { attributes: true });
+        
+        // Method 3: PostMessage listener (for potential communication)
+        window.addEventListener('message', function(event) {
+            if (event.source === iframe.contentWindow) {
+                console.log('Received message from player:', event.data);
+            }
+        });
+
+        console.log('Setting up state detection observers...');
     }
 });
