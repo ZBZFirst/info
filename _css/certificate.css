@@ -68,13 +68,13 @@ body {
 .educator-signature-line,
 .date-line {
   border-top: 1px solid #333;
-  width: 200px;
+  width: 2px;
   margin: 0 0 5px 0; 
 }
 
 .date-line {
   border-top: 1px solid #333;
-  width: 200px;
+  width: 2px;
   display: inline-block;
   margin-top: 40px;
 }
