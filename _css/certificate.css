@@ -16,7 +16,6 @@ body {
   margin: 0 auto;
   padding: 2%;
   box-sizing: border-box;
-
   border: 20px solid #1a5276;
   background-color: rgba(255,255,255,0.9);
   border-radius: 15px;
@@ -34,6 +33,7 @@ body {
   margin: 10px 0;
   font-size: 18px;
   line-height: 1.5;
+  text-align: center;
 }
 
 .certificate h2 {
