@@ -175,6 +175,35 @@ a:hover {
     min-height: 1.5rem;
 }
 
+.video-completion {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f6f8fa;
+    border-radius: 4px;
+    border: 1px solid #e1e4e8;
+}
+
+.video-completion input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: default;
+}
+
+.video-completion label {
+    cursor: default;
+    user-select: none;
+}
+
+.video-completion input[type="checkbox"]:checked + label {
+    color: #155724;
+    font-weight: bold;
+}
+
+/* Style for completed videos */
+.video-completed .video-completion {
+    background: #d4edda;
+    border-color: #c3e6cb;
+}
+
 /* ===================== */
 /* === Responsive Design === */
 /* ===================== */
