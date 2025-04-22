@@ -49,7 +49,7 @@ body {
 }
 
 .signature {
-  margin-top: 60px;
+  margin-top: 0px;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
