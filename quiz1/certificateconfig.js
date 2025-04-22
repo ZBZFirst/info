@@ -1,6 +1,5 @@
   // certificateconfig.js
 
-
 export const CERTIFICATE_TEMPLATE = {  
   template: `
     <!DOCTYPE html>
@@ -11,11 +10,7 @@ export const CERTIFICATE_TEMPLATE = {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link rel="stylesheet" href="/info/_css/certificate.css">
       <style>
-        /* Inline critical CSS for print reliability */
-        @page {
-          size: auto;
-          margin: 0;
-        }
+        @page { size: auto; margin: 0; }
       </style>
     </head>
     <body>
@@ -30,23 +25,27 @@ export const CERTIFICATE_TEMPLATE = {
         
         <p>with a score of <strong>{{score}}</strong></p>
         
-        {{#if logo}}
-        <div class="logo">
-          <img src="{{logo}}" alt="Logo" width="150">
+        <div class="logos-container">
+          <div class="logo left-logo">
+            <img src="{{logo}}" alt="Company Logo" width="150">
+          </div>
+          <div class="logo right-logo">
+            <img src="{{secondLogo}}" alt="Partner Logo" width="150">
+          </div>
         </div>
-        {{/if}}
         
-  <div class="signature">
-    <div class="signature-block">
-      <div class="educator-signature-line"></div>
-      <p>Educator Signature</p>
-    </div>
-    <div class="signature-block">
-      <p>{{date}}</p>
-      <div class="date-line"></div>
-      <p>Date</p>
-    </div>
-  </div>
+        <div class="signature">
+          <div class="signature-block">
+            <img src="{{educatorSignature}}" alt="Educator Signature" class="signature-image">
+            <div class="educator-signature-line"></div>
+            <p>Educator Signature</p>
+          </div>
+          <div class="signature-block">
+            <p>{{date}}</p>
+            <div class="date-line"></div>
+            <p>Date</p>
+          </div>
+        </div>
         
         <p class="certificate-id">{{recipient.name}} License ID: {{id}}</p>
       </div>
@@ -58,24 +57,37 @@ export const CERTIFICATE_TEMPLATE = {
     title: {
       content: 'CERTIFICATE OF COMPLETION',
       editable: false,
-      style: {
-        fontSize: '28px',
-        fontWeight: 'bold'
-      }
+      style: { fontSize: '28px', fontWeight: 'bold' }
     },
     recipient: {
       prefix: 'This certificate is awarded to ',
       editable: true,
-      style: {
-        fontSize: '20px'
-      }
+      style: { fontSize: '20px' }
     },
     logo: {
       image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/company-logo.jpg',
       editable: false,
-      style: {
-        width: '150px'
-      }
+      style: { width: '150px' }
+    },
+    secondLogo: {
+      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/another-company-logo.jpg',
+      editable: false,
+      style: { width: '150px' }
+    },
+    educatorSignature: {
+      image: 'https://raw.githubusercontent.com/ZBZFirst/info/refs/heads/main/quiz1/digital.jpg',
+      editable: false,
+      style: { width: '150px' }
     }
   }
 };
+
+
+
+
+
+
+
+
+
+
