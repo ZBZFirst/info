@@ -27,106 +27,80 @@ document.addEventListener('DOMContentLoaded', function() {
             aspectRatio: parseFloat(computedStyle.width) / parseFloat(computedStyle.height) || 'N/A'
         });
         
-        // Attempt to detect player state via indirect methods
-        detectPlayerState(iframe, videoId);
+        // Setup postMessage listener for this iframe
+        setupPostMessageListener(iframe, videoId);
         
         console.groupEnd();
     });
+});
 
-function detectPlayerState(iframe, videoId) {
-    console.log(`Setting up debugger for video: ${videoId}`);
+function setupPostMessageListener(iframe, videoId) {
+    console.log(`Setting up postMessage listener for video: ${videoId}`);
     
-    // Track previous values for comparison
-    let previousValues = {
-        currentTime: 0,
-        duration: 0,
-        percentage: 0
-    };
-
-    // Method 1: Poll for YTP progress bar changes
-    const progressChecker = setInterval(() => {
+    let lastUpdate = 0;
+    
+    const messageHandler = function(event) {
+        // Only process messages from our iframe
+        if (event.source !== iframe.contentWindow) return;
+        
         try {
-            // Access the iframe's document (may be blocked by CORS)
-            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-            const progressBar = innerDoc.querySelector('.ytp-progress-bar');
-            
-            if (progressBar) {
-                const currentTime = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
-                const duration = parseInt(progressBar.getAttribute('aria-valuemax') || '0');
-                const percentage = duration > 0 ? (currentTime / duration * 100).toFixed(2) : 0;
+            const data = JSON.parse(event.data);
+            if (data && data.info) {
+                const now = Date.now();
                 
-                // Only log if values have changed
-                if (currentTime !== previousValues.currentTime || 
-                    duration !== previousValues.duration) {
+                // Throttle updates to once per second
+                if (now - lastUpdate > 1000) {
+                    console.group(`Video ${videoId} Update`);
+                    console.log('Player info:', data.info);
                     
-                    console.group(`Video ${videoId} Progress Update`);
-                    console.log('Current Time:', `${currentTime}s (was ${previousValues.currentTime}s)`);
-                    console.log('Duration:', `${duration}s (was ${previousValues.duration}s)`);
-                    console.log('Completion:', `${percentage}%`);
-                    
-                    // Detect significant events
-                    if (previousValues.duration === 0 && duration > 0) {
-                        console.log('EVENT: Video loaded');
-                    }
-                    if (currentTime > previousValues.currentTime) {
-                        console.log('EVENT: Video playing');
-                    }
-                    if (currentTime === duration && duration > 0) {
-                        console.log('EVENT: Video completed');
+                    if (data.info.currentTime !== undefined && data.info.duration !== undefined) {
+                        const percentage = (data.info.currentTime / data.info.duration * 100).toFixed(2);
+                        console.log(`Progress: ${percentage}%`);
+                        
+                        if (data.info.currentTime >= data.info.duration * 0.99) {
+                            console.log('EVENT: Video nearly completed');
+                        }
                     }
                     
                     console.groupEnd();
-                    
-                    // Update previous values
-                    previousValues = { currentTime, duration, percentage };
+                    lastUpdate = now;
                 }
             }
         } catch (e) {
-            // Fallback to postMessage if direct access fails
-            if (!window.ytDebugFallback) {
-                console.log('CORS blocked direct access, attempting postMessage fallback...');
-                setupPostMessageFallback(iframe, videoId);
-                window.ytDebugFallback = true;
-            }
+            // Not a JSON message we care about
         }
-    }, 1000); // Check every second
+    };
 
-    // Method 2: PostMessage fallback
-    function setupPostMessageFallback(iframe, videoId) {
-        window.addEventListener('message', function(event) {
-            if (event.source === iframe.contentWindow) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data && data.info && data.info.currentTime !== undefined) {
-                        console.log(`Video ${videoId} postMessage Update:`, data.info);
-                    }
-                } catch (e) {
-                    // Not a progress update message
-                }
-            }
-        });
-
-        // Regularly request progress updates
-        setInterval(() => {
-            try {
-                iframe.contentWindow.postMessage(
-                    '{"event":"command","func":"getCurrentTime","args":""}',
-                    '*'
-                );
-            } catch (e) {
-                console.warn('postMessage failed:', e);
-            }
-        }, 1500);
-    }
+    window.addEventListener('message', messageHandler);
+    
+    // Periodically request player state
+    const requestInterval = setInterval(() => {
+        try {
+            iframe.contentWindow.postMessage(
+                '{"event":"command","func":"getPlayerState","args":""}',
+                '*'
+            );
+            iframe.contentWindow.postMessage(
+                '{"event":"command","func":"getCurrentTime","args":""}',
+                '*'
+            );
+            iframe.contentWindow.postMessage(
+                '{"event":"command","func":"getDuration","args":""}',
+                '*'
+            );
+        } catch (e) {
+            console.warn('postMessage failed:', e);
+        }
+    }, 1500);
 
     // Clean up when iframe is removed
     const cleanupObserver = new MutationObserver(() => {
         if (!document.contains(iframe)) {
-            clearInterval(progressChecker);
+            clearInterval(requestInterval);
+            window.removeEventListener('message', messageHandler);
             cleanupObserver.disconnect();
             console.log(`Cleanup complete for video ${videoId}`);
         }
     });
     cleanupObserver.observe(document.body, { childList: true, subtree: true });
 }
-});
