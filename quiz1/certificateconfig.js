@@ -29,7 +29,6 @@ export const CERTIFICATE_TEMPLATE = {
         <h2>{{course}}</h2>
         
         <p>with a score of <strong>{{score}}</strong></p>
-        <p>on {{date}}</p>
         
         {{#if logo}}
         <div class="logo">
