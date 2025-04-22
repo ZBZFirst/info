@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Track video completion status
+    // Track video completion status with timers
     const videos = [
-        { id: 'g38HMU4Pjlk', completed: false, element: null },
-        { id: 'PnH4ExmrIV4', completed: false, element: null },
-        { id: 'ytD4F0awEKc', completed: false, element: null },
-        { id: 'phbpRBO9Rkk', completed: false, element: null }
+        { id: 'g38HMU4Pjlk', completed: false, duration: 0, requiredDuration: 60, element: null },
+        { id: 'PnH4ExmrIV4', completed: false, duration: 0, requiredDuration: 120, element: null },
+        { id: 'ytD4F0awEKc', completed: false, duration: 0, requiredDuration: 90, element: null },
+        { id: 'phbpRBO9Rkk', completed: false, duration: 0, requiredDuration: 75, element: null }
     ];
     
     // Track interaction elements
@@ -17,41 +17,79 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let scrolledToBottom = false;
     let unlockButtonClicked = false;
+    let videoCheckIntervals = [];
     
-    // Find all video iframes and set up completion tracking
-    const iframes = document.querySelectorAll('iframe');
-    iframes.forEach((iframe, index) => {
-        videos[index].element = iframe;
-        
-        // Add event listener to detect when video is played
-        iframe.addEventListener('load', function() {
-            const player = iframe.contentWindow;
-            
-            // Poll for video completion (since YouTube API requires additional setup)
-            const checkComplete = setInterval(() => {
-                try {
-                    // This is a simplified approach - for full implementation you'd need YouTube API
-                    // For now, we'll just track if user interacted with each video
-                    iframe.addEventListener('click', () => {
-                        videos[index].completed = true;
-                        checkAllCompleted();
-                    });
-                } catch (e) {
-                    console.log("YouTube API not loaded yet");
+    // Create the YouTube API script tag
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    
+    // This function creates an <iframe> (and YouTube player) for each video
+    let players = [];
+    window.onYouTubeIframeAPIReady = function() {
+        const iframes = document.querySelectorAll('iframe');
+        iframes.forEach((iframe, index) => {
+            videos[index].element = iframe;
+            const player = new YT.Player(iframe, {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
                 }
-            }, 1000);
+            });
+            players[index] = player;
         });
-    });
+    };
     
-    // Create interaction elements (add these to your HTML)
+    // When a player is ready, set up tracking
+    function onPlayerReady(event) {
+        const player = event.target;
+        const index = players.indexOf(player);
+        
+        // Start tracking play time
+        videoCheckIntervals[index] = setInterval(() => {
+            trackVideoProgress(index);
+        }, 1000);
+    }
+    
+    // Track player state changes
+    function onPlayerStateChange(event) {
+        const player = event.target;
+        const index = players.indexOf(player);
+        
+        if (event.data === YT.PlayerState.ENDED) {
+            videos[index].completed = true;
+            clearInterval(videoCheckIntervals[index]);
+            checkAllCompleted();
+        }
+    }
+    
+    // Track video progress
+    function trackVideoProgress(index) {
+        const player = players[index];
+        const currentTime = player.getCurrentTime();
+        const duration = player.getDuration();
+        
+        videos[index].duration = currentTime;
+        
+        // Mark as completed if watched at least 90% of the video
+        if (currentTime / duration >= 0.9) {
+            videos[index].completed = true;
+            clearInterval(videoCheckIntervals[index]);
+            checkAllCompleted();
+        }
+    }
+    
+    // Create interaction elements
     const interactionContainer = document.createElement('div');
     interactionContainer.className = 'interaction-container';
     interactionContainer.innerHTML = `
-        <div class="interaction-item" id="interact-1">✓ Video 1 Watched</div>
-        <div class="interaction-item" id="interact-2">✓ Video 2 Watched</div>
-        <div class="interaction-item" id="interact-3">✓ Video 3 Watched</div>
-        <div class="interaction-item" id="interact-4">✓ Video 4 Watched</div>
+        <div class="interaction-item" id="interact-1">✓ Confirm Video 1 Watched</div>
+        <div class="interaction-item" id="interact-2">✓ Confirm Video 2 Watched</div>
+        <div class="interaction-item" id="interact-3">✓ Confirm Video 3 Watched</div>
+        <div class="interaction-item" id="interact-4">✓ Confirm Video 4 Watched</div>
         <button id="unlock-button" disabled>Unlock Quiz</button>
+        <div id="progress-message"></div>
     `;
     document.body.appendChild(interactionContainer);
     
@@ -59,10 +97,17 @@ document.addEventListener('DOMContentLoaded', function() {
     interactionElements.forEach(item => {
         const element = document.getElementById(item.id);
         element.addEventListener('click', () => {
-            if (videos[parseInt(item.id.split('-')[1]) - 1].completed) {
+            const videoIndex = parseInt(item.id.split('-')[1]) - 1;
+            if (videos[videoIndex].completed) {
                 item.interacted = true;
                 element.classList.add('completed');
                 checkAllInteractions();
+            } else {
+                document.getElementById('progress-message').textContent = 
+                    `Please watch Video ${videoIndex + 1} completely before confirming.`;
+                setTimeout(() => {
+                    document.getElementById('progress-message').textContent = '';
+                }, 3000);
             }
         });
     });
@@ -78,13 +123,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up unlock button
     document.getElementById('unlock-button').addEventListener('click', function() {
         unlockButtonClicked = true;
-        enableQuizLinks();
+        checkAllInteractions();
     });
     
     function checkAllCompleted() {
         const allVideosCompleted = videos.every(v => v.completed);
         if (allVideosCompleted && scrolledToBottom) {
             document.getElementById('unlock-button').disabled = false;
+            document.getElementById('progress-message').textContent = 
+                'All videos watched! Please confirm each one above.';
         }
     }
     
@@ -92,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const allInteracted = interactionElements.every(i => i.interacted);
         if (allInteracted && unlockButtonClicked) {
             enableQuizLinks();
+            document.getElementById('progress-message').textContent = 
+                'Quiz unlocked! You may now proceed.';
         }
     }
     
@@ -99,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.quiz-link').forEach(link => {
             link.style.pointerEvents = 'auto';
             link.style.opacity = '1';
+            link.style.cursor = 'pointer';
         });
     }
     
@@ -106,5 +156,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.quiz-link').forEach(link => {
         link.style.pointerEvents = 'none';
         link.style.opacity = '0.5';
+        link.style.cursor = 'not-allowed';
     });
+    
+    // Show initial instructions
+    document.getElementById('progress-message').textContent = 
+        'Please watch all videos and scroll to the bottom to unlock the quiz.';
 });
