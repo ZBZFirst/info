@@ -33,34 +33,100 @@ document.addEventListener('DOMContentLoaded', function() {
         console.groupEnd();
     });
 
-    function detectPlayerState(iframe, videoId) {
-        // Method 1: Check for title attribute changes
-        const titleObserver = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (mutation.attributeName === 'title') {
-                    console.log('Player state changed (title):', iframe.title);
+function detectPlayerState(iframe, videoId) {
+    console.log(`Setting up debugger for video: ${videoId}`);
+    
+    // Track previous values for comparison
+    let previousValues = {
+        currentTime: 0,
+        duration: 0,
+        percentage: 0
+    };
+
+    // Method 1: Poll for YTP progress bar changes
+    const progressChecker = setInterval(() => {
+        try {
+            // Access the iframe's document (may be blocked by CORS)
+            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const progressBar = innerDoc.querySelector('.ytp-progress-bar');
+            
+            if (progressBar) {
+                const currentTime = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
+                const duration = parseInt(progressBar.getAttribute('aria-valuemax') || '0');
+                const percentage = duration > 0 ? (currentTime / duration * 100).toFixed(2) : 0;
+                
+                // Only log if values have changed
+                if (currentTime !== previousValues.currentTime || 
+                    duration !== previousValues.duration) {
+                    
+                    console.group(`Video ${videoId} Progress Update`);
+                    console.log('Current Time:', `${currentTime}s (was ${previousValues.currentTime}s)`);
+                    console.log('Duration:', `${duration}s (was ${previousValues.duration}s)`);
+                    console.log('Completion:', `${percentage}%`);
+                    
+                    // Detect significant events
+                    if (previousValues.duration === 0 && duration > 0) {
+                        console.log('EVENT: Video loaded');
+                    }
+                    if (currentTime > previousValues.currentTime) {
+                        console.log('EVENT: Video playing');
+                    }
+                    if (currentTime === duration && duration > 0) {
+                        console.log('EVENT: Video completed');
+                    }
+                    
+                    console.groupEnd();
+                    
+                    // Update previous values
+                    previousValues = { currentTime, duration, percentage };
                 }
-            });
-        });
-        titleObserver.observe(iframe, { attributes: true });
-        
-        // Method 2: Check for class changes
-        const classObserver = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (mutation.attributeName === 'class') {
-                    console.log('Player class changed:', iframe.className);
-                }
-            });
-        });
-        classObserver.observe(iframe, { attributes: true });
-        
-        // Method 3: PostMessage listener (for potential communication)
+            }
+        } catch (e) {
+            // Fallback to postMessage if direct access fails
+            if (!window.ytDebugFallback) {
+                console.log('CORS blocked direct access, attempting postMessage fallback...');
+                setupPostMessageFallback(iframe, videoId);
+                window.ytDebugFallback = true;
+            }
+        }
+    }, 1000); // Check every second
+
+    // Method 2: PostMessage fallback
+    function setupPostMessageFallback(iframe, videoId) {
         window.addEventListener('message', function(event) {
             if (event.source === iframe.contentWindow) {
-                console.log('Received message from player:', event.data);
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data && data.info && data.info.currentTime !== undefined) {
+                        console.log(`Video ${videoId} postMessage Update:`, data.info);
+                    }
+                } catch (e) {
+                    // Not a progress update message
+                }
             }
         });
 
-        console.log('Setting up state detection observers...');
+        // Regularly request progress updates
+        setInterval(() => {
+            try {
+                iframe.contentWindow.postMessage(
+                    '{"event":"command","func":"getCurrentTime","args":""}',
+                    '*'
+                );
+            } catch (e) {
+                console.warn('postMessage failed:', e);
+            }
+        }, 1500);
     }
+
+    // Clean up when iframe is removed
+    const cleanupObserver = new MutationObserver(() => {
+        if (!document.contains(iframe)) {
+            clearInterval(progressChecker);
+            cleanupObserver.disconnect();
+            console.log(`Cleanup complete for video ${videoId}`);
+        }
+    });
+    cleanupObserver.observe(document.body, { childList: true, subtree: true });
+}
 });
