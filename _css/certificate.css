@@ -68,15 +68,15 @@ body {
 .educator-signature-line,
 .date-line {
   border-top: 1px solid #333;
-  width: 2px;
+  width: 200px;
   margin: 0 0 5px 0; 
 }
 
 .date-line {
   border-top: 1px solid #333;
-  width: 2px;
+  width: 200px;
   display: inline-block;
-  margin-top: 40px;
+  margin-top: 5px;
 }
 
 .certificate-id {
