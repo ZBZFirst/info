@@ -1,142 +1,68 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
     
-    const videos = [
-        { id: 'g38HMU4Pjlk', completed: false },
-        { id: 'PnH4ExmrIV4', completed: false },
-        { id: 'ytD4F0awEKc', completed: false },
-        { id: 'phbpRBO9Rkk', completed: false }
-    ];
+    // Find all YouTube iframes on the page
+    const youtubeIframes = document.querySelectorAll('iframe[src*="youtube.com"], iframe[src*="youtu.be"]');
     
-    let scrolledToBottom = false;
-    let trackers = [];
-
-    // 1. DOM-based Progress Tracking (no API)
-    function trackVideoProgress(index) {
-        const iframe = document.querySelector(`iframe[src*="${videos[index].id}"]`);
-        if (!iframe) return;
+    console.log(`Found ${youtubeIframes.length} YouTube video(s) on this page`);
+    
+    // Analyze each YouTube iframe
+    youtubeIframes.forEach((iframe, index) => {
+        console.groupCollapsed(`YouTube Video #${index + 1}`);
         
-        videos[index].iframe = iframe;
-        videos[index].checkbox = document.getElementById(`video-check-${index+1}`);
+        // Extract video ID from URL
+        const videoId = extractVideoId(iframe.src);
+        console.log('Video ID:', videoId);
         
-        trackers[index] = setInterval(() => {
-            if (videos[index].completed) return;
-            
-            try {
-                // Access iframe's DOM (may be blocked by CORS)
-                const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-                
-                // Method A: Check progress bar attributes
-                const progressBar = innerDoc.querySelector('.ytp-progress-bar');
-                if (progressBar) {
-                    const current = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
-                    const total = parseInt(progressBar.getAttribute('aria-valuemax') || '1');
-                    
-                    console.log(`Video ${index+1}: ${current}/${total} seconds`);
-                    
-                    if (current >= total) {
-                        completeVideo(index);
-                        return;
-                    }
-                }
-                
-                // Method B: Check for replay button
-                const replayButton = innerDoc.querySelector('.ytp-replay-button');
-                if (replayButton && getComputedStyle(replayButton).display !== 'none') {
-                    completeVideo(index);
-                    return;
-                }
-                
-            } catch (e) {
-                // Fallback to postMessage if DOM access fails
-                if (!videos[index].postMessageSetup) {
-                    setupPostMessageTracking(index);
-                }
-            }
-        }, 1000);
-    }
-
-    // 2. postMessage Fallback
-    function setupPostMessageTracking(index) {
-        videos[index].postMessageSetup = true;
-        const iframe = videos[index].iframe;
-        
-        window.addEventListener('message', function handler(event) {
-            if (event.source !== iframe.contentWindow) return;
-            
-            try {
-                const data = JSON.parse(event.data);
-                if (data?.info?.currentTime && data?.info?.duration) {
-                    const progress = data.info.currentTime / data.info.duration;
-                    if (progress >= 0.95) {
-                        completeVideo(index);
-                        window.removeEventListener('message', handler);
-                    }
-                }
-            } catch (e) {
-                // Invalid message format
-            }
+        // Basic iframe information
+        console.log('iframe dimensions:', {
+            width: iframe.width,
+            height: iframe.height,
+            aspectRatio: iframe.width / iframe.height
         });
         
-        // Request progress updates
-        setInterval(() => {
-            try {
-                iframe.contentWindow.postMessage(
-                    '{"event":"command","func":"getCurrentTime","args":""}',
-                    '*'
-                );
-            } catch (e) {
-                console.warn(`postMessage failed for video ${index+1}`);
+        // Attempt to access internal YouTube player elements
+        try {
+            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            // Get player container
+            const player = innerDoc.querySelector('.html5-video-player');
+            console.log('Player element:', player ? 'Found' : 'Not found');
+            
+            // Get video title
+            const titleElement = innerDoc.querySelector('.ytp-title-link');
+            const videoTitle = titleElement ? titleElement.textContent : 'Unknown';
+            console.log('Video title:', videoTitle);
+            
+            // Get progress information
+            const progressBar = innerDoc.querySelector('.ytp-progress-bar');
+            if (progressBar) {
+                console.log('Progress bar:', {
+                    currentTime: progressBar.getAttribute('aria-valuenow'),
+                    duration: progressBar.getAttribute('aria-valuemax'),
+                    percentage: (progressBar.getAttribute('aria-valuenow') / progressBar.getAttribute('aria-valuemax') * 100).toFixed(1) + '%'
+                });
             }
-        }, 1500);
-    }
-
-    function completeVideo(index) {
-        if (videos[index].completed) return;
-        
-        console.log(`Video ${index+1} completed`);
-        videos[index].completed = true;
-        
-        clearInterval(trackers[index]);
-        
-        // Update UI
-        if (videos[index].checkbox) {
-            videos[index].checkbox.checked = true;
+            
+            // Check player state
+            const playButton = innerDoc.querySelector('.ytp-play-button');
+            console.log('Player state:', playButton ? playButton.getAttribute('aria-label') : 'Unknown');
+            
+        } catch (e) {
+            console.log('Could not access iframe internals due to CORS policy:', e.message);
+            console.log('Try these alternative approaches:');
+            console.log('- Use the YouTube Iframe API for authorized access');
+            console.log('- Look for postMessage communication from the iframe');
+            console.log('- Check for changes in the iframe URL parameters');
         }
         
-        const card = videos[index].iframe.closest('.resource-card');
-        if (card) {
-            card.classList.add('video-completed');
-        }
-        
-        checkAllCompleted();
-    }
-
-    // Scroll tracking
-    window.addEventListener('scroll', function() {
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-            scrolledToBottom = true;
-            checkAllCompleted();
-        }
+        console.groupEnd();
     });
-
-    function checkAllCompleted() {
-        const allCompleted = videos.every(v => v.completed);
-        if (allCompleted && scrolledToBottom) {
-            enableQuizLinks();
-        }
+    
+    // Helper function to extract YouTube video ID
+    function extractVideoId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
     }
-
-    function enableQuizLinks() {
-        document.querySelectorAll('.quiz-link').forEach(link => {
-            link.style.pointerEvents = 'auto';
-            link.style.opacity = '1';
-            link.style.cursor = 'pointer';
-        });
-    }
-
-    // Initialize tracking after delay
-    setTimeout(() => {
-        videos.forEach((_, index) => trackVideoProgress(index));
-    }, 2000);
 });
