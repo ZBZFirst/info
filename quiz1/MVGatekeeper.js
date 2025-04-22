@@ -26,11 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const videoId = iframe.src.split('/embed/')[1]?.split('?')[0] || 
                                iframe.src.split('youtu.be/')[1]?.split('?')[0];
                 
+                // Get the corresponding checkbox
+                const checkbox = document.getElementById(`video-check-${index+1}`);
+                
                 videoData[index] = {
                     id: videoId,
                     duration: 0,
                     currentTime: 0,
-                    percentWatched: 0
+                    percentWatched: 0,
+                    completed: false,
+                    checkbox: checkbox
                 };
 
                 players[index] = new YT.Player(iframe, {
@@ -52,6 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log(`Player ${index + 1} ready (Video ID: ${videoData[index].id}, Duration: ${duration}s)`);
         
+        // Enable the checkbox now that player is ready
+        if (videoData[index].checkbox) {
+            videoData[index].checkbox.disabled = false;
+        }
+        
         // Start progress tracking
         videoData[index].interval = setInterval(() => updateProgress(player, index), 1000);
     }
@@ -60,8 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const states = ['UNSTARTED', 'ENDED', 'PLAYING', 'PAUSED', 'BUFFERING', 'CUED'];
         console.log(`Player ${index + 1} state: ${states[event.data]}`);
         
+        // Mark as completed when video ends
         if (event.data === YT.PlayerState.ENDED) {
-            console.log(`Video ${index + 1} completed`);
+            markVideoAsComplete(index);
         }
     }
 
@@ -71,30 +82,39 @@ document.addEventListener('DOMContentLoaded', function() {
             const duration = videoData[index].duration || player.getDuration();
             const percentWatched = (currentTime / duration * 100).toFixed(2);
             
-            // Only log if progress changed significantly
-            if (Math.abs(videoData[index].percentWatched - percentWatched) > 0.5) {
-                videoData[index].currentTime = currentTime;
-                videoData[index].percentWatched = percentWatched;
-                
-                console.group(`Video ${index + 1} Progress`);
-                console.log('Current Time:', currentTime.toFixed(1) + 's');
-                console.log('Duration:', duration.toFixed(1) + 's');
-                console.log('Percent Watched:', percentWatched + '%');
-                console.groupEnd();
-                
-                // You can add additional logic here when certain thresholds are reached
-                if (percentWatched >= 90) {
-                    console.log(`Video ${index + 1} nearly completed (${percentWatched}%)`);
-                }
+            // Update tracking data
+            videoData[index].currentTime = currentTime;
+            videoData[index].percentWatched = percentWatched;
+            
+            // Check if video is effectively complete (watched at least 90%)
+            if (percentWatched >= 90 && !videoData[index].completed) {
+                markVideoAsComplete(index);
             }
         } catch (e) {
             console.warn(`Error updating progress for player ${index + 1}:`, e);
         }
     }
 
+    function markVideoAsComplete(index) {
+        if (!videoData[index].completed && videoData[index].checkbox) {
+            videoData[index].completed = true;
+            videoData[index].checkbox.checked = true;
+            console.log(`Video ${index + 1} marked as complete`);
+            
+            // Dispatch change event in case you have form validation
+            const event = new Event('change');
+            videoData[index].checkbox.dispatchEvent(event);
+            
+            // Clear the interval
+            if (videoData[index].interval) {
+                clearInterval(videoData[index].interval);
+            }
+        }
+    }
+
     // Clean up when page unloads
     window.addEventListener('beforeunload', function() {
-        videoData.forEach((data, index) => {
+        videoData.forEach((data) => {
             if (data.interval) {
                 clearInterval(data.interval);
             }
