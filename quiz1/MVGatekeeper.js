@@ -30,23 +30,24 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeAllPlayers() {
         const videoContainers = document.querySelectorAll('.embed-container');
         console.debug(`[YT-Loader] Found ${videoContainers.length} video containers`);
-
+    
         videoContainers.forEach((container, index) => {
             try {
                 console.debug(`[YT-Player ${index}] Initializing...`);
                 const iframe = container.querySelector('iframe');
                 
-                if (!iframe) {
-                    console.error(`[YT-Player ${index}] No iframe found in container`);
-                    return;
+                // Add this check - some iframes may already be YT players
+                if (iframe.id && iframe.id.startsWith('widget')) {
+                    console.debug(`[YT-Player ${index}] Using existing YouTube iframe`);
+                    iframe.id = `yt-player-${index}`; // Give it a consistent ID
                 }
-
+    
                 const videoId = extractVideoId(iframe.src);
                 if (!videoId) {
-                    console.error(`[YT-Player ${index}] Could not extract video ID from URL: ${iframe.src}`);
+                    console.error(`[YT-Player ${index}] Could not extract video ID`);
                     return;
                 }
-
+    
                 console.debug(`[YT-Player ${index}] Creating player for video ID: ${videoId}`);
                 videoPlayers.status[index] = {
                     state: 'initializing',
@@ -54,9 +55,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     metadata: null,
                     errors: []
                 };
-
-                new YT.Player(iframe, {
+    
+                // Add playerVars to prevent conflict with default embed
+                new YT.Player(iframe.id || `yt-player-${index}`, {
                     videoId: videoId,
+                    playerVars: {
+                        controls: 1,
+                        enablejsapi: 1,
+                        origin: window.location.origin
+                    },
                     events: {
                         'onReady': (event) => onPlayerReady(event, index),
                         'onStateChange': (event) => onPlayerStateChange(event, index),
@@ -82,53 +89,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function onPlayerReady(event, index) {
-        console.debug(`[YT-Player ${index}] Player ready`);
+        console.debug(`[YT-Player ${index}] Player ready - attempting metadata load`);
         const player = event.target;
         videoPlayers.players[index] = player;
         videoPlayers.status[index].state = 'ready';
-
+    
+        // First try to get duration directly
         try {
-            // Mute to help with autoplay restrictions
-            player.mute();
-            console.debug(`[YT-Player ${index}] Attempting play/pause to load metadata`);
-            player.playVideo();
+            const duration = player.getDuration();
+            if (duration && duration > 0) {
+                console.debug(`[YT-Player ${index}] Got duration: ${duration} seconds`);
+                videoPlayers.status[index].metadata = { duration };
+                initializeTrackingSystem(index, duration);
+                return;
+            }
         } catch (e) {
-            console.error(`[YT-Player ${index}] Play command failed:`, e);
-            recordError(index, 'play_command', e);
-            // Fallback to direct metadata load
-            loadMetadataDirectly(player, index);
+            console.debug(`[YT-Player ${index}] Couldn't get duration directly`, e);
+        }
+    
+        // Fallback to play/pause method
+        try {
+            player.mute();
+            player.playVideo().then(() => {
+                console.debug(`[YT-Player ${index}] Play initiated for metadata`);
+            }).catch(e => {
+                console.error(`[YT-Player ${index}] Play failed:`, e);
+                fallbackMetadataLoad(player, index);
+            });
+        } catch (e) {
+            console.error(`[YT-Player ${index}] Play/pause method failed:`, e);
+            fallbackMetadataLoad(player, index);
         }
     }
 
     function onPlayerStateChange(event, index) {
         const states = ['UNSTARTED', 'ENDED', 'PLAYING', 'PAUSED', 'BUFFERING', 'CUED'];
-        const player = event.target;
-        const currentState = states[event.data];
+        const state = states[event.data];
+        console.debug(`[YT-Player ${index}] State changed to: ${state}`);
         
-        console.debug(`[YT-Player ${index}] State changed to: ${currentState}`);
-        videoPlayers.status[index].lastState = currentState;
-
-        try {
-            switch (event.data) {
-                case YT.PlayerState.PLAYING:
-                    console.debug(`[YT-Player ${index}] Pausing to capture metadata`);
-                    player.pauseVideo();
-                    break;
-                    
-                case YT.PlayerState.PAUSED:
-                    if (!videoPlayers.status[index].metadata) {
-                        loadMetadataDirectly(player, index);
+        const player = event.target;
+        const status = videoPlayers.status[index];
+    
+        switch (event.data) {
+            case YT.PlayerState.PLAYING:
+                if (!status.metadata) {
+                    try {
+                        const duration = player.getDuration();
+                        if (duration) {
+                            status.metadata = { duration };
+                            initializeTrackingSystem(index, duration);
+                        }
+                    } catch (e) {
+                        console.error(`[YT-Player ${index}] Duration check failed:`, e);
                     }
-                    break;
-                    
-                case YT.PlayerState.ENDED:
-                case YT.PlayerState.BUFFERING:
-                    // Handle additional states if needed
-                    break;
-            }
-        } catch (e) {
-            console.error(`[YT-Player ${index}] State change handling error:`, e);
-            recordError(index, 'state_change', e);
+                }
+                break;
+                
+            case YT.PlayerState.ENDED:
+                if (status.tracking?.percentComplete >= 90) {
+                    markVideoAsComplete(index);
+                }
+                break;
         }
     }
 
@@ -209,6 +230,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function fallbackMetadataLoad(player, index) {
+        console.log(`[YT-Player ${index}] Using fallback tracking`);
+        
+        // Enable the checkbox for manual completion
+        const checkbox = document.getElementById(`video-check-${index+1}`);
+        if (checkbox) {
+            checkbox.disabled = false;
+            checkbox.addEventListener('change', () => {
+                videoPlayers.status[index].completed = checkbox.checked;
+                updateQuizButtonState();
+            });
+        }
+        
+        // Initialize basic tracking
+        videoPlayers.status[index].tracking = {
+            fallback: true,
+            completed: false
+        };
+    }
+    
+    function updateQuizButtonState() {
+        const allCompleted = videoPlayers.status.every(s => s.completed);
+        const quizButton = document.querySelector('.quiz-link[href="testquiz.html"]');
+        if (quizButton) {
+            quizButton.classList.toggle('disabled', !allCompleted);
+            quizButton.style.pointerEvents = allCompleted ? 'auto' : 'none';
+        }
+    }
+    
     function attemptRetry(index) {
         videoPlayers.initAttempts++;
         if (videoPlayers.initAttempts <= videoPlayers.maxInitAttempts) {
