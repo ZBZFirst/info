@@ -2,20 +2,45 @@
 const videoPlayers = {
     players: [],
     status: [],
-    readyCount: 0
+    readyCount: 0,
+    apiLoaded: false
 };
 
-// Main initialization
+// Main initialization - now called after DOM and API are ready
+function initializeVideoTracking() {
+    // Show loading state
+    document.querySelectorAll('.embed-container').forEach(container => {
+        container.classList.add('loading');
+    });
+
+    // Check if API loaded successfully
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        console.error('YouTube API failed to load');
+        showFallbackMessage();
+        enableManualCompletion();
+        return;
+    }
+
+    initYouTubePlayers();
+}
+
+// Initialize YouTube players
 function initYouTubePlayers() {
     const videoContainers = document.querySelectorAll('.embed-container');
     
     videoContainers.forEach((container, index) => {
         const iframe = container.querySelector('iframe');
-        if (!iframe) return;
+        if (!iframe) {
+            console.error(`No iframe found in container ${index}`);
+            return;
+        }
 
         // Extract video ID from iframe src
         const videoId = extractVideoId(iframe.src);
-        if (!videoId) return;
+        if (!videoId) {
+            console.error(`Could not extract video ID from iframe ${index}`);
+            return;
+        }
 
         // Create unique ID for the iframe if it doesn't have one
         if (!iframe.id) {
@@ -25,29 +50,37 @@ function initYouTubePlayers() {
         // Initialize player status
         videoPlayers.status[index] = {
             videoId: videoId,
-            state: 'uninitialized',
+            state: 'initializing',
             duration: 0,
             watchedSeconds: 0,
-            completed: false
+            completed: false,
+            container: container
         };
 
-        // Create the player
-        videoPlayers.players[index] = new YT.Player(iframe.id, {
-            videoId: videoId,
-            playerVars: {
-                'enablejsapi': 1,
-                'origin': window.location.origin,
-                'controls': 1,
-                'rel': 0
-            },
-            events: {
-                'onReady': (event) => onPlayerReady(event, index),
-                'onStateChange': (event) => onPlayerStateChange(event, index),
-                'onError': (event) => onPlayerError(event, index)
-            }
-        });
+        try {
+            // Create the player
+            videoPlayers.players[index] = new YT.Player(iframe.id, {
+                videoId: videoId,
+                playerVars: {
+                    'enablejsapi': 1,
+                    'origin': window.location.origin,
+                    'controls': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': (event) => onPlayerReady(event, index),
+                    'onStateChange': (event) => onPlayerStateChange(event, index),
+                    'onError': (event) => onPlayerError(event, index)
+                }
+            });
+        } catch (e) {
+            console.error(`Failed to initialize player ${index}:`, e);
+            videoPlayers.status[index].state = 'error';
+            container.classList.add('error');
+        }
     });
 }
+
 
 // Extract video ID from URL
 function extractVideoId(url) {
@@ -165,3 +198,76 @@ function enableManualCompletion() {
         });
     });
 }
+
+function startProgressTracking(player, index) {
+    const progressBar = document.createElement('div');
+    progressBar.className = 'video-progress';
+    progressBar.innerHTML = '<div class="video-progress-bar"></div>';
+    videoPlayers.status[index].container.appendChild(progressBar);
+    
+    const updateInterval = setInterval(() => {
+        try {
+            const currentTime = player.getCurrentTime();
+            const duration = videoPlayers.status[index].duration;
+            const percentWatched = (currentTime / duration) * 100;
+            
+            // Update progress bar
+            progressBar.querySelector('.video-progress-bar').style.width = `${percentWatched}%`;
+            
+            // Update watched seconds
+            if (currentTime > videoPlayers.status[index].watchedSeconds) {
+                videoPlayers.status[index].watchedSeconds = currentTime;
+            }
+            
+            // Check for completion
+            if (!videoPlayers.status[index].completed && percentWatched >= 90) {
+                markVideoAsComplete(index);
+                clearInterval(updateInterval);
+            }
+        } catch (e) {
+            console.error(`Error tracking progress for player ${index}:`, e);
+        }
+    }, 1000);
+}
+
+// New function to show fallback message
+function showFallbackMessage() {
+    const fallbackHtml = `
+        <div class="yt-fallback-message">
+            <p>YouTube integration not available. Please mark videos manually.</p>
+            <p>For full functionality, ensure you're not blocking YouTube scripts.</p>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('afterbegin', fallbackHtml);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded');
+    
+    // Set up API ready callback
+    window.onYouTubeIframeAPIReady = function() {
+        console.log('YouTube API ready callback');
+        videoPlayers.apiLoaded = true;
+        initializeVideoTracking();
+    };
+    
+    // Check if API is already loaded
+    if (window.YT && window.YT.loaded) {
+        console.log('YouTube API already loaded');
+        window.onYouTubeIframeAPIReady();
+    }
+    
+    // Fallback in case API doesn't load
+    const apiLoadTimeout = setTimeout(() => {
+        if (!videoPlayers.apiLoaded) {
+            console.warn('YouTube API failed to load - using fallback');
+            showFallbackMessage();
+            enableManualCompletion();
+        }
+    }, 5000);
+
+    // Clean up timeout if API loads
+    window.addEventListener('YTLoaded', () => {
+        clearTimeout(apiLoadTimeout);
+    });
+});
