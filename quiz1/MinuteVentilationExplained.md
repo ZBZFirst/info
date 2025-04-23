@@ -15,7 +15,7 @@ title: "What Is Minute Ventilation?"
     <h2>The Base Equation</h2>
     <p>This short video just shows the variables involved with the equation. The Units of Measurement are provided.</p>
     <div class="embed-container">
-        <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
     <div class="video-completion">
         <input type="checkbox" id="video-check-1" disabled>
@@ -27,7 +27,7 @@ title: "What Is Minute Ventilation?"
     <h2>Technical Demonstration of Equation</h2>
     <p>A slow walk through of the equation and how the variables are input into the equation is shown with a few examples.</p>
     <div class="embed-container">
-        <iframe src="https://www.youtube.com/embed/PnH4ExmrIV4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/PnH4ExmrIV4?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
     <div class="video-completion">
         <input type="checkbox" id="video-check-2" disabled>
@@ -39,7 +39,7 @@ title: "What Is Minute Ventilation?"
     <h2>Graphing the Results for Classification</h2>
     <p>Performing the equation with different input parameters gives different Minute Ventilation results. Applying a coloring scheme based on Minute Ventilation Values allows for the creations of a color classification scheme based on conditional statements about the values produced. The same color scheme is used in the next video.</p>
     <div class="embed-container">
-        <iframe src="https://www.youtube.com/embed/ytD4F0awEKc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/ytD4F0awEKc?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
     <div class="video-completion">
         <input type="checkbox" id="video-check-3" disabled>
@@ -51,7 +51,7 @@ title: "What Is Minute Ventilation?"
     <h2>Large Dataset Visualization</h2>
     <p>Since the input parameters are constrained to a narrow range, a full set of values can be graphed and plotted, graphing 100+ values with conditional formatting allows for a dataset to be visualized that more easily allows for analysis.</p>
     <div class="embed-container">
-        <iframe src="https://www.youtube.com/embed/phbpRBO9Rkk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/phbpRBO9Rkk?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
     <div class="video-completion">
         <input type="checkbox" id="video-check-4" disabled>
