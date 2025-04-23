@@ -8,14 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
         videoData: [],
         apiReady: false,
         initialized: false,
-
-    // Disable quiz button initially
-    const quizButton = document.querySelector('.quiz-link[href="testquiz.html"]');
-    if (quizButton) {
-        quizButton.classList.add('disabled');
-        quizButton.style.pointerEvents = 'none';
-        console.log('[MVGatekeeper] Quiz button initialized to disabled state');
-    }
         
         // Enhanced debug function
         debug: function() {
@@ -60,37 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
-    }
-
-    // Helper functions for localStorage persistence
-    function getStoredCompletion() {
-        try {
-            const stored = localStorage.getItem('videoCompletion');
-            return stored ? JSON.parse(stored) : {};
-        } catch (e) {
-            console.error('[MVGatekeeper] Error reading from localStorage', e);
-            return {};
-        }
-    }
-    
-    function storeCompletion(index) {
-        try {
-            const completion = getStoredCompletion();
-            completion[index] = true;
-            localStorage.setItem('videoCompletion', JSON.stringify(completion));
-        } catch (e) {
-            console.error(`[MVGatekeeper] Error storing completion for video ${index}`, e);
-        }
-    }
-    
-    function checkStoredCompletion() {
-        const completion = getStoredCompletion();
-        const allCompleted = videoTracker.videoData.every((_, index) => completion[index]);
-        
-        if (allCompleted) {
-            console.log('[MVGatekeeper] All videos previously completed - enabling quiz button');
-            updateQuizButton(true);
-        }
     }
 
     // Initialize all YouTube players with enhanced logging
@@ -162,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         videoTracker.initialized = true;
         console.log('[MVGatekeeper] Players initialization complete', videoTracker.debug());
-        checkStoredCompletion();
     }
 
     // Enhanced player ready handler
@@ -201,11 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(`[MVGatekeeper][Player ${index}] Error getting video info:`, e);
             videoTracker.videoData[index].error = e.message;
         }
-    }
-
-    function clearStoredCompletion() {
-        localStorage.removeItem('videoCompletion');
-        console.log('[MVGatekeeper] Cleared stored video completion status');
     }
 
     // Enhanced state change handler with full logging
@@ -302,14 +257,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`[MVGatekeeper][Player ${index}] Checkbox #${index+1} checked`);
             }
             
-            // Store completion in localStorage
-            storeCompletion(index);
             updateQuizButton();
         }
     }
 
-    function updateQuizButton(forceEnable = false) {
-        const allCompleted = forceEnable || videoTracker.videoData.every(video => video.completed);
+    // Update quiz button state based on completion
+    function updateQuizButton() {
+        const allCompleted = videoTracker.videoData.every(video => video.completed);
         const quizButton = document.querySelector('.quiz-link[href="testquiz.html"]');
         
         console.log(`[MVGatekeeper] Updating quiz button. All videos completed: ${allCompleted}`);
