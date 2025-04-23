@@ -11,6 +11,22 @@ const videoPlayers = {
 
 let fallbackTimeout;
 
+// Add debug state function
+function debugState() {
+    return {
+        time: new Date().toISOString(),
+        players: videoPlayers.players.map((p, i) => ({
+            index: i,
+            ready: !!p?.getDuration,
+            state: videoPlayers.status[i]?.state,
+            videoId: videoPlayers.status[i]?.videoId
+        })),
+        readyCount: videoPlayers.readyCount,
+        initialized: videoPlayers.initialized,
+        apiLoaded: videoPlayers.apiLoaded
+    };
+}
+
 // 1. First add the missing extractVideoId function
 function extractVideoId(url) {
     if (!url) return null;
@@ -32,15 +48,10 @@ function onPlayerStateChange(event, index) {
 function initializeVideoTracking() {
     if (videoPlayers.initialized) return;
     
-    console.log('Initializing video tracking - YT state:', {
-        YT_available: typeof YT !== 'undefined',
-        YT_loaded: window.YT?.loaded,
-        playersInitialized: videoPlayers.players.length,
-        playersReady: videoPlayers.readyCount
-    });
+    console.log('Initializing video tracking', debugState());
     
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-        console.error('YouTube API not available after callback');
+        console.error('YouTube API not available', debugState());
         showFallbackMessage();
         enableManualCompletion();
         return;
@@ -53,113 +64,83 @@ function initializeVideoTracking() {
 
 // Enhanced player initialization
 function initYouTubePlayers() {
-    try {
-        const videoContainers = document.querySelectorAll('.embed-container');
-        console.log(`Found ${videoContainers.length} video containers`);
-        
-        if (videoContainers.length === 0) {
-            console.error('No video containers found');
-            showFallbackMessage();
-            enableManualCompletion();
+    console.log('Initializing players', debugState());
+    const videoContainers = document.querySelectorAll('.embed-container');
+    
+    videoContainers.forEach((container, index) => {
+        const iframe = container.querySelector('iframe');
+        if (!iframe) {
+            console.error('No iframe found', {index, container});
             return;
         }
 
-        videoContainers.forEach((container, index) => {
-            const iframe = container.querySelector('iframe');
-            if (!iframe) {
-                console.error(`No iframe found in container ${index}`);
-                return;
-            }
+        const videoId = extractVideoId(iframe.src);
+        if (!videoId) {
+            console.error('Invalid video ID', {index, src: iframe.src});
+            return;
+        }
 
-            const videoId = extractVideoId(iframe.src);
-            if (!videoId) {
-                console.error(`Could not extract video ID from iframe ${index} with src: ${iframe.src}`);
-                return;
-            }
+        if (!iframe.id) iframe.id = `yt-player-${index}`;
 
-            if (!iframe.id) {
-                iframe.id = `yt-player-${index}`;
-            }
+        videoPlayers.status[index] = {
+            videoId: videoId,
+            state: 'initializing',
+            duration: 0,
+            watchedSeconds: 0,
+            completed: false,
+            container: container
+        };
 
-            videoPlayers.status[index] = {
+        try {
+            console.log(`Creating player ${index}`, {videoId, iframeId: iframe.id});
+            videoPlayers.players[index] = new YT.Player(iframe.id, {
                 videoId: videoId,
-                state: 'initializing',
-                duration: 0,
-                watchedSeconds: 0,
-                completed: false,
-                container: container
-            };
-
-            try {
-                console.log(`Initializing player ${index} for video ${videoId}`);
-                videoPlayers.players[index] = new YT.Player(iframe.id, {
-                    videoId: videoId,
-                    playerVars: {
-                        'enablejsapi': 1,
-                        'origin': window.location.origin,
-                        'controls': 1,
-                        'rel': 0,
-                        'autoplay': 0
+                playerVars: {
+                    'enablejsapi': 1,
+                    'origin': window.location.origin,
+                    'controls': 1,
+                    'rel': 0,
+                    'autoplay': 0
+                },
+                events: {
+                    'onReady': (event) => {
+                        console.log(`Player ${index} onReady event`, event);
+                        onPlayerReady(event, index);
                     },
-                    events: {
-                        'onReady': (event) => onPlayerReady(event, index),
-                        'onStateChange': (event) => onPlayerStateChange(event, index),
-                        'onError': (event) => onPlayerError(event, index)
+                    'onStateChange': (event) => onPlayerStateChange(event, index),
+                    'onError': (event) => {
+                        console.error(`Player ${index} error`, event);
+                        onPlayerError(event, index);
                     }
-                });
-            } catch (e) {
-                console.error(`Failed to initialize player ${index}:`, e);
-                handlePlayerError(index);
-            }
-        });
-    } catch (e) {
-        console.error('Fatal error in initYouTubePlayers:', e);
-        showFallbackMessage();
-        enableManualCompletion();
-    }
+                }
+            });
+        } catch (e) {
+            console.error(`Player ${index} creation failed`, e, debugState());
+            handlePlayerError(index);
+        }
+    });
 }
+
 
 // Enhanced player ready handler
 function onPlayerReady(event, index) {
-    console.log(`Player ${index} ready event received`, event);
+    console.log(`Player ${index} ready`, debugState());
     const player = event.target;
     videoPlayers.readyCount++;
-    
     clearTimeout(fallbackTimeout);
-    console.log(`Cleared fallback timeout after player ${index} ready`);
-    
+
     try {
-        console.log(`Attempting to get duration for player ${index}`);
         const duration = player.getDuration();
+        console.log(`Player ${index} duration: ${duration}s`);
         
-        if (duration && duration > 0) {
+        if (duration > 0) {
             videoPlayers.status[index].duration = duration;
             videoPlayers.status[index].state = 'ready';
-            console.log(`Player ${index} ready (${duration}s)`, {
-                playerState: player.getPlayerState(),
-                videoUrl: player.getVideoUrl()
-            });
-            
-            const checkbox = document.getElementById(`video-check-${index+1}`);
-            if (checkbox) {
-                checkbox.disabled = false;
-                console.log(`Enabled checkbox for player ${index}`);
-            }
-            
             startProgressTracking(player, index);
-            return;
-        } else {
-            console.warn(`Invalid duration (${duration}) for player ${index}`);
         }
     } catch (e) {
-        console.error(`Error getting duration for player ${index}:`, e, {
-            player: player,
-            playerState: player?.getPlayerState?.()
-        });
+        console.error(`Duration check failed for player ${index}`, e);
     }
-    
-    videoPlayers.status[index].state = 'ready';
-    console.log(`Player ${index} ready (duration unknown)`);
 }
 
 // Enhanced fallback system
@@ -191,55 +172,30 @@ function setupFallback() {
     console.log('Fallback timeout set for 10 seconds');
 }
 
-// Modified API ready handler
-window.onYouTubeIframeAPIReady = function() {
-    console.log('YouTube API ready callback - YT state:', {
-        YT: typeof YT,
-        Player: typeof YT?.Player,
-        loaded: YT?.loaded
-    });
-    
-    videoPlayers.apiLoaded = true;
-    
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        console.log('DOM is ready - initializing video tracking');
-        initializeVideoTracking();
-    } else {
-        console.log('Waiting for DOM to be ready');
-    }
-};
-
-
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded - YT state:', {
-        YT_available: typeof YT !== 'undefined',
-        YT_loaded: window.YT?.loaded
-    });
+    console.log('DOM loaded', debugState());
     
-    // Set up the fallback timeout
     fallbackTimeout = setTimeout(() => {
+        console.warn('Fallback triggered', debugState());
         if (!videoPlayers.initialized || videoPlayers.readyCount === 0) {
-            console.warn('YouTube API timeout - using fallback');
+            console.error('Activating fallback mode', debugState());
             showFallbackMessage();
             enableManualCompletion();
         }
     }, 10000);
     
     if (window.YT?.loaded) {
-        console.log('API was loaded before DOM ready - initializing');
         initializeVideoTracking();
     }
 });
 
-// Add cleanup
-window.addEventListener('beforeunload', () => {
-    clearTimeout(fallbackTimeout);
-    videoPlayers.status.forEach(status => {
-        if (status.progressInterval) {
-            clearInterval(status.progressInterval);
-        }
-    });
-});
+window.onYouTubeIframeAPIReady = function() {
+    console.log('YouTube API ready', debugState());
+    videoPlayers.apiLoaded = true;
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initializeVideoTracking();
+    }
+};
 
 
 
