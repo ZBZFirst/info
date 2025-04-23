@@ -162,10 +162,6 @@ function onPlayerError(event, index) {
     handlePlayerError(index);
 }
 
-function onYouTubeIframeAPIReady() {
-    console.log('YouTube API ready - initializing players');
-    initYouTubePlayers();
-}
 
 setTimeout(() => {
     if (!window.YT || videoPlayers.readyCount === 0) {
