@@ -1,4 +1,4 @@
-//MVGatekeeper.ks file start
+//MVGatekeeper.js file start
 // Track all players and their states
 const videoPlayers = {
     players: [],
@@ -300,5 +300,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-//MVGatekeeper.ks file end
+//MVGatekeeper.js file end
 
