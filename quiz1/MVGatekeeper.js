@@ -284,18 +284,24 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error(`[MVGatekeeper][Player ${index}] No container found for progress tracking`);
             return;
         }
-
-        // Create progress bar
-        const progressBar = document.createElement('div');
-        progressBar.className = 'video-progress';
+    
+        // Find the existing progress bar (use the one in video-progress-container)
+        const progressContainer = container.closest('.video-wrapper').querySelector('.video-progress-container');
+        if (!progressContainer) {
+            console.error(`[MVGatekeeper][Player ${index}] No progress container found`);
+            return;
+        }
+    
+        const progressBar = progressContainer.querySelector('.video-progress-bar');
+        const progressText = progressContainer.querySelector('.video-progress-text');
         
-        const progressBarInner = document.createElement('div');
-        progressBarInner.className = 'video-progress-bar';
-        progressBar.appendChild(progressBarInner);
-        container.appendChild(progressBar);
-
-        console.log(`[MVGatekeeper][Player ${index}] Progress bar created`);
-
+        if (!progressBar || !progressText) {
+            console.error(`[MVGatekeeper][Player ${index}] Progress elements not found`);
+            return;
+        }
+    
+        console.log(`[MVGatekeeper][Player ${index}] Found existing progress elements`);
+    
         // Update progress periodically
         const progressInterval = setInterval(() => {
             try {
@@ -303,8 +309,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const duration = player.getDuration();
                 const percentWatched = (currentTime / duration) * 100;
                 
-                // Update progress bar
-                progressBarInner.style.width = `${percentWatched}%`;
+                // Update progress bar and text
+                progressBar.style.width = `${percentWatched}%`;
+                progressText.textContent = `${Math.round(percentWatched)}% watched`;
                 videoTracker.videoData[index].watched = currentTime;
                 
                 // Log progress every 10% or when significant changes occur
@@ -324,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearInterval(progressInterval);
             }
         }, 1000);
-
+    
         // Store interval ID for cleanup
         videoTracker.videoData[index].progressInterval = progressInterval;
         console.log(`[MVGatekeeper][Player ${index}] Progress tracking initialized`);
