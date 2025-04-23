@@ -121,36 +121,75 @@ function initYouTubePlayers() {
     });
 }
 
+// Enhanced player ready handler with full video information
 function onPlayerReady(event, index) {
-    console.log(`Player ${index} ready`);
     const player = event.target;
     videoPlayers.readyCount++;
 
     try {
-        // Get duration and add it to our tracking
-        const duration = player.getDuration();
-        console.log(`Player ${index} duration: ${duration} seconds`);
-        
-        if (duration > 0) {
-            // Update our status object
+        // Get all available video information
+        const videoInfo = {
+            duration: player.getDuration(),
+            url: player.getVideoUrl(),
+            embedCode: player.getVideoEmbedCode(),
+            state: player.getPlayerState()
+        };
+
+        console.log(`Player ${index} ready with video info:`, {
+            videoId: videoPlayers.status[index].videoId,
+            ...videoInfo,
+            timestamp: new Date().toISOString()
+        });
+
+        // Update our tracking object
+        if (videoInfo.duration > 0) {
             videoPlayers.status[index] = {
-                ...videoPlayers.status[index], // Keep existing properties
-                duration: duration,
+                ...videoPlayers.status[index],
+                ...videoInfo,
                 state: 'ready',
-                playerInstance: player // Store the player instance if needed
+                lastUpdated: new Date().toISOString()
             };
 
-            // Start tracking progress
+            // Start progress tracking
             startProgressTracking(player, index);
             
-            // Enable the checkbox
+            // Enable the corresponding checkbox
             const checkbox = document.getElementById(`video-check-${index+1}`);
-            if (checkbox) checkbox.disabled = false;
+            if (checkbox) {
+                checkbox.disabled = false;
+                checkbox.dataset.videoDuration = videoInfo.duration;
+            }
+        } else {
+            console.warn(`Player ${index} returned 0 duration - may be live stream`);
+            handleLiveStream(player, index);
         }
     } catch (e) {
-        console.error(`Error getting duration for player ${index}:`, e);
+        console.error(`Error getting video info for player ${index}:`, e);
         handlePlayerError(index);
     }
+}
+
+// Special handling for live streams
+function handleLiveStream(player, index) {
+    // For live streams, we'll track viewing time instead
+    const startTime = Date.now();
+    const updateInterval = setInterval(() => {
+        try {
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            videoPlayers.status[index].watchedSeconds = elapsedSeconds;
+            
+            // Consider live stream "completed" after 5 minutes (adjust as needed)
+            if (elapsedSeconds >= 300) { // 5 minutes
+                markVideoAsComplete(index);
+                clearInterval(updateInterval);
+            }
+        } catch (e) {
+            console.error(`Live stream tracking error:`, e);
+            clearInterval(updateInterval);
+        }
+    }, 1000);
+
+    videoPlayers.status[index].liveStreamInterval = updateInterval;
 }
 
 // UI Functions
@@ -196,57 +235,75 @@ function updateQuizButtonState() {
     }
 }
 
-function startProgressTracking(player, index) {
-    if (index >= 0 && index < videoPlayers.status.length) {
-        const container = videoPlayers.status[index].container;
-        if (!container) return;
-
-        const progressBar = document.createElement('div');
-        progressBar.className = 'video-progress';
-        progressBar.style.cssText = `
-            width: 100%;
-            height: 5px;
-            background: #ddd;
-            margin-top: 5px;
-        `;
-        
-        const progressBarInner = document.createElement('div');
-        progressBarInner.className = 'video-progress-bar';
-        progressBarInner.style.cssText = `
-            height: 100%;
-            background: #f00;
-            width: 0%;
-            transition: width 0.3s ease;
-        `;
-        
-        progressBar.appendChild(progressBarInner);
-        container.appendChild(progressBar);
-
-        const updateInterval = setInterval(() => {
-            try {
-                const currentTime = player.getCurrentTime();
-                const duration = videoPlayers.status[index].duration;
-                
-                if (duration > 0) {
-                    const percentWatched = (currentTime / duration) * 100;
-                    progressBarInner.style.width = `${percentWatched}%`;
-                    
-                    videoPlayers.status[index].watchedSeconds = currentTime;
-                    
-                    if (!videoPlayers.status[index].completed && percentWatched >= 90) {
-                        markVideoAsComplete(index);
-                        clearInterval(updateInterval);
-                    }
-                }
-            } catch (e) {
-                console.error(`Progress tracking error for player ${index}`, e);
-                clearInterval(updateInterval);
-            }
-        }, 1000);
-
-        videoPlayers.status[index].progressInterval = updateInterval;
-    }
+// Helper function to format time (seconds to HH:MM:SS)
+function formatTime(seconds) {
+    return new Date(seconds * 1000).toISOString().substr(11, 8);
 }
+
+function startProgressTracking(player, index) {
+    const container = videoPlayers.status[index].container;
+    if (!container) return;
+
+    // Create progress bar using your CSS classes
+    const progressBar = document.createElement('div');
+    progressBar.className = 'video-progress';
+    
+    const progressBarInner = document.createElement('div');
+    progressBarInner.className = 'video-progress-bar';
+    
+    progressBar.appendChild(progressBarInner);
+    container.appendChild(progressBar);
+
+    // Add video info display
+    const videoInfo = document.createElement('div');
+    videoInfo.className = 'video-status text-muted mt-1';
+    videoInfo.innerHTML = `
+        <span class="video-duration"></span>
+        <a href="#" class="video-link" target="_blank">View on YouTube</a>
+    `;
+    container.appendChild(videoInfo);
+
+    // Update video info
+    try {
+        videoInfo.querySelector('.video-duration').textContent = 
+            `Duration: ${formatTime(player.getDuration())} • `;
+        videoInfo.querySelector('.video-link').href = player.getVideoUrl();
+    } catch (e) {
+        console.error('Error setting video info:', e);
+    }
+
+    const updateInterval = setInterval(() => {
+        try {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            const percentWatched = (currentTime / duration) * 100;
+            
+            // Update progress bar
+            progressBarInner.style.width = `${percentWatched}%`;
+            videoPlayers.status[index].watchedSeconds = currentTime;
+            
+            // Check for completion
+            if (!videoPlayers.status[index].completed && percentWatched >= 90) {
+                markVideoAsComplete(index);
+                clearInterval(updateInterval);
+                
+                // Add completed styling
+                container.classList.add('completed');
+                const checkbox = container.querySelector('.video-completion input');
+                if (checkbox) {
+                    checkbox.checked = true;
+                    checkbox.parentElement.classList.add('completed');
+                }
+            }
+        } catch (e) {
+            console.error(`Progress tracking error for player ${index}:`, e);
+            clearInterval(updateInterval);
+        }
+    }, 1000);
+
+    videoPlayers.status[index].progressInterval = updateInterval;
+}
+
 
 // Initialize when everything is ready
 function checkInitialization() {
