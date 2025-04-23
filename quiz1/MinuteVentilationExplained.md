@@ -13,22 +13,27 @@ title: "What Is Minute Ventilation?"
 
 <div class="resource-card">
     <h2>The Base Equation</h2>
-    <p>This short video just shows the variables involved with the equation. The Units of Measurement are provided.</p>
-    <div class="embed-container">
-        <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <p>This short video just shows the variables involved with the equation.</p>
+    
+    <!-- Video Container -->
+    <div class="video-wrapper">
+        <div class="embed-container">
+            <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <!-- Progress Bar - Now outside embed-container -->
         <div class="video-progress-container">
             <div class="video-progress">
-              <div class="video-progress-bar"></div>
+                <div class="video-progress-bar"></div>
             </div>
             <div class="video-progress-text">0% watched</div>
         </div>
     </div>
+    
     <div class="video-completion">
         <input type="checkbox" id="video-check-1" disabled>
         <label for="video-check-1">Video 1 completed</label>
     </div>
 </div>
-
 <div class="resource-card">
     <h2>Technical Demonstration of Equation</h2>
     <p>A slow walk through of the equation and how the variables are input into the equation is shown with a few examples.</p>
