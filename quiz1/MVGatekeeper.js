@@ -1,5 +1,7 @@
 //MVGatekeeper.js file start
-// Track all players and their states
+
+console.log('MVGatekeeper.js loaded - YT available:', typeof YT !== 'undefined');
+
 const videoPlayers = {
     players: [],
     status: [],
@@ -9,25 +11,27 @@ const videoPlayers = {
 
 };
 
-// Main initialization - now called after DOM and API are ready
+let fallbackTimeout;
+
 function initializeVideoTracking() {
     if (videoPlayers.initialized) return;
-    videoPlayers.initialized = true;
-
-    console.log('Initializing video tracking');
     
-    // Check if API loaded successfully
+    console.log('Initializing video tracking - YT state:', {
+        YT_available: typeof YT !== 'undefined',
+        YT_loaded: window.YT?.loaded
+    });
+    
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-        console.error('YouTube API not available');
+        console.error('YouTube API not available after callback');
         showFallbackMessage();
         enableManualCompletion();
         return;
     }
 
+    videoPlayers.initialized = true;
     initYouTubePlayers();
 }
 
-// Initialize YouTube players
 function initYouTubePlayers() {
     const videoContainers = document.querySelectorAll('.embed-container');
     console.log(`Found ${videoContainers.length} video containers`);
@@ -39,19 +43,16 @@ function initYouTubePlayers() {
             return;
         }
 
-        // Extract video ID from iframe src
         const videoId = extractVideoId(iframe.src);
         if (!videoId) {
             console.error(`Could not extract video ID from iframe ${index}`);
             return;
         }
 
-        // Create unique ID for the iframe if it doesn't have one
         if (!iframe.id) {
             iframe.id = `yt-player-${index}`;
         }
 
-        // Initialize player status
         videoPlayers.status[index] = {
             videoId: videoId,
             state: 'initializing',
@@ -86,31 +87,30 @@ function initYouTubePlayers() {
 }
 
 
-// Extract video ID from URL
 function extractVideoId(url) {
     const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
-// Player ready handler
 function onPlayerReady(event, index) {
+    console.log(`Player ${index} ready event received`);
     const player = event.target;
     videoPlayers.readyCount++;
     
+    // Reset the fallback timeout since we got a ready event
+    clearTimeout(fallbackTimeout);
+    
     try {
-        // Get duration immediately
         const duration = player.getDuration();
         if (duration) {
             videoPlayers.status[index].duration = duration;
             videoPlayers.status[index].state = 'ready';
             console.log(`Player ${index} ready (${duration}s)`);
             
-            // Enable the checkbox
             const checkbox = document.getElementById(`video-check-${index+1}`);
             if (checkbox) checkbox.disabled = false;
             
-            // Start tracking progress
             startProgressTracking(player, index);
             return;
         }
@@ -118,36 +118,10 @@ function onPlayerReady(event, index) {
         console.error(`Error getting duration for player ${index}:`, e);
     }
     
-    // Fallback if we couldn't get duration
     videoPlayers.status[index].state = 'ready';
     console.log(`Player ${index} ready (duration unknown)`);
 }
 
-// Progress tracking
-function startProgressTracking(player, index) {
-    const updateInterval = setInterval(() => {
-        try {
-            const currentTime = player.getCurrentTime();
-            const duration = videoPlayers.status[index].duration;
-            
-            // Update watched seconds
-            if (currentTime > videoPlayers.status[index].watchedSeconds) {
-                videoPlayers.status[index].watchedSeconds = currentTime;
-            }
-            
-            // Check for completion (watched at least 90%)
-            if (!videoPlayers.status[index].completed && 
-                videoPlayers.status[index].watchedSeconds >= duration * 0.9) {
-                markVideoAsComplete(index);
-                clearInterval(updateInterval);
-            }
-        } catch (e) {
-            console.error(`Error tracking progress for player ${index}:`, e);
-        }
-    }, 1000); // Update every second
-}
-
-// Mark video as completed
 function markVideoAsComplete(index) {
     videoPlayers.status[index].completed = true;
     const checkbox = document.getElementById(`video-check-${index+1}`);
@@ -156,7 +130,6 @@ function markVideoAsComplete(index) {
         checkbox.dispatchEvent(new Event('change'));
     }
     
-    // Update quiz button state
     updateQuizButtonState();
 }
 
@@ -164,7 +137,6 @@ function handlePlayerError(index) {
     videoPlayers.status[index].state = 'error';
     videoPlayers.status[index].container.classList.add('error');
     
-    // Enable manual completion for this video
     const checkbox = document.getElementById(`video-check-${index+1}`);
     if (checkbox) {
         checkbox.disabled = false;
@@ -175,7 +147,6 @@ function handlePlayerError(index) {
     }
 }
 
-// Update quiz button based on completion
 function updateQuizButtonState() {
     const allCompleted = videoPlayers.status.every(s => s.completed);
     const quizButton = document.querySelector('.quiz-link[href="testquiz.html"]');
@@ -186,19 +157,16 @@ function updateQuizButtonState() {
     }
 }
 
-// Enhanced error handling
 function onPlayerError(event, index) {
     console.error(`Player ${index} error:`, event.data);
     handlePlayerError(index);
 }
 
-// Initialize when YouTube API is ready
 function onYouTubeIframeAPIReady() {
     console.log('YouTube API ready - initializing players');
     initYouTubePlayers();
 }
 
-// Fallback in case API doesn't load
 setTimeout(() => {
     if (!window.YT || videoPlayers.readyCount === 0) {
         console.warn('YouTube API not loaded - enabling manual completion');
@@ -206,7 +174,6 @@ setTimeout(() => {
     }
 }, 5000);
 
-// Manual completion fallback
 function enableManualCompletion() {
     document.querySelectorAll('.video-completion input').forEach(checkbox => {
         checkbox.disabled = false;
@@ -230,15 +197,12 @@ function startProgressTracking(player, index) {
             const duration = videoPlayers.status[index].duration;
             const percentWatched = (currentTime / duration) * 100;
             
-            // Update progress bar
             progressBar.querySelector('.video-progress-bar').style.width = `${percentWatched}%`;
             
-            // Update watched seconds
             if (currentTime > videoPlayers.status[index].watchedSeconds) {
                 videoPlayers.status[index].watchedSeconds = currentTime;
             }
             
-            // Check for completion
             if (!videoPlayers.status[index].completed && percentWatched >= 90) {
                 markVideoAsComplete(index);
                 clearInterval(updateInterval);
@@ -249,7 +213,6 @@ function startProgressTracking(player, index) {
     }, 1000);
 }
 
-// New function to show fallback message
 function showFallbackMessage() {
     const fallbackHtml = `
         <div class="yt-fallback-message">
@@ -260,34 +223,43 @@ function showFallbackMessage() {
     document.body.insertAdjacentHTML('afterbegin', fallbackHtml);
 }
 
-
+// Modified API ready handler
+window.onYouTubeIframeAPIReady = function() {
+    console.log('YouTube API ready callback - YT state:', {
+        YT: typeof YT,
+        Player: typeof YT?.Player,
+        loaded: YT?.loaded
+    });
+    
+    videoPlayers.apiLoaded = true;
+    
+    // Only initialize if DOM is ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initializeVideoTracking();
+    }
+};
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded');
+    console.log('DOM fully loaded - YT state:', {
+        YT_available: typeof YT !== 'undefined',
+        YT_loaded: window.YT?.loaded
+    });
     
-    // Set up API ready callback
-    window.onYouTubeIframeAPIReady = function() {
-        console.log('YouTube API ready callback');
-        videoPlayers.apiLoaded = true;
-        initializeVideoTracking();
-    };
-    
-    // Check if API loaded before our callback was set
-    if (window.YT && window.YT.loaded) {
-        console.log('YouTube API already loaded');
-        window.onYouTubeIframeAPIReady();
-    }
-    
-    // Fallback in case API doesn't load
-    setTimeout(() => {
-        if (!videoPlayers.apiLoaded && !videoPlayers.initialized) {
+    // Set up the fallback timeout
+    fallbackTimeout = setTimeout(() => {
+        if (!videoPlayers.initialized && videoPlayers.readyCount === 0) {
             console.warn('YouTube API timeout - using fallback');
             showFallbackMessage();
             enableManualCompletion();
         }
-    }, 10000); // Increased timeout to 10 seconds
+    }, 10000);
+    
+    // If API is already loaded when DOM is ready
+    if (window.YT?.loaded) {
+        console.log('API was loaded before DOM ready');
+        initializeVideoTracking();
+    }
 });
-
 
 
 
