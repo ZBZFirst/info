@@ -122,25 +122,33 @@ function initYouTubePlayers() {
 }
 
 function onPlayerReady(event, index) {
-    console.log(`Player ${index} ready`, debugState());
+    console.log(`Player ${index} ready`);
     const player = event.target;
     videoPlayers.readyCount++;
 
     try {
+        // Get duration and add it to our tracking
         const duration = player.getDuration();
-        console.log(`Player ${index} duration: ${duration}s`);
+        console.log(`Player ${index} duration: ${duration} seconds`);
         
         if (duration > 0) {
-            videoPlayers.status[index].duration = duration;
-            videoPlayers.status[index].state = 'ready';
+            // Update our status object
+            videoPlayers.status[index] = {
+                ...videoPlayers.status[index], // Keep existing properties
+                duration: duration,
+                state: 'ready',
+                playerInstance: player // Store the player instance if needed
+            };
+
+            // Start tracking progress
             startProgressTracking(player, index);
             
-            // Enable the corresponding checkbox
+            // Enable the checkbox
             const checkbox = document.getElementById(`video-check-${index+1}`);
             if (checkbox) checkbox.disabled = false;
         }
     } catch (e) {
-        console.error(`Duration check failed for player ${index}`, e);
+        console.error(`Error getting duration for player ${index}:`, e);
         handlePlayerError(index);
     }
 }
