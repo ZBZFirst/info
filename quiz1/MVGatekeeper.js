@@ -62,25 +62,53 @@ function initializeVideoTracking() {
 }
 
 
-// Enhanced player initialization
 function initYouTubePlayers() {
     console.log('Initializing players', debugState());
     const videoContainers = document.querySelectorAll('.embed-container');
     
+    // Check if YouTube API is properly loaded
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        console.error('YouTube API not properly loaded', {
+            YT: typeof YT,
+            Player: typeof YT?.Player,
+            loaded: YT?.loaded
+        });
+        showFallbackMessage();
+        enableManualCompletion();
+        return;
+    }
+
     videoContainers.forEach((container, index) => {
         const iframe = container.querySelector('iframe');
         if (!iframe) {
-            console.error('No iframe found', {index, container});
+            console.error('No iframe found in container', {
+                index: index,
+                container: container,
+                html: container.innerHTML
+            });
+            handlePlayerError(index);
             return;
+        }
+
+        // Ensure iframe has proper attributes
+        if (!iframe.hasAttribute('allow')) {
+            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
         }
 
         const videoId = extractVideoId(iframe.src);
         if (!videoId) {
-            console.error('Invalid video ID', {index, src: iframe.src});
+            console.error('Could not extract video ID from iframe', {
+                index: index,
+                src: iframe.src,
+                iframe: iframe.outerHTML
+            });
+            handlePlayerError(index);
             return;
         }
 
-        if (!iframe.id) iframe.id = `yt-player-${index}`;
+        if (!iframe.id) {
+            iframe.id = `yt-player-${index}`;
+        }
 
         videoPlayers.status[index] = {
             videoId: videoId,
@@ -88,36 +116,108 @@ function initYouTubePlayers() {
             duration: 0,
             watchedSeconds: 0,
             completed: false,
-            container: container
+            container: container,
+            lastUpdate: new Date().toISOString()
         };
 
         try {
-            console.log(`Creating player ${index}`, {videoId, iframeId: iframe.id});
-            videoPlayers.players[index] = new YT.Player(iframe.id, {
+            console.log(`Creating player ${index}`, {
                 videoId: videoId,
+                iframeId: iframe.id,
+                iframeSrc: iframe.src,
+                container: container
+            });
+
+            // Create new player with enhanced parameters
+            videoPlayers.players[index] = new YT.Player(iframe, {  // Pass iframe element directly
+                videoId: videoId,
+                height: iframe.height || '100%',
+                width: iframe.width || '100%',
                 playerVars: {
                     'enablejsapi': 1,
                     'origin': window.location.origin,
                     'controls': 1,
                     'rel': 0,
-                    'autoplay': 0
+                    'autoplay': 0,
+                    'html5': 1,
+                    'fs': 1,
+                    'playsinline': 1
                 },
                 events: {
                     'onReady': (event) => {
-                        console.log(`Player ${index} onReady event`, event);
+                        console.log(`Player ${index} onReady event received`, {
+                            event: event,
+                            playerState: event.target.getPlayerState(),
+                            videoUrl: event.target.getVideoUrl(),
+                            timestamp: new Date().toISOString()
+                        });
                         onPlayerReady(event, index);
                     },
-                    'onStateChange': (event) => onPlayerStateChange(event, index),
+                    'onStateChange': (event) => {
+                        console.log(`Player ${index} state changed to ${event.data}`, {
+                            event: event,
+                            timestamp: new Date().toISOString()
+                        });
+                        onPlayerStateChange(event, index);
+                    },
                     'onError': (event) => {
-                        console.error(`Player ${index} error`, event);
+                        console.error(`Player ${index} encountered error ${event.data}`, {
+                            event: event,
+                            errorCode: event.data,
+                            timestamp: new Date().toISOString()
+                        });
                         onPlayerError(event, index);
                     }
                 }
             });
+
+            // Add diagnostic checks
+            const diagnosticInterval = setInterval(() => {
+                try {
+                    const player = videoPlayers.players[index];
+                    if (player && typeof player.getPlayerState === 'function') {
+                        const state = player.getPlayerState();
+                        console.log(`Player ${index} diagnostic check`, {
+                            state: state,
+                            ready: !!player.getDuration,
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        // Clear interval if player becomes ready
+                        if (state !== YT.PlayerState.UNSTARTED) {
+                            clearInterval(diagnosticInterval);
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Player ${index} diagnostic check failed`, e);
+                    clearInterval(diagnosticInterval);
+                }
+            }, 2000);
+
+            // Store interval for cleanup
+            videoPlayers.status[index].diagnosticInterval = diagnosticInterval;
+
         } catch (e) {
-            console.error(`Player ${index} creation failed`, e, debugState());
+            console.error(`Failed to initialize player ${index}`, {
+                error: e,
+                stack: e.stack,
+                iframe: iframe.outerHTML,
+                videoId: videoId,
+                timestamp: new Date().toISOString()
+            });
             handlePlayerError(index);
         }
+    });
+
+    // Add global error listener
+    window.addEventListener('error', (event) => {
+        console.error('Global error occurred', {
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+            error: event.error
+        });
     });
 }
 
