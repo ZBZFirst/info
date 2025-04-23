@@ -1,3 +1,4 @@
+//MVGatekeeper.ks file start
 // Track all players and their states
 const videoPlayers = {
     players: [],
@@ -271,3 +272,5 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(apiLoadTimeout);
     });
 });
+
+//MVGatekeeper.ks file end
