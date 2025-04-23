@@ -4,19 +4,21 @@ const videoPlayers = {
     players: [],
     status: [],
     readyCount: 0,
-    apiLoaded: false
+    apiLoaded: false,
+    initialized: false
+
 };
 
 // Main initialization - now called after DOM and API are ready
 function initializeVideoTracking() {
-    // Show loading state
-    document.querySelectorAll('.embed-container').forEach(container => {
-        container.classList.add('loading');
-    });
+    if (videoPlayers.initialized) return;
+    videoPlayers.initialized = true;
 
+    console.log('Initializing video tracking');
+    
     // Check if API loaded successfully
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-        console.error('YouTube API failed to load');
+        console.error('YouTube API not available');
         showFallbackMessage();
         enableManualCompletion();
         return;
@@ -28,7 +30,8 @@ function initializeVideoTracking() {
 // Initialize YouTube players
 function initYouTubePlayers() {
     const videoContainers = document.querySelectorAll('.embed-container');
-    
+    console.log(`Found ${videoContainers.length} video containers`);
+
     videoContainers.forEach((container, index) => {
         const iframe = container.querySelector('iframe');
         if (!iframe) {
@@ -59,14 +62,15 @@ function initYouTubePlayers() {
         };
 
         try {
-            // Create the player
+            console.log(`Initializing player ${index} for video ${videoId}`);
             videoPlayers.players[index] = new YT.Player(iframe.id, {
                 videoId: videoId,
                 playerVars: {
                     'enablejsapi': 1,
                     'origin': window.location.origin,
                     'controls': 1,
-                    'rel': 0
+                    'rel': 0,
+                    'autoplay': 0
                 },
                 events: {
                     'onReady': (event) => onPlayerReady(event, index),
@@ -76,8 +80,7 @@ function initYouTubePlayers() {
             });
         } catch (e) {
             console.error(`Failed to initialize player ${index}:`, e);
-            videoPlayers.status[index].state = 'error';
-            container.classList.add('error');
+            handlePlayerError(index);
         }
     });
 }
@@ -157,6 +160,21 @@ function markVideoAsComplete(index) {
     updateQuizButtonState();
 }
 
+function handlePlayerError(index) {
+    videoPlayers.status[index].state = 'error';
+    videoPlayers.status[index].container.classList.add('error');
+    
+    // Enable manual completion for this video
+    const checkbox = document.getElementById(`video-check-${index+1}`);
+    if (checkbox) {
+        checkbox.disabled = false;
+        checkbox.addEventListener('change', function() {
+            videoPlayers.status[index].completed = this.checked;
+            updateQuizButtonState();
+        });
+    }
+}
+
 // Update quiz button based on completion
 function updateQuizButtonState() {
     const allCompleted = videoPlayers.status.every(s => s.completed);
@@ -168,10 +186,10 @@ function updateQuizButtonState() {
     }
 }
 
-// Error handling
+// Enhanced error handling
 function onPlayerError(event, index) {
     console.error(`Player ${index} error:`, event.data);
-    videoPlayers.status[index].state = 'error';
+    handlePlayerError(index);
 }
 
 // Initialize when YouTube API is ready
@@ -242,6 +260,8 @@ function showFallbackMessage() {
     document.body.insertAdjacentHTML('afterbegin', fallbackHtml);
 }
 
+
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded');
     
@@ -252,25 +272,33 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeVideoTracking();
     };
     
-    // Check if API is already loaded
+    // Check if API loaded before our callback was set
     if (window.YT && window.YT.loaded) {
         console.log('YouTube API already loaded');
         window.onYouTubeIframeAPIReady();
     }
     
     // Fallback in case API doesn't load
-    const apiLoadTimeout = setTimeout(() => {
-        if (!videoPlayers.apiLoaded) {
-            console.warn('YouTube API failed to load - using fallback');
+    setTimeout(() => {
+        if (!videoPlayers.apiLoaded && !videoPlayers.initialized) {
+            console.warn('YouTube API timeout - using fallback');
             showFallbackMessage();
             enableManualCompletion();
         }
-    }, 5000);
-
-    // Clean up timeout if API loads
-    window.addEventListener('YTLoaded', () => {
-        clearTimeout(apiLoadTimeout);
-    });
+    }, 10000); // Increased timeout to 10 seconds
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
 //MVGatekeeper.ks file end
+
