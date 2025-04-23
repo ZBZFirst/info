@@ -11,6 +11,23 @@ const videoPlayers = {
 
 let fallbackTimeout;
 
+// 1. First add the missing extractVideoId function
+function extractVideoId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// 2. Add the missing onPlayerStateChange handler
+function onPlayerStateChange(event, index) {
+    console.log(`Player ${index} state changed:`, event.data);
+    // States: -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering, 5=video cued
+    if (event.data === YT.PlayerState.ENDED) {
+        markVideoAsComplete(index);
+    }
+}
+
 // Enhanced initialization with debug
 function initializeVideoTracking() {
     if (videoPlayers.initialized) return;
@@ -23,10 +40,7 @@ function initializeVideoTracking() {
     });
     
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-        console.error('YouTube API not available after callback', {
-            YT: typeof YT,
-            Player: typeof YT?.Player
-        });
+        console.error('YouTube API not available after callback');
         showFallbackMessage();
         enableManualCompletion();
         return;
@@ -36,14 +50,15 @@ function initializeVideoTracking() {
     initYouTubePlayers();
 }
 
+
 // Enhanced player initialization
 function initYouTubePlayers() {
     try {
         const videoContainers = document.querySelectorAll('.embed-container');
-        console.log(`Found ${videoContainers.length} video containers`, videoContainers);
+        console.log(`Found ${videoContainers.length} video containers`);
         
         if (videoContainers.length === 0) {
-            console.error('No video containers found - check your HTML structure');
+            console.error('No video containers found');
             showFallbackMessage();
             enableManualCompletion();
             return;
@@ -52,13 +67,13 @@ function initYouTubePlayers() {
         videoContainers.forEach((container, index) => {
             const iframe = container.querySelector('iframe');
             if (!iframe) {
-                console.error(`No iframe found in container ${index}`, container);
+                console.error(`No iframe found in container ${index}`);
                 return;
             }
 
             const videoId = extractVideoId(iframe.src);
             if (!videoId) {
-                console.error(`Could not extract video ID from iframe ${index}`, iframe.src);
+                console.error(`Could not extract video ID from iframe ${index} with src: ${iframe.src}`);
                 return;
             }
 
@@ -76,11 +91,7 @@ function initYouTubePlayers() {
             };
 
             try {
-                console.log(`Initializing player ${index} for video ${videoId}`, {
-                    iframeId: iframe.id,
-                    iframeSrc: iframe.src
-                });
-                
+                console.log(`Initializing player ${index} for video ${videoId}`);
                 videoPlayers.players[index] = new YT.Player(iframe.id, {
                     videoId: videoId,
                     playerVars: {
@@ -96,16 +107,8 @@ function initYouTubePlayers() {
                         'onError': (event) => onPlayerError(event, index)
                     }
                 });
-                
-                console.log(`Player ${index} initialization attempted`);
             } catch (e) {
-                console.error(`Failed to initialize player ${index}:`, e, {
-                    iframe: iframe,
-                    playerVars: {
-                        'enablejsapi': 1,
-                        'origin': window.location.origin
-                    }
-                });
+                console.error(`Failed to initialize player ${index}:`, e);
                 handlePlayerError(index);
             }
         });
@@ -193,8 +196,7 @@ window.onYouTubeIframeAPIReady = function() {
     console.log('YouTube API ready callback - YT state:', {
         YT: typeof YT,
         Player: typeof YT?.Player,
-        loaded: YT?.loaded,
-        version: YT?.getApiVersion?.()
+        loaded: YT?.loaded
     });
     
     videoPlayers.apiLoaded = true;
@@ -207,14 +209,21 @@ window.onYouTubeIframeAPIReady = function() {
     }
 };
 
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded - YT state:', {
         YT_available: typeof YT !== 'undefined',
-        YT_loaded: window.YT?.loaded,
-        YT_version: window.YT?.getApiVersion?.()
+        YT_loaded: window.YT?.loaded
     });
     
-    setupFallback();
+    // Set up the fallback timeout
+    fallbackTimeout = setTimeout(() => {
+        if (!videoPlayers.initialized || videoPlayers.readyCount === 0) {
+            console.warn('YouTube API timeout - using fallback');
+            showFallbackMessage();
+            enableManualCompletion();
+        }
+    }, 10000);
     
     if (window.YT?.loaded) {
         console.log('API was loaded before DOM ready - initializing');
@@ -222,9 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Add cleanup for page unload
+// Add cleanup
 window.addEventListener('beforeunload', () => {
-    console.log('Page unloading - cleaning up');
     clearTimeout(fallbackTimeout);
     videoPlayers.status.forEach(status => {
         if (status.progressInterval) {
@@ -232,3 +240,7 @@ window.addEventListener('beforeunload', () => {
         }
     });
 });
+
+
+
+
