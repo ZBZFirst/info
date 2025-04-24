@@ -9,7 +9,10 @@ title: "Minute Ventilation Calculator"
     <div class="slider-container">
         <label for="respiratory-rate" class="slider-label">Respiratory Rate (breaths/min):</label>
         <input type="range" id="respiratory-rate" class="slider" min="6" max="40" value="12" step="1">
-        <div class="value-display">Current: <span id="rr-value">12</span></div>
+        <div class="value-display">
+            Current: <span id="rr-value">12</span>
+            <span id="rr-classification" class="classification-tag eupnea">(Eupnea)</span>
+        </div>
     </div>
     
     <div class="slider-container">
@@ -25,8 +28,8 @@ title: "Minute Ventilation Calculator"
         <span id="minute-ventilation-value" class="graph-result-value">6.0</span> L/min
     </div>
     <div class="graph-result-item">
-        <strong>Classification:</strong> 
-        <span id="ventilation-classification" class="graph-result-value">Normal</span>
+        <strong>Ventilation Status:</strong> 
+        <span id="ventilation-classification" class="graph-result-value">Normal Ventilation</span>
     </div>
 </div>
 
@@ -35,3 +38,17 @@ title: "Minute Ventilation Calculator"
 <link rel="stylesheet" href="/info/_css/graph-components.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="/info/js/ventilation-calculator.js"></script>
+
+<style>
+    /* Add to your existing CSS */
+    .classification-tag {
+        margin-left: 8px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+    .bradypnea { background-color: #3498db; color: white; }
+    .eupnea { background-color: #2ecc71; color: white; }
+    .tachypnea { background-color: #e74c3c; color: white; }
+</style>
