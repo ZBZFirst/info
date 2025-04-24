@@ -127,6 +127,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 highlightPoint(point.x, point.y);
                 updateSliders(point.x, point.y);
                 updateInfoBox(point.x, point.y, point.customdata);
+                
+                // Also make the polar graph bring its point to front
+                Plotly.restyle('ventilation-graph-polar', {
+                    'marker.size': [20]
+                }, [1]);
             }
         });
 
