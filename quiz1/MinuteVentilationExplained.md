@@ -16,7 +16,7 @@ title: "What Is Minute Ventilation?"
     <p>This short video just shows the variables involved with the equation. The Units of Measurement are provided.</p>
     <div class="video-wrapper">
         <div class="embed-container">
-            <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io&controls=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="video-progress-container">
             <div class="video-progress">
@@ -36,7 +36,7 @@ title: "What Is Minute Ventilation?"
     <p>A slow walk through of the equation and how the variables are input into the equation is shown with a few examples.</p>
     <div class="video-wrapper">
         <div class="embed-container">
-            <iframe src="https://www.youtube.com/embed/PnH4ExmrIV4?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/PnH4ExmrIV4?enablejsapi=1&origin=https://zbzfirst.github.io&controls=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="video-progress-container">
             <div class="video-progress">
@@ -56,7 +56,7 @@ title: "What Is Minute Ventilation?"
     <p>Performing the equation with different input parameters gives different Minute Ventilation results. Applying a coloring scheme based on Minute Ventilation Values allows for the creations of a color classification scheme based on conditional statements about the values produced. The same color scheme is used in the next video.</p>
     <div class="video-wrapper">
         <div class="embed-container">
-            <iframe src="https://www.youtube.com/embed/ytD4F0awEKc?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/ytD4F0awEKc?enablejsapi=1&origin=https://zbzfirst.github.io&controls=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="video-progress-container">
             <div class="video-progress">
@@ -76,7 +76,7 @@ title: "What Is Minute Ventilation?"
     <p>Since the input parameters are constrained to a narrow range, a full set of values can be graphed and plotted, graphing 100+ values with conditional formatting allows for a dataset to be visualized that more easily allows for analysis.</p>
     <div class="video-wrapper">
         <div class="embed-container">
-            <iframe src="https://www.youtube.com/embed/phbpRBO9Rkk?enablejsapi=1&origin=https://zbzfirst.github.io" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/phbpRBO9Rkk?enablejsapi=1&origin=https://zbzfirst.github.io&controls=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
         <div class="video-progress-container">
             <div class="video-progress">
