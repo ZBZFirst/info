@@ -34,6 +34,9 @@ title: "Minute Ventilation Calculator"
 
 <div id="ventilation-graph" class="graph-container"></div>
 
+<div id="ventilation-graph-polar" class="graph-container"></div>
+
+
 <link rel="stylesheet" href="/info/_css/graph-components.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="/info/js/ventilation-calculator.js"></script>
