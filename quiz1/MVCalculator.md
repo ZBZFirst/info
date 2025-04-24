@@ -17,7 +17,7 @@ title: "Minute Ventilation Calculator"
     
     <div class="slider-container">
         <label for="tidal-volume" class="slider-label">Tidal Volume (mL):</label>
-        <input type="range" id="tidal-volume" class="slider" min="200" max="1000" value="500" step="10">
+        <input type="range" id="tidal-volume" class="slider" min="0" max="1000" value="500" step="10">
         <div class="value-display">Current: <span id="tv-value">500</span></div>
     </div>
 </div>
