@@ -25,7 +25,7 @@ title: "What Is Minute Ventilation?"
             <div class="video-progress-text">0% watched</div>
         </div>
     </div>
-    <div class="video-completion">
+    <div class="video-completion disabled">
         <input type="checkbox" id="video-check-1" disabled>
         <label for="video-check-1">Video 1 completed</label>
     </div>
@@ -45,7 +45,7 @@ title: "What Is Minute Ventilation?"
             <div class="video-progress-text">0% watched</div>
         </div>
     </div>
-    <div class="video-completion">
+    <div class="video-completion disabled">
         <input type="checkbox" id="video-check-2" disabled>
         <label for="video-check-2">Video 2 completed</label>
     </div>
@@ -65,7 +65,7 @@ title: "What Is Minute Ventilation?"
             <div class="video-progress-text">0% watched</div>
         </div>
     </div>
-    <div class="video-completion">
+    <div class="video-completion disabled">
         <input type="checkbox" id="video-check-3" disabled>
         <label for="video-check-3">Video 3 completed</label>
     </div>
@@ -85,7 +85,7 @@ title: "What Is Minute Ventilation?"
             <div class="video-progress-text">0% watched</div>
         </div>
     </div>
-    <div class="video-completion">
+    <div class="video-completion disabled">
         <input type="checkbox" id="video-check-4" disabled>
         <label for="video-check-4">Video 4 completed</label>
     </div>
