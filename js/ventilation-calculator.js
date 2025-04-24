@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Graph container
     const graphDiv = document.getElementById('ventilation-graph');
     
+    // Current highlighted point
+    let highlightedPoint = null;
+    
     // Generate all possible data points
     function generateData() {
         const data = [];
@@ -24,23 +27,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5-zone color gradient
     function getColor(mv) {
         if (mv <= 4) {
-            // Black (0,0,0) → Yellow (255,255,0)
             const intensity = Math.floor(255 * (mv / 4));
             return `rgb(${intensity}, ${intensity}, 0)`;
         } else if (mv <= 8) {
-            // Yellow (255,255,0) → Green (0,128,0)
             const ratio = (mv - 4) / 4;
             return `rgb(${Math.floor(255 * (1 - ratio))}, ${Math.floor(255 - (127 * ratio))}, 0)`;
         } else if (mv <= 12) {
-            // Green (0,128,0) → Yellow (255,255,0)
             const ratio = (mv - 8) / 4;
             return `rgb(${Math.floor(255 * ratio)}, ${Math.floor(128 + (127 * ratio))}, 0)`;
         } else if (mv <= 20) {
-            // Yellow (255,255,0) → Red (255,0,0)
             const ratio = (mv - 12) / 8;
             return `rgb(255, ${Math.floor(255 * (1 - ratio))}, 0)`;
         } else {
-            // Solid red for 20-25
             return 'rgb(255, 0, 0)';
         }
     }
@@ -49,25 +47,43 @@ document.addEventListener('DOMContentLoaded', function() {
     function createGraph() {
         const data = generateData();
         
-        const trace = {
+        // Main heatmap trace
+        const heatmapTrace = {
             x: data.map(d => d.x),
             y: data.map(d => d.y),
             mode: 'markers',
-            type: 'scattergl', // Using WebGL for better performance
+            type: 'scattergl',
             marker: {
                 size: 8,
                 color: data.map(d => d.color),
-                opacity: 0.7,
+                opacity: 0.5, // Reduced opacity for background points
                 line: {
                     width: 0
                 }
             },
             customdata: data.map(d => d.mv),
-            hoverinfo: 'x+y+z',
-            hoverlabel: {
-                bgcolor: '#fff',
-                bordercolor: '#000'
-            }
+            hoverinfo: 'none', // Disabled hover for main trace
+            name: 'Possible Combinations'
+        };
+
+        // Highlight trace (initially hidden)
+        const highlightTrace = {
+            x: [],
+            y: [],
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 16,
+                color: 'white',
+                opacity: 1,
+                line: {
+                    color: 'black',
+                    width: 3
+                },
+                symbol: 'diamond'
+            },
+            hoverinfo: 'none',
+            name: 'Selected'
         };
 
         const layout = {
@@ -83,31 +99,79 @@ document.addEventListener('DOMContentLoaded', function() {
             hovermode: 'closest',
             margin: { t: 40, b: 60, l: 60, r: 20 },
             plot_bgcolor: '#f8f9fa',
-            paper_bgcolor: '#f8f9fa'
+            paper_bgcolor: '#f8f9fa',
+            showlegend: true
         };
 
-        Plotly.newPlot(graphDiv, [trace], layout);
+        Plotly.newPlot(graphDiv, [heatmapTrace, highlightTrace], layout);
 
         // Add click interaction
         graphDiv.on('plotly_click', function(data) {
-            const point = data.points[0];
-            updateSliders(point.x, point.y);
-            updateInfoBox(point.x, point.y, point.customdata);
+            if (data.points.length > 0) {
+                const point = data.points[0];
+                highlightPoint(point.x, point.y);
+                updateSliders(point.x, point.y);
+                updateInfoBox(point.x, point.y, point.customdata);
+            }
         });
+
+        // Initialize with default values
+        const initialRR = 12;
+        const initialVT = 0.5;
+        highlightPoint(initialRR, initialVT);
+        updateSliders(initialRR, initialVT);
+        updateInfoBox(initialRR, initialVT, initialRR * initialVT);
     }
 
-    // Update sliders and display
+    // Highlight a specific point
+    function highlightPoint(rr, vt) {
+        const update = {
+            'marker.color': ['white'],
+            'marker.size': [20], // Larger size
+            'marker.line.color': ['black'],
+            'marker.line.width': [3],
+            'marker.symbol': ['diamond'],
+            x: [[rr]],
+            y: [[vt]]
+        };
+        
+        Plotly.restyle(graphDiv, update, 1); // Update the highlight trace (trace index 1)
+        
+        // Store the highlighted point
+        highlightedPoint = { rr, vt };
+    }
+
+    // Update sliders when point is clicked
     function updateSliders(rr, vt) {
-        document.getElementById('rr-slider').value = rr;
-        document.getElementById('vt-slider').value = vt;
+        document.getElementById('respiratory-rate').value = rr;
+        document.getElementById('tidal-volume').value = vt * 1000; // Convert to mL for slider
     }
 
+    // Update info box
     function updateInfoBox(rr, vt, mv) {
         document.getElementById('rr-value').textContent = rr;
-        document.getElementById('vt-value').textContent = vt.toFixed(2);
-        document.getElementById('mv-value').textContent = mv.toFixed(2);
+        document.getElementById('tv-value').textContent = (vt * 1000).toFixed(0); // Display in mL
+        document.getElementById('minute-ventilation-value').textContent = mv.toFixed(1);
+    }
+
+    // Slider event handlers
+    function setupSliderEvents() {
+        const rrSlider = document.getElementById('respiratory-rate');
+        const tvSlider = document.getElementById('tidal-volume');
+        
+        function updateFromSliders() {
+            const rr = parseInt(rrSlider.value);
+            const vt = parseInt(tvSlider.value) / 1000; // Convert to L
+            
+            highlightPoint(rr, vt);
+            updateInfoBox(rr, vt, rr * vt);
+        }
+        
+        rrSlider.addEventListener('input', updateFromSliders);
+        tvSlider.addEventListener('input', updateFromSliders);
     }
 
     // Initialize everything
     createGraph();
+    setupSliderEvents();
 });
