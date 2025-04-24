@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update quiz button state based on completion
     function updateQuizButton() {
         const allCompleted = videoTracker.videoData.every(video => video.completed);
-        const quizButtons = document.querySelectorAll('a[href="testquiz.html"], a[href="MVInteractive.html"]');
+        const quizButton = document.querySelectorAll('a[href="testquiz.html"], a[href="MVInteractive.html"]');
         
         console.log(`[MVGatekeeper] Updating quiz button. All videos completed: ${allCompleted}`);
         
