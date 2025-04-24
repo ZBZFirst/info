@@ -1,227 +1,389 @@
-// MVGatekeeper.js
+// MVGatekeeper.js - Enhanced YouTube Video Tracking with Detailed Logging
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('MVGatekeeper.js initialized');
-
-    // Initialize YouTube API
-    initYouTubeAPI();
-
-    // Disable quiz links initially
-    disableQuizLinks();
-
-    // Find all video containers on the page
-    const videoContainers = document.querySelectorAll('.resource-card');
-    console.log(`Found ${videoContainers.length} video containers`);
-
-    // Store all YouTube players and their states
-    const videoPlayers = {};
-    let playersReady = 0;
-    const totalVideos = videoContainers.length;
-
-    // Function to initialize YouTube API
-    function initYouTubeAPI() {
-        console.log('Initializing YouTube API');
+    console.log('[MVGatekeeper] DOM Content Loaded - Initializing');
+    
+    // Global state object with enhanced tracking
+    const videoTracker = {
+        players: [],
+        videoData: [],
+        apiReady: false,
+        initialized: false,
         
-        // Check if YouTube API is already loaded
-        if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-            console.error('YouTube API not loaded');
-            showYouTubeFallback();
+        // Enhanced debug function
+        debug: function() {
+            const playerStates = this.players.map((p, i) => {
+                if (!p) return 'null';
+                try {
+                    return {
+                        id: this.videoData[i]?.id || 'unknown',
+                        state: p.getPlayerState ? getStateName(p.getPlayerState()) : 'unknown',
+                        currentTime: p.getCurrentTime ? p.getCurrentTime() : 'unknown',
+                        duration: p.getDuration ? p.getDuration() : 'unknown'
+                    };
+                } catch (e) {
+                    return 'error:' + e.message;
+                }
+            });
+            
+            return {
+                apiReady: this.apiReady,
+                initialized: this.initialized,
+                players: playerStates,
+                videoData: this.videoData
+            };
+        }
+    };
+
+    // Helper function to get state name
+    function getStateName(stateCode) {
+        const states = {
+            [-1]: 'UNSTARTED',
+            0: 'ENDED',
+            1: 'PLAYING',
+            2: 'PAUSED',
+            3: 'BUFFERING',
+            5: 'CUED'
+        };
+        return states[stateCode] || 'UNKNOWN';
+    }
+
+    // Extract YouTube video ID from URL
+    function extractVideoId(url) {
+        const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // Initialize all YouTube players with enhanced logging
+    function initializePlayers() {
+        if (videoTracker.initialized) {
+            console.log('[MVGatekeeper] Players already initialized');
             return;
         }
-
-        console.log('YouTube API is available');
-    }
-
-    // Function to show fallback message if YouTube API fails
-    function showYouTubeFallback() {
-        const fallbackMessage = document.createElement('div');
-        fallbackMessage.className = 'yt-fallback-message';
-        fallbackMessage.innerHTML = `
-            <strong>YouTube Player Error:</strong> 
-            The YouTube player failed to load. Please ensure you have JavaScript enabled 
-            and try refreshing the page. If the problem persists, you may need to 
-            check your network connection or browser settings.
-        `;
-        document.body.insertBefore(fallbackMessage, document.body.firstChild);
-    }
-
-    // Function to disable all quiz links initially
-    function disableQuizLinks() {
-        const quizLinks = document.querySelectorAll('.quiz-link');
-        quizLinks.forEach(link => {
-            if (!link.href.includes('stripe.com')) { // Don't disable the access code link
-                link.classList.add('disabled');
-                link.addEventListener('click', function(e) {
-                    if (this.classList.contains('disabled')) {
-                        e.preventDefault();
-                        console.log('Quiz link blocked - videos not completed');
-                    }
-                });
-            }
-        });
-        console.log('Quiz links disabled');
-    }
-
-    // Function to enable quiz links when all videos are watched
-    function enableQuizLinks() {
-        const quizLinks = document.querySelectorAll('.quiz-link');
-        quizLinks.forEach(link => {
-            link.classList.remove('disabled');
-        });
-        console.log('Quiz links enabled');
-    }
-
-    // Function to check if all videos are completed
-    function checkAllVideosCompleted() {
-        const checkboxes = document.querySelectorAll('.video-completion input[type="checkbox"]');
-        let allCompleted = true;
         
-        checkboxes.forEach(checkbox => {
-            if (!checkbox.checked) {
-                allCompleted = false;
-            }
-        });
-
-        if (allCompleted) {
-            console.log('All videos completed!');
-            enableQuizLinks();
-            
-            // Add celebration effect
-            const cards = document.querySelectorAll('.resource-card');
-            cards.forEach(card => {
-                card.classList.add('completed');
-            });
-        }
+        console.log('[MVGatekeeper] Initializing YouTube players', videoTracker.debug());
         
-        return allCompleted;
-    }
-
-    // Function to create YouTube player for each video container
-    function createYouTubePlayers() {
+        const videoContainers = document.querySelectorAll('.embed-container');
+        console.log(`[MVGatekeeper] Found ${videoContainers.length} video containers`);
+        
         videoContainers.forEach((container, index) => {
             const iframe = container.querySelector('iframe');
-            if (!iframe) return;
-
-            const videoId = iframe.id;
-            const videoCheckbox = container.querySelector('.video-completion input[type="checkbox"]');
-            const progressBar = container.querySelector('.video-progress-bar');
-            const progressText = container.querySelector('.video-progress-text');
-            const videoDuration = videoCheckbox ? parseInt(videoCheckbox.dataset.videoDuration) : 0;
-
-            console.log(`Setting up player for video ${index + 1} with ID: ${videoId}`);
-
-            // Create YouTube player
-            videoPlayers[videoId] = new YT.Player(videoId, {
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-
-            function onPlayerReady(event) {
-                playersReady++;
-                console.log(`Player ${videoId} ready (${playersReady}/${totalVideos})`);
-                
-                if (playersReady === totalVideos) {
-                    console.log('All YouTube players are ready');
-                }
+            if (!iframe) {
+                console.error(`[MVGatekeeper] No iframe found in container ${index}`);
+                return;
             }
 
-            function onPlayerStateChange(event) {
-                const currentTime = event.target.getCurrentTime();
-                const duration = event.target.getDuration();
-                const percentWatched = (currentTime / duration) * 100;
+            const videoId = extractVideoId(iframe.src);
+            if (!videoId) {
+                console.error(`[MVGatekeeper] Could not extract video ID from iframe ${index} with src: ${iframe.src}`);
+                return;
+            }
 
-                // Update progress bar
-                if (progressBar) {
-                    progressBar.style.width = `${percentWatched}%`;
-                }
+            // Store initial video data with timestamps
+            videoTracker.videoData[index] = {
+                id: videoId,
+                duration: 0,
+                watched: 0,
+                completed: false,
+                container: container,
+                firstReady: null,
+                lastStateChange: null,
+                stateHistory: []
+            };
+
+            console.log(`[MVGatekeeper] Creating player ${index} for video ${videoId}`);
+            
+            // Create YouTube player with all event handlers
+            try {
+                videoTracker.players[index] = new YT.Player(iframe, {
+                    events: {
+                        'onReady': (event) => onPlayerReady(event, index),
+                        'onStateChange': (event) => onPlayerStateChange(event, index),
+                        'onError': (event) => onPlayerError(event, index),
+                        'onPlaybackQualityChange': (event) => onPlaybackQualityChange(event, index),
+                        'onPlaybackRateChange': (event) => onPlaybackRateChange(event, index),
+                        'onApiChange': (event) => onApiChange(event, index)
+                    }
+                });
                 
-                // Update progress text
-                if (progressText) {
-                    progressText.textContent = `${Math.round(percentWatched)}% watched`;
-                }
-
-                // Check if video is completed (watched at least 95%)
-                if (percentWatched >= 95 && videoCheckbox) {
-                    videoCheckbox.checked = true;
-                    container.classList.add('completed');
-                    progressBar.classList.add('complete');
-                    console.log(`Video ${index + 1} completed`);
-                    
-                    // Check if all videos are now completed
-                    checkAllVideosCompleted();
-                }
-
-                // Log player state changes
-                const stateMap = {
-                    [-1]: 'unstarted',
-                    [0]: 'ended',
-                    [1]: 'playing',
-                    [2]: 'paused',
-                    [3]: 'buffering',
-                    [5]: 'video cued'
-                };
+                // Additional event listeners using addEventListener
+                setTimeout(() => {
+                    if (videoTracker.players[index] && videoTracker.players[index].addEventListener) {
+                        videoTracker.players[index].addEventListener('onStateChange', (event) => {
+                            console.log(`[MVGatekeeper][Player ${index}] Additional State Change: ${getStateName(event.data)}`);
+                        });
+                    }
+                }, 1000);
                 
-                console.log(`Video ${index + 1} state: ${stateMap[event.data] || 'unknown'} (${Math.round(currentTime)}s/${Math.round(duration)}s)`);
+            } catch (e) {
+                console.error(`[MVGatekeeper] Error creating player ${index}:`, e);
+                videoTracker.videoData[index].error = e.message;
             }
         });
+
+        videoTracker.initialized = true;
+        console.log('[MVGatekeeper] Players initialization complete', videoTracker.debug());
     }
 
-    // Wait for YouTube API to be ready
-    function onYouTubeIframeAPIReady() {
-        console.log('YouTube iframe API ready');
-        createYouTubePlayers();
-    }
-
-    // Fallback in case onYouTubeIframeAPIReady isn't called
-    setTimeout(() => {
-        if (playersReady === 0 && typeof YT !== 'undefined') {
-            console.log('Fallback: Initializing players after timeout');
-            createYouTubePlayers();
+    // Enhanced player ready handler
+    function onPlayerReady(event, index) {
+        console.log(`[MVGatekeeper][Player ${index}] Ready event received`);
+        const player = event.target;
+        const now = new Date().toISOString();
+        
+        try {
+            const duration = player.getDuration();
+            const videoUrl = player.getVideoUrl();
+            const embedCode = player.getVideoEmbedCode();
+            
+            console.log(`[MVGatekeeper][Player ${index}] Video details - Duration: ${duration}s, URL: ${videoUrl}`);
+            
+            // Update video data
+            videoTracker.videoData[index].duration = duration;
+            videoTracker.videoData[index].firstReady = now;
+            videoTracker.videoData[index].lastStateChange = now;
+            videoTracker.videoData[index].embedCode = embedCode;
+            
+            // Enable the corresponding checkbox
+            const checkbox = document.getElementById(`video-check-${index+1}`);
+            if (checkbox) {
+                checkbox.disabled = false;
+                checkbox.dataset.videoDuration = duration;
+                console.log(`[MVGatekeeper][Player ${index}] Enabled checkbox #${index+1}`);
+            }
+            
+            // Start tracking progress
+            startProgressTracking(player, index);
+            
+            console.log(`[MVGatekeeper][Player ${index}] Current player state: ${getStateName(player.getPlayerState())}`);
+            
+        } catch (e) {
+            console.error(`[MVGatekeeper][Player ${index}] Error getting video info:`, e);
+            videoTracker.videoData[index].error = e.message;
         }
-    }, 3000);
+    }
 
-    // Expose the function to the global scope
-    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+    // Enhanced state change handler with full logging
+    function onPlayerStateChange(event, index) {
+        const stateName = getStateName(event.data);
+        const now = new Date().toISOString();
+        
+        // Record state change
+        videoTracker.videoData[index].lastStateChange = now;
+        videoTracker.videoData[index].stateHistory.push({
+            time: now,
+            state: stateName,
+            data: event.data
+        });
+        
+        console.log(`[MVGatekeeper][Player ${index}] State changed to: ${stateName} (${event.data})`);
+        
+        switch (event.data) {
+            case YT.PlayerState.PLAYING:
+                console.log(`[MVGatekeeper][Player ${index}] Video started playing`);
+                break;
+            case YT.PlayerState.PAUSED:
+                console.log(`[MVGatekeeper][Player ${index}] Video paused`);
+                break;
+            case YT.PlayerState.ENDED:
+                console.log(`[MVGatekeeper][Player ${index}] Video ended`);
+                markVideoComplete(index);
+                break;
+            case YT.PlayerState.BUFFERING:
+                console.log(`[MVGatekeeper][Player ${index}] Video buffering`);
+                break;
+            case YT.PlayerState.CUED:
+                console.log(`[MVGatekeeper][Player ${index}] Video cued`);
+                break;
+        }
+    }
 
-    // Manual completion fallback (for testing/demo purposes)
-    document.querySelectorAll('.video-completion input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const container = this.closest('.resource-card');
-            const progressBar = container.querySelector('.video-progress-bar');
+    // Enhanced error handler
+    function onPlayerError(event, index) {
+        const errorCodes = {
+            2: 'Invalid parameter',
+            5: 'HTML5 player error',
+            100: 'Video not found',
+            101: 'Embedding not allowed',
+            150: 'Embedding not allowed (disguised)'
+        };
+        
+        const errorMessage = errorCodes[event.data] || `Unknown error (${event.data})`;
+        console.error(`[MVGatekeeper][Player ${index}] Player error: ${errorMessage}`);
+        
+        videoTracker.videoData[index].error = errorMessage;
+        
+        // Enable checkbox manually in case of error
+        const checkbox = document.getElementById(`video-check-${index+1}`);
+        if (checkbox) {
+            checkbox.disabled = false;
+            console.log(`[MVGatekeeper][Player ${index}] Enabled checkbox due to error`);
+        }
+    }
+
+    // Additional event handlers with logging
+    function onPlaybackQualityChange(event, index) {
+        console.log(`[MVGatekeeper][Player ${index}] Playback quality changed to: ${event.data}`);
+        videoTracker.videoData[index].lastQualityChange = {
+            time: new Date().toISOString(),
+            quality: event.data
+        };
+    }
+
+    function onPlaybackRateChange(event, index) {
+        console.log(`[MVGatekeeper][Player ${index}] Playback rate changed to: ${event.data}`);
+        videoTracker.videoData[index].lastRateChange = {
+            time: new Date().toISOString(),
+            rate: event.data
+        };
+    }
+
+    function onApiChange(event, index) {
+        console.log(`[MVGatekeeper][Player ${index}] API change detected`);
+        videoTracker.videoData[index].lastApiChange = new Date().toISOString();
+    }
+
+    // Mark video as complete with logging
+    function markVideoComplete(index) {
+        console.log(`[MVGatekeeper][Player ${index}] Marking video as complete`);
+        
+        if (index >= 0 && index < videoTracker.videoData.length) {
+            videoTracker.videoData[index].completed = true;
+            videoTracker.videoData[index].completedAt = new Date().toISOString();
             
-            if (this.checked) {
-                container.classList.add('completed');
-                if (progressBar) {
-                    progressBar.style.width = '100%';
-                    progressBar.classList.add('complete');
-                }
-                console.log('Video manually marked as completed');
-            } else {
-                container.classList.remove('completed');
-                if (progressBar) {
-                    progressBar.classList.remove('complete');
-                }
-                console.log('Video completion unchecked');
+            const checkbox = document.getElementById(`video-check-${index+1}`);
+            if (checkbox) {
+                checkbox.checked = true;
+                console.log(`[MVGatekeeper][Player ${index}] Checkbox #${index+1} checked`);
             }
             
-            checkAllVideosCompleted();
-        });
-    });
-
-    // Add manual complete buttons for testing
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-        document.querySelectorAll('.video-completion').forEach(container => {
-            const button = document.createElement('button');
-            button.className = 'manual-complete-btn';
-            button.textContent = 'Mark as Complete (Dev)';
-            button.addEventListener('click', function() {
-                const checkbox = container.querySelector('input[type="checkbox"]');
-                checkbox.checked = true;
-                checkbox.dispatchEvent(new Event('change'));
-            });
-            container.appendChild(button);
-        });
-        console.log('Added development controls');
+            updateQuizButton();
+        }
     }
+
+    // Update quiz button state based on completion
+    function updateQuizButton() {
+        const allCompleted = videoTracker.videoData.every(video => video.completed);
+        const quizButton = document.querySelector('.quiz-link[href="testquiz.html"]');
+        
+        console.log(`[MVGatekeeper] Updating quiz button. All videos completed: ${allCompleted}`);
+        
+        if (quizButton) {
+            quizButton.classList.toggle('disabled', !allCompleted);
+            quizButton.style.pointerEvents = allCompleted ? 'auto' : 'none';
+            console.log(`[MVGatekeeper] Quiz button state: ${allCompleted ? 'ENABLED' : 'DISABLED'}`);
+        }
+    }
+
+    // Enhanced progress tracking with logging
+    function startProgressTracking(player, index) {
+        console.log(`[MVGatekeeper][Player ${index}] Starting progress tracking`);
+        
+        const container = videoTracker.videoData[index].container;
+        if (!container) {
+            console.error(`[MVGatekeeper][Player ${index}] No container found for progress tracking`);
+            return;
+        }
+    
+        // Find the existing progress bar (use the one in video-progress-container)
+        const progressContainer = container.closest('.video-wrapper').querySelector('.video-progress-container');
+        if (!progressContainer) {
+            console.error(`[MVGatekeeper][Player ${index}] No progress container found`);
+            return;
+        }
+    
+        const progressBar = progressContainer.querySelector('.video-progress-bar');
+        const progressText = progressContainer.querySelector('.video-progress-text');
+        
+        if (!progressBar || !progressText) {
+            console.error(`[MVGatekeeper][Player ${index}] Progress elements not found`);
+            return;
+        }
+    
+        console.log(`[MVGatekeeper][Player ${index}] Found existing progress elements`);
+    
+        // Update progress periodically
+        const progressInterval = setInterval(() => {
+            try {
+                const currentTime = player.getCurrentTime();
+                const duration = player.getDuration();
+                const percentWatched = (currentTime / duration) * 100;
+                
+                // Update progress bar and text
+                progressBar.style.width = `${percentWatched}%`;
+                progressText.textContent = `${Math.round(percentWatched)}% watched`;
+                videoTracker.videoData[index].watched = currentTime;
+                
+                // Log progress every 10% or when significant changes occur
+                if (percentWatched % 10 < 0.5 || 
+                    (percentWatched > 85 && percentWatched % 5 < 0.5)) {
+                    console.log(`[MVGatekeeper][Player ${index}] Progress: ${percentWatched.toFixed(1)}% (${currentTime.toFixed(1)}s/${duration.toFixed(1)}s)`);
+                }
+                
+                // Check for completion (90% watched)
+                if (!videoTracker.videoData[index].completed && percentWatched >= 90) {
+                    console.log(`[MVGatekeeper][Player ${index}] Reached 90% watched - marking complete`);
+                    markVideoComplete(index);
+                    clearInterval(progressInterval);
+                }
+            } catch (e) {
+                console.error(`[MVGatekeeper][Player ${index}] Progress tracking error:`, e);
+                clearInterval(progressInterval);
+            }
+        }, 1000);
+    
+        // Store interval ID for cleanup
+        videoTracker.videoData[index].progressInterval = progressInterval;
+        console.log(`[MVGatekeeper][Player ${index}] Progress tracking initialized`);
+    }
+
+    // Fallback UI if YouTube API fails
+    function showFallbackUI() {
+        console.log('[MVGatekeeper] Showing fallback UI');
+        
+        // Enable all checkboxes
+        document.querySelectorAll('.video-completion input').forEach(checkbox => {
+            checkbox.disabled = false;
+        });
+        
+        // Show message
+        const fallbackMessage = document.createElement('div');
+        fallbackMessage.className = 'yt-fallback-message';
+        fallbackMessage.textContent = 'YouTube integration not available. Please mark videos manually.';
+        document.body.prepend(fallbackMessage);
+        
+        console.log('[MVGatekeeper] Fallback UI activated');
+    }
+
+    // Check if YouTube API is loaded with timeout
+    function checkYouTubeAPI() {
+        console.log('[MVGatekeeper] Checking for YouTube API');
+        
+        if (typeof YT !== 'undefined' && typeof YT.Player !== 'undefined') {
+            console.log('[MVGatekeeper] YouTube API already loaded');
+            videoTracker.apiReady = true;
+            initializePlayers();
+        } else {
+            console.log('[MVGatekeeper] YouTube API not yet loaded - waiting');
+            
+            // If not loaded after timeout, show fallback
+            setTimeout(() => {
+                if (!videoTracker.apiReady) {
+                    console.warn('[MVGatekeeper] YouTube API not loaded after timeout - activating fallback');
+                    showFallbackUI();
+                }
+            }, 5000);
+        }
+    }
+
+    // YouTube API callback with logging
+    window.onYouTubeIframeAPIReady = function() {
+        console.log('[MVGatekeeper] YouTube API ready callback received');
+        videoTracker.apiReady = true;
+        initializePlayers();
+    };
+
+    // Start the process
+    console.log('[MVGatekeeper] Starting initialization process');
+    checkYouTubeAPI();
 });
