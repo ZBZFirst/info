@@ -1,6 +1,6 @@
 - name: "ABG Tools"
   url: "/info/ABGpHCalculator.html"
-- name: "Ventilation"
+- name: "Minute Ventilation Module"
   url: "/info/quiz1/MinuteVentilationExplained.html"
 - name: "Image OCR"
   url: "/info/VentScreenOCR.html"
