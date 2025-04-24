@@ -36,10 +36,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Create color scale
     function getColor(mv) {
-        if (mv < 4) return `rgb(${Math.floor(51 * mv)}, 0, 0)`; // Black to dark red
-        if (mv <= 8) return `rgb(0, ${Math.floor(255 * (mv - 4)/4}, 0)`; // Green gradient
-        if (mv <= 16) return `rgb(255, ${Math.floor(255 * (16 - mv)/8)}, 0)`; // Yellow to orange
-        return `rgb(255, 0, 0)`; // Red
+        // 5-zone gradient:
+        // 0-4: Black (0,0,0) → Yellow (255,255,0)
+        // 4-8: Yellow (255,255,0) → Green (0,128,0)
+        // 8-12: Green (0,128,0) → Yellow (255,255,0)
+        // 12-20: Yellow (255,255,0) → Red (255,0,0)
+        // 20-25: Solid Red (255,0,0)
+        
+        if (mv <= 4) {
+            // Black to Yellow (R and G increase)
+            const intensity = Math.floor(255 * (mv / 4));
+            return `rgb(${intensity}, ${intensity}, 0)`;
+        } else if (mv <= 8) {
+            // Yellow to Green (R decreases, G transitions to darker green)
+            const progress = (mv - 4) / 4;
+            return `rgb(${Math.floor(255 * (1 - progress))}, ${Math.floor(128 + (127 * progress))}, 0)`;
+        } else if (mv <= 12) {
+            // Green back to Yellow
+            const progress = (mv - 8) / 4;
+            return `rgb(${Math.floor(255 * progress)}, ${Math.floor(128 + (127 * (1 - progress)))}, 0)`;
+        } else if (mv <= 20) {
+            // Yellow to Red (G decreases)
+            const progress = (mv - 12) / 8;
+            return `rgb(255, ${Math.floor(255 * (1 - progress)))}, 0)`;
+        } else {
+            // Solid red for highest values
+            return 'rgb(255, 0, 0)';
+        }
     }
     
     // Initialize graph
