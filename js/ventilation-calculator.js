@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const graphDiv = document.getElementById('ventilation-graph');
+    const polarDiv = document.getElementById('ventilation-graph-polar');
+
+    // Only proceed if both elements exist
+    if (!graphDiv || !polarDiv) {
+        console.error('Required graph containers not found!');
+        return;
+    }
     
     let highlightedPoint = null;
     
@@ -121,17 +128,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         Plotly.newPlot(graphDiv, [heatmapTrace, highlightTrace], layout);
 
+        // Create Polar graph
+        createPolarGraph();
+
+        // Set up interactions
         graphDiv.on('plotly_click', function(data) {
             if (data.points.length > 0) {
                 const point = data.points[0];
                 highlightPoint(point.x, point.y);
                 updateSliders(point.x, point.y);
                 updateInfoBox(point.x, point.y, point.customdata);
-                
-                // Also make the polar graph bring its point to front
-                Plotly.restyle('ventilation-graph-polar', {
-                    'marker.size': [20]
-                }, [1]);
+            }
+        });
+
+        // Also add click handler for polar graph
+        polarDiv.on('plotly_click', function(data) {
+            if (data.points.length > 0) {
+                const rr = data.points[0].theta * (40/360); // Convert back from polar
+                const vt = data.points[0].r;
+                highlightPoint(rr, vt);
+                updateSliders(rr, vt);
+                updateInfoBox(rr, vt, rr * vt);
             }
         });
 
@@ -140,12 +157,10 @@ document.addEventListener('DOMContentLoaded', function() {
         highlightPoint(initialRR, initialVT);
         updateSliders(initialRR, initialVT);
         updateInfoBox(initialRR, initialVT, initialRR * initialVT);
-        createPolarGraph();
     }
 
     // Modify highlightPoint to update both graphs
     function highlightPoint(rr, vt) {
-        // Update Cartesian graph
         const cartesianUpdate = {
             'marker.color': ['white'],
             'marker.size': [20],
