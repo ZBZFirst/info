@@ -1,3 +1,5 @@
+
+// abg-simulator.js file start
 // Initialize the graph
 let graphData = {
     pCO2Lines: [],
@@ -321,4 +323,7 @@ function update() {
             yaxis: { range: [5, 50] }
         }
     });
+
+    // abg-simulator.js file end
+
 }
