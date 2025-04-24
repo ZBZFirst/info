@@ -1,11 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Graph container
     const graphDiv = document.getElementById('ventilation-graph');
     
-    // Current highlighted point
     let highlightedPoint = null;
     
-    // Generate all possible data points
     function generateData() {
         const data = [];
         for (let rr = 0; rr <= 40; rr++) { // Whole numbers for RR
@@ -24,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return data;
     }
 
-    // 5-zone color gradient
     function getColor(mv) {
         if (mv <= 4) {
             const intensity = Math.floor(255 * (mv / 4));
@@ -43,21 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Classify respiratory rate
     function classifyRR(rr) {
         if (rr < 12) return { classification: 'Bradypnea', class: 'bradypnea' };
         if (rr > 20) return { classification: 'Tachypnea', class: 'tachypnea' };
         return { classification: 'Eupnea', class: 'eupnea' };
     }
 
-    // Classify tidal volume
     function classifyVT(vt) {
         if (vt < 0.2) return { classification: 'Hypopnea', class: 'bradypnea' };
         if (vt > 0.8) return { classification: 'Hyperpnea', class: 'tachypnea' };
         return { classification: 'Normal VT', class: 'normal vt' };
     }
 
-    // Classify overall ventilation status
     function classifyVentilation(rr, vt) {
         const rrClass = classifyRR(rr);
         const vtClass = classifyVT(vt);
@@ -68,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return `Abnormal (${rrClass.classification} and ${vtClass.classification})`;
     }
 
-    // Create the graph
     function createGraph() {
         const data = generateData();
         
@@ -91,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
             name: 'Possible Combinations'
         };
 
-        // Highlight trace (initially hidden)
         const highlightTrace = {
             x: [],
             y: [],
@@ -130,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         Plotly.newPlot(graphDiv, [heatmapTrace, highlightTrace], layout);
 
-        // Add click interaction
         graphDiv.on('plotly_click', function(data) {
             if (data.points.length > 0) {
                 const point = data.points[0];
@@ -140,46 +130,129 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Initialize with default values
         const initialRR = 12;
         const initialVT = 0.5;
         highlightPoint(initialRR, initialVT);
         updateSliders(initialRR, initialVT);
         updateInfoBox(initialRR, initialVT, initialRR * initialVT);
+        createPolarGraph();
     }
 
-    // Highlight a specific point
+    // Modify highlightPoint to update both graphs
     function highlightPoint(rr, vt) {
-        const update = {
+        // Update Cartesian graph
+        const cartesianUpdate = {
             'marker.color': ['white'],
-            'marker.size': [20], // Larger size
+            'marker.size': [20],
             'marker.line.color': ['black'],
             'marker.line.width': [3],
             'marker.symbol': ['diamond'],
             x: [[rr]],
             y: [[vt]]
         };
+        Plotly.restyle('ventilation-graph', cartesianUpdate, 1);
         
-        Plotly.restyle(graphDiv, update, 1); // Update the highlight trace (trace index 1)
+        // Update Polar graph
+        const polarUpdate = {
+            'marker.color': ['white'],
+            'marker.size': [20],
+            'marker.line.color': ['black'],
+            'marker.line.width': [3],
+            'marker.symbol': ['diamond'],
+            theta: [[rr * (360/40)]],
+            r: [[vt]]
+        };
+        Plotly.restyle('ventilation-graph-polar', polarUpdate, 1);
         
-        // Store the highlighted point
         highlightedPoint = { rr, vt };
     }
-
-    // Update sliders when point is clicked
+    // Add this function to create polar data
+    function generatePolarData() {
+        const data = [];
+        for (let rr = 0; rr <= 40; rr++) {
+            for (let vt = 0; vt <= 1; vt += 0.01) {
+                const mv = rr * vt;
+                if (mv <= 25) {
+                    data.push({
+                        theta: rr * (360/40), // Convert RR to degrees (0-360)
+                        r: vt,                // VT as radius
+                        mv: mv,               // MV for coloring
+                        color: getColor(mv)
+                    });
+                }
+            }
+        }
+        return data;
+    }
+    
+    // Add this function to create the polar graph
+    function createPolarGraph() {
+        const data = generatePolarData();
+        const polarDiv = document.getElementById('ventilation-graph-polar');
+        
+        const polarTrace = {
+            type: 'scatterpolar',
+            mode: 'markers',
+            theta: data.map(d => d.theta),
+            r: data.map(d => d.r),
+            marker: {
+                color: data.map(d => d.color),
+                size: 8,
+                opacity: 0.5
+            },
+            name: 'Possible Combinations',
+            hoverinfo: 'none'
+        };
+    
+        const highlightTrace = {
+            type: 'scatterpolar',
+            mode: 'markers',
+            theta: [],
+            r: [],
+            marker: {
+                size: 16,
+                color: 'white',
+                opacity: 1,
+                line: {
+                    color: 'black',
+                    width: 3
+                },
+                symbol: 'diamond'
+            },
+            hoverinfo: 'none',
+            name: 'Selected'
+        };
+    
+        const layout = {
+            title: 'Polar Ventilation Heatmap',
+            polar: {
+                radialaxis: {
+                    title: 'Tidal Volume (L)',
+                    range: [0, 1]
+                },
+                angularaxis: {
+                    rotation: 90,
+                    direction: 'clockwise',
+                    tickvals: [0, 90, 180, 270, 360],
+                    ticktext: ['0', '10', '20', '30', '40']
+                }
+            },
+            showlegend: true
+        };
+    
+        Plotly.newPlot(polarDiv, [polarTrace, highlightTrace], layout);
+    }
+    
     function updateSliders(rr, vt) {
         document.getElementById('respiratory-rate').value = rr;
         document.getElementById('tidal-volume').value = vt * 1000; // Convert to mL for slider
     }
     
-    // Update info box
     function updateInfoBox(rr, vt, mv) {
-        // Update values
         document.getElementById('rr-value').textContent = rr;
         document.getElementById('tv-value').textContent = (vt * 1000).toFixed(0); // Display in mL
         document.getElementById('minute-ventilation-value').textContent = mv.toFixed(1);
         
-        // Update classifications
         const rrClassification = classifyRR(rr);
         const vtClassification = classifyVT(vt);
         
@@ -187,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('ventilation-classification').textContent = ventilationStatus;
     }
 
-    // Slider event handlers
     function setupSliderEvents() {
         const rrSlider = document.getElementById('respiratory-rate');
         const tvSlider = document.getElementById('tidal-volume');
@@ -204,7 +276,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tvSlider.addEventListener('input', updateFromSliders);
     }
 
-    // Initialize everything
     createGraph();
     setupSliderEvents();
 });
