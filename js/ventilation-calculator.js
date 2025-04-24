@@ -1,9 +1,7 @@
-// ventilation-calculator.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Set graph accent color (can be different for each calculator)
+    // Graph styling
     document.documentElement.style.setProperty('--graph-accent-color', '#3498db');
     document.documentElement.style.setProperty('--graph-secondary-color', '#2ecc71');
-    document.documentElement.style.setProperty('--graph-accent-rgb', '52, 152, 219');
     
     // DOM elements
     const rrSlider = document.getElementById('respiratory-rate');
@@ -11,55 +9,117 @@ document.addEventListener('DOMContentLoaded', function() {
     const rrValue = document.getElementById('rr-value');
     const tvValue = document.getElementById('tv-value');
     const mvValue = document.getElementById('minute-ventilation-value');
-    const classificationElement = document.getElementById('ventilation-classification');
+    const graphDiv = document.getElementById('ventilation-graph');
+    
+    // Constants
+    const MAX_MV = 25;
+    const RR_STEP = 1;
+    const VT_STEP = 0.001;
+    
+    // Generate all possible data points
+    function generateData() {
+        const data = [];
+        for (let rr = 0; rr <= 40; rr += RR_STEP) {
+            for (let vt = 0; vt <= 1; vt += VT_STEP) {
+                const mv = rr * vt;
+                if (mv <= MAX_MV) {
+                    data.push({
+                        rr: rr,
+                        vt: vt,
+                        mv: mv
+                    });
+                }
+            }
+        }
+        return data;
+    }
+    
+    // Create color scale
+    function getColor(mv) {
+        if (mv < 4) return `rgb(${Math.floor(51 * mv)}, 0, 0)`; // Black to dark red
+        if (mv <= 8) return `rgb(0, ${Math.floor(255 * (mv - 4)/4}, 0)`; // Green gradient
+        if (mv <= 16) return `rgb(255, ${Math.floor(255 * (16 - mv)/8)}, 0)`; // Yellow to orange
+        return `rgb(255, 0, 0)`; // Red
+    }
     
     // Initialize graph
-    initializeVentilationGraph();
-    
-    // Event listeners
-    rrSlider.addEventListener('input', updateCalculations);
-    tvSlider.addEventListener('input', updateCalculations);
-    
-    // Initial calculation
-    updateCalculations();
-    
-    function updateCalculations() {
-        const rr = parseInt(rrSlider.value);
-        const tv = parseInt(tvSlider.value);
+    function initializeGraph() {
+        const data = generateData();
         
-        // Update displayed values
+        const trace = {
+            x: data.map(d => d.rr),
+            y: data.map(d => d.vt),
+            mode: 'markers',
+            marker: {
+                size: 8,
+                color: data.map(d => getColor(d.mv)),
+                opacity: 0.7
+            },
+            type: 'scatter',
+            customdata: data.map(d => d.mv)
+        };
+        
+        const layout = {
+            title: 'Ventilation Heatmap',
+            xaxis: { title: 'Respiratory Rate (breaths/min)' },
+            yaxis: { title: 'Tidal Volume (L)' },
+            hovermode: 'closest',
+            margin: { t: 40 }
+        };
+        
+        Plotly.newPlot(graphDiv, [trace], layout);
+        
+        // Add click handler to update sliders
+        graphDiv.on('plotly_click', function(data) {
+            const point = data.points[0];
+            rrSlider.value = point.x;
+            tvSlider.value = point.y;
+            updateUI(point.x, point.y);
+        });
+    }
+    
+    // Update UI based on slider values
+    function updateUI(rr, vt) {
+        const mv = rr * vt;
+        
         rrValue.textContent = rr;
-        tvValue.textContent = tv;
+        tvValue.textContent = vt.toFixed(3);
+        mvValue.textContent = mv.toFixed(2);
         
-        // Calculate minute ventilation (convert mL to L)
-        const mv = (rr * tv) / 1000;
-        mvValue.textContent = mv.toFixed(1);
-        
-        // Classify ventilation
-        const classification = classifyVentilation(mv, rr);
-        classificationElement.textContent = classification;
-        
-        // Update graph
-        updateGraph(rr, tv, mv);
+        // Update graph highlight
+        Plotly.restyle(graphDiv, {
+            'selectedpoints': [[getNearestPointIndex(rr, vt)]]
+        });
     }
     
-    function classifyVentilation(mv, rr) {
-        if (mv < 4) return "Severe Hypoventilation";
-        if (mv < 5) return "Moderate Hypoventilation";
-        if (mv < 6) return "Mild Hypoventilation";
-        if (mv > 10) {
-            if (rr > 20) return "Tachypneic Hyperventilation";
-            return "Deep Hyperventilation";
-        }
-        return "Normal Ventilation";
+    // Find nearest data point index
+    function getNearestPointIndex(rr, vt) {
+        // In a real implementation, you'd search your data array
+        // This is simplified for the example
+        return Math.round(rr) * 1000 + Math.round(vt * 1000);
     }
     
-    function initializeVentilationGraph() {
-        // Graph initialization code similar to your ABG simulator
-        // Would include Plotly setup for ventilation-specific visualization
-    }
+    // Refactored slider event handlers
+    rrSlider.addEventListener('input', () => {
+        const rr = parseFloat(rrSlider.value);
+        const vt = parseFloat(tvSlider.value);
+        updateUI(rr, vt);
+    });
     
-    function updateGraph(rr, tv, mv) {
-        // Graph update code
-    }
+    tvSlider.addEventListener('input', () => {
+        const rr = parseFloat(rrSlider.value);
+        const vt = parseFloat(tvSlider.value);
+        updateUI(rr, vt);
+    });
+    
+    // HTML changes needed:
+    // - Change sliders to type="range" with appropriate min/max/step
+    // - Add <div id="ventilation-graph"></div>
+    
+    // Initialize everything
+    initializeGraph();
+    updateUI(
+        parseFloat(rrSlider.value),
+        parseFloat(tvSlider.value)
+    );
 });
