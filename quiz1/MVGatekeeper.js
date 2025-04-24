@@ -84,7 +84,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 videoTracker.videoData[index].watched = savedVideo.watched || 0;
             }
         });
+    
+        // Initialize UI immediately with saved state
+        initializeUIFromSavedState();
     }
+
 
     // Helper function to get state name
     function getStateName(stateCode) {
