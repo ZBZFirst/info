@@ -28,7 +28,7 @@ title: "ABG pH Calculator"
 
 <div id="graph"></div>
 
-<link rel="stylesheet" href="_css/abg.css">
+<link rel="stylesheet" href="_css/graph-components.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="abg-simulator.js"></script>
 <script src="js/abg-background.js"></script>
