@@ -43,6 +43,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Classify respiratory rate
+    function classifyRR(rr) {
+        if (rr < 12) return { classification: 'Bradypnea', class: 'bradypnea' };
+        if (rr > 20) return { classification: 'Tachypnea', class: 'tachypnea' };
+        return { classification: 'Eupnea', class: 'eupnea' };
+    }
+
+    // Classify tidal volume
+    function classifyVT(vt) {
+        if (vt < 0.2) return { classification: 'Hypopnea', class: 'bradypnea' };
+        if (vt > 0.8) return { classification: 'Hyperpnea', class: 'tachypnea' };
+        return { classification: 'Eupnea', class: 'eupnea' };
+    }
+
+    // Classify overall ventilation status
+    function classifyVentilation(rr, vt) {
+        const rrClass = classifyRR(rr);
+        const vtClass = classifyVT(vt);
+        
+        if (rrClass.classification === 'Eupnea' && vtClass.classification === 'Eupnea') {
+            return 'Normal RR and Normal VT';
+        }
+        return `Abnormal (${rrClass.classification} and ${vtClass.classification})`;
+    }
+
     // Create the graph
     function createGraph() {
         const data = generateData();
@@ -149,9 +174,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update info box
     function updateInfoBox(rr, vt, mv) {
+        // Update values
         document.getElementById('rr-value').textContent = rr;
         document.getElementById('tv-value').textContent = (vt * 1000).toFixed(0); // Display in mL
         document.getElementById('minute-ventilation-value').textContent = mv.toFixed(1);
+        
+        // Update classifications
+        const rrClassification = classifyRR(rr);
+        const vtClassification = classifyVT(vt);
+        
+        const rrClassificationElement = document.getElementById('rr-classification');
+        rrClassificationElement.textContent = `(${rrClassification.classification})`;
+        rrClassificationElement.className = 'classification-tag ' + rrClassification.class;
+        
+        const ventilationStatus = classifyVentilation(rr, vt);
+        document.getElementById('ventilation-classification').textContent = ventilationStatus;
     }
 
     // Slider event handlers
