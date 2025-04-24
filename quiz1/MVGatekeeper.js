@@ -264,15 +264,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update quiz button state based on completion
     function updateQuizButton() {
         const allCompleted = videoTracker.videoData.every(video => video.completed);
-        const quizButton = document.querySelectorAll('a[href="testquiz.html"], a[href="MVInteractive.html"]');
+        const quizButtons = document.querySelectorAll('a[href="testquiz.html"], a[href="MVInteractive.html"]');
         
-        console.log(`[MVGatekeeper] Updating quiz button. All videos completed: ${allCompleted}`);
+        console.log(`[MVGatekeeper] Updating ${quizButtons.length} quiz buttons. All videos completed: ${allCompleted}`);
         
-        if (quizButton) {
-            quizButton.classList.toggle('disabled', !allCompleted);
-            quizButton.style.pointerEvents = allCompleted ? 'auto' : 'none';
-            console.log(`[MVGatekeeper] Quiz button state: ${allCompleted ? 'ENABLED' : 'DISABLED'}`);
-        }
+        quizButtons.forEach(button => {
+            button.classList.toggle('disabled', !allCompleted);
+            button.style.pointerEvents = allCompleted ? 'auto' : 'none';
+            console.log(`[MVGatekeeper] ${button.textContent.trim()} button state: ${allCompleted ? 'ENABLED' : 'DISABLED'}`);
+        });
     }
 
     // Enhanced progress tracking with logging
