@@ -147,6 +147,47 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('tidal-volume').value = vt * 1000; // Convert to mL for slider
     }
 
+        // Classification functions
+        function classifyRespiratoryRate(rr) {
+            if (rr < 12) return { text: "Bradypnea", class: "bradypnea" };
+            if (rr <= 20) return { text: "Eupnea", class: "eupnea" };
+            return { text: "Tachypnea", class: "tachypnea" };
+        }
+    
+        function classifyVentilation(mv) {
+            if (mv < 4) return "Severe Hypoventilation";
+            if (mv < 5) return "Moderate Hypoventilation";
+            if (mv < 6) return "Mild Hypoventilation";
+            if (mv > 10) return "Hyperventilation";
+            return "Normal Ventilation";
+        }
+    
+        // Update function
+        function updateCalculations() {
+            const rr = parseInt(rrSlider.value);
+            const tv = parseInt(tvSlider.value);
+            const mv = (rr * tv) / 1000;
+    
+            // Update displays
+            rrValue.textContent = rr;
+            tvValue.textContent = tv;
+            mvValue.textContent = mv.toFixed(1);
+            
+            // Update classifications
+            const rrClass = classifyRespiratoryRate(rr);
+            const rrClassificationElement = document.getElementById('rr-classification');
+            rrClassificationElement.textContent = `(${rrClass.text})`;
+            rrClassificationElement.className = `classification-tag ${rrClass.class}`;
+            
+            document.getElementById('ventilation-classification').textContent = classifyVentilation(mv);
+            
+            // Existing graph update code...
+        }
+    
+        // Initialize
+        updateCalculations();
+    });
+    
     // Update info box
     function updateInfoBox(rr, vt, mv) {
         document.getElementById('rr-value').textContent = rr;
