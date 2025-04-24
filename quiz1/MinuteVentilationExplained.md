@@ -5,7 +5,7 @@ title: "What Is Minute Ventilation?"
 
 # What is Minute Ventilation?
 
-<p>This short guide explains what Minute Ventilation is for Healthcare Providers. It is one of the most useful equations that a provider can demonstrate proficiency in due to its usage in numerous other healthcare equations. One way to demonstrate proficiency is by performing the calculation a few times. Read the following guide and then attempt the quiz found in the link below. If you want a certificate of some kind, go get the codes, they are free but you have to change the price to free and fill out the form.</p>
+<p>This short guide explains what Minute Ventilation is for Healthcare Providers. It is one of the most useful equations that a provider can demonstrate proficiency in due to its usage in numerous other healthcare equations. One way to demonstrate proficiency is by performing the calculation a few times. Read the following guide and watch the videos below. Upon completing the videos, the Quiz and Interactive Page will become unlocked. In order to generate a certificate, an access code must be purchased.</p>
 
 <a href="https://buy.stripe.com/8wM17H2yObCt8Mw008" class="quiz-link" title="Go Here to Obtain an Access Codez">Access Code Checkout Page</a>
 <a href="testquiz.html" class="quiz-link disabled" title="Test Minute Ventilation Quiz">Minute Ventilation Quiz</a>
