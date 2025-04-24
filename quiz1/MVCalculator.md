@@ -11,7 +11,6 @@ title: "Minute Ventilation Calculator"
         <input type="range" id="respiratory-rate" class="slider" min="6" max="40" value="12" step="1">
         <div class="value-display">
             Current: <span id="rr-value">12</span>
-            <span id="rr-classification" class="classification-tag eupnea">(Eupnea)</span>
         </div>
     </div>
     
