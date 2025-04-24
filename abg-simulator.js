@@ -324,6 +324,5 @@ function update() {
         }
     });
 
-    // abg-simulator.js file end
-
 }
+    // abg-simulator.js file end
