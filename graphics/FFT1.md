@@ -37,5 +37,5 @@ title: Fast Fourier Transform
     <canvas id="visualizer" width="800" height="400"></canvas>
 </div>
 
-<link rel="stylesheet" href="_css/fft.css">
-<script src="js/fft.js" defer></script>
+<link rel="stylesheet" href="/_css/fft.css">
+<script src="/js/fft.js" defer></script>
