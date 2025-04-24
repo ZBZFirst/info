@@ -1,0 +1,165 @@
+/* graph-components.css */
+/* Base Graph Styling */
+.graph-container {
+    width: 100%;
+    height: 600px;
+    border: 3px solid var(--graph-accent-color, #ff4d00);
+    border-radius: 12px;
+    background: white;
+    box-shadow: 
+        0 4px 20px rgba(var(--graph-accent-rgb, 255, 77, 0), 0.3),
+        0 8px 30px rgba(var(--graph-accent-rgb, 255, 0, 0), 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+/* Add a pseudo-element for extra effect */
+.graph-container::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(
+        45deg,
+        var(--graph-accent-color, #ff4d00) 0%,
+        var(--graph-secondary-color, #ff9900) 50%,
+        var(--graph-accent-color, #ff4d00) 100%
+    );
+    z-index: -1;
+    filter: blur(20px);
+    opacity: 0.3;
+    animation: graphPulse 3s infinite alternate;
+}
+
+@keyframes graphPulse {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.4; }
+}
+
+/* Graph Controls Styling */
+.graph-controls {
+    background: linear-gradient(to right, #fff8f5, #ffffff);
+    box-sizing: border-box;
+    border: 3px solid var(--graph-accent-color, #ff4d00);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(var(--graph-accent-rgb, 255, 77, 0), 0.1);
+}
+
+.slider-container {
+    margin: 15px 0;
+}
+
+.slider-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--graph-text-color, #333);
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #f0f0f0;
+    outline: none;
+    margin: 10px 0;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--graph-accent-color, #ff4d00);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(var(--graph-accent-rgb, 255, 77, 0), 0.3);
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    background: var(--graph-accent-hover, #ff6600);
+}
+
+.value-display {
+    font-size: 0.9em;
+    color: var(--graph-text-secondary, #666);
+}
+
+/* Graph Results Styling */
+.graph-results {
+    background: linear-gradient(to right, #fff8f5, #ffffff);
+    border: 2px solid var(--graph-accent-color, #ff4d00);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.graph-result-item {
+    margin: 8px 0;
+    font-size: 1.1em;
+}
+
+.graph-result-value {
+    font-weight: bold;
+    color: var(--graph-accent-color, #ff4d00);
+}
+
+/* Title Styling */
+.graph-title {
+    color: var(--graph-accent-color, #ff4d00);
+    text-align: center;
+    font-weight: 800;
+    margin: 30px 0;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.graph-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    background: linear-gradient(
+        to right, 
+        var(--graph-accent-color, #ff4d00), 
+        var(--graph-secondary-color, #ff9900)
+    );
+    border-radius: 3px;
+}
+
+/* Link Styling */
+.graph-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(
+        to right, 
+        var(--graph-accent-color, #ff4d00), 
+        var(--graph-secondary-color, #ff9900)
+    );
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+    margin: 15px 0;
+    box-shadow: 0 4px 15px rgba(var(--graph-accent-rgb, 255, 77, 0), 0.3);
+    transition: all 0.3s ease;
+}
+
+.graph-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--graph-accent-rgb, 255, 77, 0), 0.4);
+}
+
+/* graph-components.css end */
