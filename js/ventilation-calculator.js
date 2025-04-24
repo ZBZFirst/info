@@ -183,10 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const rrClassification = classifyRR(rr);
         const vtClassification = classifyVT(vt);
         
-        const rrClassificationElement = document.getElementById('rr-classification');
-        rrClassificationElement.textContent = `(${rrClassification.classification})`;
-        rrClassificationElement.className = 'classification-tag ' + rrClassification.class;
-        
         const ventilationStatus = classifyVentilation(rr, vt);
         document.getElementById('ventilation-classification').textContent = ventilationStatus;
     }
