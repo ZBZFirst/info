@@ -4,7 +4,7 @@ title: "Minute Ventilation Calculator"
 ---
 
 <h1 class="graph-title">Minute Ventilation Simulator</h1>
-
+<h2>Assume over 18 Years of Age and indescriminate normals for sex and height</h2>
 <div class="graph-controls">
     <div class="slider-container">
         <label for="respiratory-rate" class="slider-label">Respiratory Rate (breaths/min):</label>
