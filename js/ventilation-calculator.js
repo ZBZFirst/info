@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function classifyVT(vt) {
         if (vt < 0.2) return { classification: 'Hypopnea', class: 'bradypnea' };
         if (vt > 0.8) return { classification: 'Hyperpnea', class: 'tachypnea' };
-        return { classification: 'Eupnea', class: 'eupnea' };
+        return { classification: 'Normal VT', class: 'normal vt' };
     }
 
     // Classify overall ventilation status
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rrClass = classifyRR(rr);
         const vtClass = classifyVT(vt);
         
-        if (rrClass.classification === 'Eupnea' && vtClass.classification === 'Eupnea') {
+        if (rrClass.classification === 'Eupnea' && vtClass.classification === 'normal vt') {
             return 'Normal RR and Normal VT';
         }
         return `Abnormal (${rrClass.classification} and ${vtClass.classification})`;
