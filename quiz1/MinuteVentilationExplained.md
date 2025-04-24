@@ -12,9 +12,7 @@ title: "What Is Minute Ventilation?"
 <a href="MVInteractive.html" class="quiz-link disabled" title="Interactive Worksheet">Minute Ventilation Interactive Page - Fun</a>
 
 <div class="resource-card">
-    <h2>The Base Equation</h2>
-    <p>This short video just shows the variables involved with the equation. The Units of Measurement are provided.</p>
-    <div class="video-wrapper">
+    <h2>Fundamentals of Respiratory Measurement</h2> <p>Respiratory function is quantified through three primary variables that form a complete breath cycle:</p> <ul> <li><strong>Pressure</strong>: The force generated during inhalation/exhalation (measured in cmH<sub>2</sub>O)</li> <li><strong>Flow</strong>: The rate of air movement (measured in L/sec)</li> <li><strong>Volume</strong>: The total air displaced per breath (measured in mL or L), calculated as flow integrated over time</li> </ul> <p>These parameters create characteristic pressure-flow loops when graphed together. Clinical assessment requires separate evaluation of inhalation and exhalation phases, as certain pathologies may manifest differently in each phase. For example, the FEV1/FVC ratio distinguishes between obstructive and restrictive lung diseases.</p> </div><div class="resource-card"> <h2>The Base Equation</h2> <p>This animation demonstrates the fundamental equation of minute ventilation and its component measurements.</p> 
         <div class="embed-container">
             <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io&controls=0&modestbranding=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
