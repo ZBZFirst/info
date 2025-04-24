@@ -2,7 +2,34 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[MVGatekeeper] DOM Content Loaded - Initializing');
     
-    // Global state object with enhanced tracking
+    // 1. First define storage helper functions
+    const storage = {
+        saveState: function(data) {
+            try {
+                localStorage.setItem('videoTracker', JSON.stringify(data));
+                console.log('[MVGatekeeper] State saved to localStorage');
+            } catch (e) {
+                console.error('[MVGatekeeper] Error saving to localStorage:', e);
+            }
+        },
+        loadState: function() {
+            try {
+                const data = localStorage.getItem('videoTracker');
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.error('[MVGatekeeper] Error loading from localStorage:', e);
+                return null;
+            }
+        },
+        clearState: function() {
+            localStorage.removeItem('videoTracker');
+        }
+    };
+
+    // 2. Then load saved state
+    const savedState = storage.loadState();
+    
+    // 3. Now define videoTracker with initial data
     const videoTracker = {
         players: [],
         videoData: [],
@@ -34,6 +61,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // 4. Merge saved state after videoTracker is created
+    if (savedState) {
+        console.log('[MVGatekeeper] Loading saved state');
+        // Initialize videoData with correct length first
+        const videoContainers = document.querySelectorAll('.embed-container');
+        videoTracker.videoData = Array(videoContainers.length).fill().map((_, index) => ({
+            id: null,
+            duration: 0,
+            watched: 0,
+            completed: false,
+            container: null,
+            firstReady: null,
+            lastStateChange: null,
+            stateHistory: []
+        }));
+        
+        // Merge saved completed states
+        savedState.forEach((savedVideo, index) => {
+            if (index < videoTracker.videoData.length) {
+                videoTracker.videoData[index].completed = savedVideo.completed;
+                videoTracker.videoData[index].watched = savedVideo.watched || 0;
+            }
+        });
+    }
+
     // Helper function to get state name
     function getStateName(stateCode) {
         const states = {
@@ -47,6 +99,48 @@ document.addEventListener('DOMContentLoaded', function() {
         return states[stateCode] || 'UNKNOWN';
     }
 
+    // Update UI based on saved state
+    function initializeUIFromSavedState() {
+        console.log('[MVGatekeeper] Initializing UI from saved state');
+        
+        videoTracker.videoData.forEach((video, index) => {
+            // Update checkboxes
+            const checkbox = document.getElementById(`video-check-${index+1}`);
+            if (checkbox) {
+                checkbox.checked = video.completed;
+                checkbox.disabled = !video.completed; // Keep disabled if not completed
+            }
+    
+            // Update progress bars if watched progress exists
+            if (video.watched > 0 && video.container) {
+                const progressBar = video.container.querySelector('.video-progress-bar');
+                const progressText = video.container.querySelector('.video-progress-text');
+                
+                if (progressBar && progressText) {
+                    const percent = video.duration > 0 ? 
+                        Math.min(100, (video.watched / video.duration) * 100) : 
+                        (video.completed ? 100 : 0);
+                    
+                    progressBar.style.width = `${percent}%`;
+                    progressText.textContent = `${Math.round(percent)}% watched`;
+                    
+                    if (video.completed) {
+                        progressBar.classList.add('complete');
+                    }
+                }
+            }
+    
+            // Update card styling
+            if (video.completed && video.container) {
+                video.container.closest('.resource-card')?.classList.add('completed');
+            }
+        });
+    
+        // Update quiz buttons based on completion status
+        updateQuizButton();
+    }
+
+    
     // Extract YouTube video ID from URL
     function extractVideoId(url) {
         const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -256,6 +350,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkbox.checked = true;
                 console.log(`[MVGatekeeper][Player ${index}] Checkbox #${index+1} checked`);
             }
+            
+            // Save the updated state
+            storage.saveState(videoTracker.videoData.map(video => ({
+                completed: video.completed,
+                watched: video.watched
+            })));
             
             updateQuizButton();
         }
