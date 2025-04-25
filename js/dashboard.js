@@ -19,13 +19,13 @@ const playBtn = document.getElementById("playBtn");
 const stopBtn = document.getElementById("stopBtn");
 const slowBtn = document.getElementById("slowBtn");
 const fastBtn = document.getElementById("fastBtn");
-const reverseBtn = document.getElementById("reverseBtn"); // Add this button to your HTML
+const reverseBtn = document.getElementById("reverseBtn");
 const speedDisplay = document.getElementById("speedDisplay");
 const tableHeader = document.getElementById("tableHeader");
 const tableBody = document.getElementById("tableBody");
 
 // Web Worker for data processing
-const worker = new Worker(URL.createObjectURL(new Blob([`
+const workerCode = `
   self.onmessage = async function(e) {
     if (e.data.command === "load") {
       try {
@@ -70,7 +70,9 @@ const worker = new Worker(URL.createObjectURL(new Blob([`
       }
     }
   };
-`], {type: 'application/javascript'}));
+`;
+
+const worker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'}));
 
 // Initialize Dashboard
 async function initDashboard() {
@@ -88,7 +90,7 @@ async function initDashboard() {
     
   } catch (error) {
     console.error("Dashboard initialization failed:", error);
-    alert(\`Error: \${error.message}\\nCheck console for details.\`);
+    alert("Error: " + error.message + "\nCheck console for details.");
   }
 }
 
@@ -102,7 +104,7 @@ worker.onmessage = function(e) {
   } 
   else if (e.data.command === "error") {
     console.error("Worker error:", e.data.error);
-    alert(\`Data loading failed: \${e.data.error}\`);
+    alert("Data loading failed: " + e.data.error);
   }
 };
 
@@ -140,7 +142,7 @@ function initChart() {
           ticks: {
             callback: function(value) {
               const point = data[value];
-              return point ? \`\${value}\\n\${point.displayTime}\` : value;
+              return point ? value + "\\n" + point.displayTime : value;
             }
           }
         },
@@ -156,11 +158,11 @@ function initChart() {
           callbacks: {
             title: function(context) {
               const point = data[context[0].dataIndex];
-              return \`Indexer: \${point.indexer}\`;
+              return "Indexer: " + point.indexer;
             },
             afterLabel: function(context) {
               const point = data[context.dataIndex];
-              return \`Time: \${point.displayTime}\\nRel. Time: \${point.relTime}ms\`;
+              return "Time: " + point.displayTime + "\\nRel. Time: " + point.relTime + "ms";
             }
           }
         }
@@ -261,7 +263,7 @@ function stopPlayback() {
 
 function changeSpeed(factor) {
   playbackSpeed = Math.max(50, playbackSpeed * factor);
-  speedDisplay.textContent = \`\${(1 / playbackSpeed * 1000).toFixed(1)}x\`;
+  speedDisplay.textContent = (1 / playbackSpeed * 1000).toFixed(1) + "x";
   
   if (playbackInterval) {
     startPlayback(); // Restart with new speed
