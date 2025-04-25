@@ -17,6 +17,7 @@ title: Paul's Desktop Reference
       <button id="stopBtn">⏹ Stop</button>
       <button id="slowBtn">⏪ Slow Down</button>
       <button id="fastBtn">⏩ Speed Up</button>
+      <button id="reverseBtn">⏪ Reverse</button>
       <span class="speed-indicator">Speed: <span id="speedDisplay">1x</span></span>
     </div>
   </div>
