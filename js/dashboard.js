@@ -7,8 +7,8 @@ const config = {
   testFiles: ["data.xlsx", "data1.xlsx"], // Files to try
   searchPaths: [
     "",              // Current directory
-    "data/",         // Local data folder
-    "../data/",      // One level up data folder
+    "js/",         // Local data folder
+    "../info/",      // One level up data folder
     "../"            // One level up
   ]
 };
