@@ -35,6 +35,8 @@ async function initDashboard() {
     // Get first sheet data
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     data = XLSX.utils.sheet_to_json(firstSheet);
+    console.log("First 3 rows of data:", data.slice(0, 3));
+    console.log("Column names:", Object.keys(data[0] || {}));
     
     // Validate data
     if (!data.length) throw new Error("No data found in spreadsheet");
