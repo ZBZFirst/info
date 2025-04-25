@@ -1,10 +1,10 @@
 // Dashboard Configuration
 const config = {
-  dataFile: "/info/data.xlsx", // Path to your XLSX file
+  dataFile: "/info/data.xlsx",
   animationSpeed: 1000,
   maxDataPoints: 100,
-  timeColumn: "timestamp", // Must match your column name
-  valueColumns: ["flow", "pressure", "phase", "volume"] // Update with your actual column names
+  timeColumn: "timestamp",
+  valueColumns: ["flow", "pressure", "phase", "volume"]
 };
 
 // Global State
@@ -25,51 +25,57 @@ const tableBody = document.getElementById("tableBody");
 // Initialize Dashboard
 async function initDashboard() {
   try {
-    // Load XLSX file
+    // Load and parse data
     const response = await fetch(config.dataFile);
     if (!response.ok) throw new Error("Failed to load data file");
     
     const arrayBuffer = await response.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer);
-    
-    // Get first sheet data
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     data = XLSX.utils.sheet_to_json(firstSheet);
-    console.log("First 3 rows of data:", data.slice(0, 3));
-    console.log("Column names:", Object.keys(data[0] || {}));
     
     // Validate data
     if (!data.length) throw new Error("No data found in spreadsheet");
-    
-    // Format timestamps
-    data.forEach(row => {
-      if (row[config.timeColumn]) {
-        // Handle both string and Excel serial dates
-        if (typeof row[config.timeColumn] === "number") {
-          row[config.timeColumn] = XLSX.SSF.parse_date_code(row[config.timeColumn]);
-        } else {
-          row[config.timeColumn] = new Date(row[config.timeColumn]);
-        }
-      }
+    console.log("Raw data sample:", data.slice(0, 3));
+
+    // Process timestamps and create indexer
+    let startTime = null;
+    data.forEach((row, index) => {
+      // Parse timestamp in sss:mmm format
+      const [seconds, millis] = String(row[config.timeColumn]).split(':').map(Number);
+      const currentTime = (seconds * 1000) + millis;
+      
+      // Set start time if not set
+      if (startTime === null) startTime = currentTime;
+      
+      // Calculate relative time in ms
+      row.relTime = currentTime - startTime;
+      
+      // Create indexer
+      row.indexer = index;
+      
+      // Format for display
+      row.displayTime = `${seconds}:${millis.toString().padStart(3, '0')}`;
     });
+
+    console.log("Processed data sample:", data.slice(0, 3));
     
-    // Initialize Chart and Table
+    // Initialize visualization
     initChart();
     initTable();
     updateDisplay(0);
     
   } catch (error) {
     console.error("Dashboard initialization failed:", error);
-    alert("Error loading data. Check console for details.");
+    alert(`Error: ${error.message}\nCheck console for details.`);
   }
 }
 
 function initChart() {
   const ctx = document.getElementById("timeSeriesChart").getContext("2d");
   
-  // Destroy previous chart if exists
   if (chart) chart.destroy();
-  
+
   chart = new Chart(ctx, {
     type: "line",
     data: {
@@ -79,22 +85,29 @@ function initChart() {
         borderColor: getColor(i),
         backgroundColor: "transparent",
         borderWidth: 2,
-        tension: 0.1
+        tension: 0.1,
+        pointRadius: 0
       }))
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: {
+        duration: 0
+      },
       scales: {
         x: {
-          type: "time",
-          time: {
-            tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
-            unit: 'minute'
-          },
+          type: "linear",
           title: {
             display: true,
-            text: "Time"
+            text: "Time Progression (indexer)"
+          },
+          ticks: {
+            callback: function(value) {
+              // Show both indexer and time on x-axis
+              const point = data[value];
+              return point ? `${value}\n${point.displayTime}` : value;
+            }
           }
         },
         y: {
@@ -103,28 +116,38 @@ function initChart() {
             text: "Value"
           }
         }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              const point = data[context[0].dataIndex];
+              return `Indexer: ${point.indexer}`;
+            },
+            afterLabel: function(context) {
+              const point = data[context.dataIndex];
+              return `Time: ${point.displayTime}\nRel. Time: ${point.relTime}ms`;
+            }
+          }
+        }
       }
     }
   });
 }
 
-// Initialize Table
 function initTable() {
-  // Clear existing headers
   tableHeader.innerHTML = "";
   
-  // Add headers
-  if (data.length > 0) {
-    Object.keys(data[0]).forEach(key => {
-      const th = document.createElement("th");
-      th.textContent = key;
-      tableHeader.appendChild(th);
-    });
-  }
+  // Create headers
+  const headers = ["indexer", "time", ...config.valueColumns];
+  headers.forEach(text => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    tableHeader.appendChild(th);
+  });
 }
 
 function updateDisplay(index) {
-  // Add these checks at the start
   if (!chart || !chart.data || !chart.data.datasets) {
     console.error("Chart not properly initialized");
     return;
@@ -138,7 +161,7 @@ function updateDisplay(index) {
   const currentData = data[index];
   currentIndex = index;
   
-  // Update Chart with null checks
+  // Update Chart
   config.valueColumns.forEach((col, i) => {
     if (!chart.data.datasets[i]) return;
     
@@ -146,25 +169,35 @@ function updateDisplay(index) {
       chart.data.datasets[i].data.shift();
     }
     
-    // Handle missing data
-    const yValue = currentData[col] !== undefined ? currentData[col] : null;
-    
     chart.data.datasets[i].data.push({
-      x: currentData[config.timeColumn],
-      y: yValue
+      x: currentData.indexer, // Use indexer for x-axis
+      y: currentData[col]
     });
   });
 
-  chart.update('none'); // 'none' prevents animation for better performance
+  chart.update('none');
   
   // Update Table
   tableBody.innerHTML = "";
   const row = document.createElement("tr");
-  Object.values(currentData).forEach(val => {
+  
+  // Add indexer cell
+  const indexerCell = document.createElement("td");
+  indexerCell.textContent = currentData.indexer;
+  row.appendChild(indexerCell);
+  
+  // Add time cell
+  const timeCell = document.createElement("td");
+  timeCell.textContent = currentData.displayTime;
+  row.appendChild(timeCell);
+  
+  // Add data cells
+  config.valueColumns.forEach(col => {
     const td = document.createElement("td");
-    td.textContent = (val instanceof Date) ? val.toLocaleString() : val;
+    td.textContent = currentData[col];
     row.appendChild(td);
   });
+  
   tableBody.appendChild(row);
 }
 
@@ -193,7 +226,7 @@ function changeSpeed(factor) {
   speedDisplay.textContent = `${(1 / config.animationSpeed * 1000).toFixed(1)}x`;
   
   if (animationInterval) {
-    startAnimation(); // Restart with new speed
+    startAnimation();
   }
 }
 
