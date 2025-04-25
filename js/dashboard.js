@@ -72,7 +72,11 @@ const workerCode = `
   };
 `;
 
-const worker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'}));
+const worker = new Worker(
+  URL.createObjectURL(
+    new Blob([workerCode], {type: 'application/javascript'})
+  )
+);
 
 // Initialize Dashboard
 async function initDashboard() {
