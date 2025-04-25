@@ -6,10 +6,9 @@ const config = {
   initialSpeed: 1000, // ms between updates
   testFiles: ["data.xlsx", "data1.xlsx"], // Files to try
   searchPaths: [
-    "",              // Current directory
-    "js/",         // Local data folder
-    "../info/",      // One level up data folder
-    "../"            // One level up
+    "js/",              // Current directory
+    "../",         // Local data folder
+    ""            // One level up
   ]
 };
 
@@ -79,39 +78,78 @@ function createWorker() {
   return worker;
 }
 
-// Enhanced File Discovery
+// Enhanced File Discovery with Path Debugging
 async function discoverDataFile() {
-  const basePath = document.currentScript.src.replace(/[^/]*$/, '');
+  const scriptPath = document.currentScript.src;
+  const basePath = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
+  console.log("Base script path:", basePath);
+
   const testUrls = [];
   
   // Generate all possible file URLs to test
   config.searchPaths.forEach(path => {
     config.testFiles.forEach(file => {
-      testUrls.push(new URL(path + file, basePath).href);
+      const fullPath = new URL(path + file, basePath + '/').href;
+      testUrls.push(fullPath);
+      console.log("Testing path:", fullPath);
     });
   });
 
-  // Try each URL in parallel with timeout
+  // Try each URL with timeout
   const tests = testUrls.map(url => 
     Promise.race([
       fetch(url).then(res => res.ok ? url : null),
-      new Promise(resolve => setTimeout(() => resolve(null), 2000))
-    ]).catch(() => null)
+      new Promise(resolve => setTimeout(() => {
+        console.log("Timeout reached for:", url);
+        resolve(null);
+      }, 2000))
+    ]).catch(e => {
+      console.log("Fetch failed for:", url, e);
+      return null;
+    })
   );
 
   const results = await Promise.all(tests);
-  return results.find(url => url !== null);
+  const foundUrl = results.find(url => url !== null);
+  
+  if (!foundUrl) {
+    console.error("No valid files found at these locations:", testUrls);
+    throw new Error("No valid data files found in configured paths");
+  }
+  
+  console.log("Using data file:", foundUrl);
+  return foundUrl;
 }
 
 // Data Validation
 function validateData(jsonData) {
-  if (!Array.isArray(jsonData) return false;
-  if (jsonData.length === 0) return false;
-  
+  if (!Array.isArray(jsonData) || jsonData.length === 0) {
+    console.error("Data is empty or not an array");
+    return false;
+  }
+
   const firstRow = jsonData[0];
-  return config.valueColumns.every(col => 
+  if (!firstRow) {
+    console.error("First row is undefined");
+    return false;
+  }
+
+  // Check required columns exist and have valid values
+  const hasValidTimestamp = config.timeColumn in firstRow && 
+                          String(firstRow[config.timeColumn]).includes(':');
+  
+  const hasValidValues = config.valueColumns.every(col => 
     col in firstRow && !isNaN(parseFloat(firstRow[col]))
-    && config.timeColumn in firstRow;
+  );
+
+  if (!hasValidTimestamp) {
+    console.error("Missing or invalid timestamp column");
+  }
+  if (!hasValidValues) {
+    console.error("Missing or invalid value columns");
+  }
+
+  return hasValidTimestamp && hasValidValues;
 }
 
 // Initialize Dashboard
