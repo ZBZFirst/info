@@ -3,7 +3,7 @@ const config = {
   maxDataPoints: 100,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 1000,
+  initialSpeed: 20000,
   dataFiles: ["data.xlsx", "data1.xlsx"] // Files to try in /info/js/
 };
 
@@ -239,8 +239,8 @@ function getColor(index) {
 // Event Listeners
 playBtn.addEventListener("click", () => playbackInterval ? stopPlayback() : startPlayback());
 stopBtn.addEventListener("click", stopPlayback);
-slowBtn.addEventListener("click", () => changeSpeed(1.5));
-fastBtn.addEventListener("click", () => changeSpeed(0.67));
+slowBtn.addEventListener("click", () => changeSpeed(5));
+fastBtn.addEventListener("click", () => changeSpeed(5));
 reverseBtn.addEventListener("click", toggleDirection);
 
 // Clean up
