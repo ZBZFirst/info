@@ -178,21 +178,43 @@ function updateDisplay(index) {
   currentIndex = index;
   const currentData = data[index];
   
-  // Update Chart
+  // Clear all data if we looped around (index went back to 0)
+  if (currentIndex === 0 && playbackDirection === 1) {
+    config.valueColumns.forEach((col, i) => {
+      if (chart.data.datasets[i]) {
+        chart.data.datasets[i].data = [];
+      }
+    });
+  }
+  
+  // If going backwards, remove the last point from each dataset
+  if (playbackDirection === -1) {
+    config.valueColumns.forEach((col, i) => {
+      if (chart.data.datasets[i] && chart.data.datasets[i].data.length > 0) {
+        chart.data.datasets[i].data.pop();
+      }
+    });
+  }
+  
+  // Add new data point
   config.valueColumns.forEach((col, i) => {
     if (chart.data.datasets[i]) {
+      // Maintain max data points by removing oldest if needed
       if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
         chart.data.datasets[i].data.shift();
       }
+      
+      // Add new point
       chart.data.datasets[i].data.push({
         x: currentData.indexer,
         y: currentData[col]
       });
     }
   });
+  
   chart.update('none');
   
-  // Update Table
+  // Update Table (unchanged)
   tableBody.innerHTML = "";
   const row = document.createElement("tr");
   ["indexer", "displayTime", ...config.valueColumns].forEach(key => {
@@ -210,6 +232,8 @@ function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
   
   lastUpdateTime = performance.now();
+  let lastIndex = currentIndex;
+  
   playbackInterval = setInterval(() => {
     const now = performance.now();
     const elapsed = now - lastUpdateTime;
@@ -221,8 +245,22 @@ function startPlayback() {
     rowsToSkip -= rowsToAdvance;
     
     if (rowsToAdvance > 0) {
-      currentIndex = (currentIndex + (playbackDirection * rowsToAdvance) + data.length) % data.length;
+      const newIndex = (currentIndex + (playbackDirection * rowsToAdvance) + data.length) % data.length;
+      
+      // Detect if we looped around
+      if ((playbackDirection === 1 && newIndex < currentIndex) || 
+          (playbackDirection === -1 && newIndex > currentIndex)) {
+        // Clear all data when we loop
+        config.valueColumns.forEach((col, i) => {
+          if (chart.data.datasets[i]) {
+            chart.data.datasets[i].data = [];
+          }
+        });
+      }
+      
+      currentIndex = newIndex;
       updateDisplay(currentIndex);
+      lastIndex = currentIndex;
     }
   }, 16); // ~60fps
   playBtn.textContent = "⏸ Pause";
@@ -242,16 +280,22 @@ function changeSpeed(factor) {
                          Math.min(config.maxSpeed, 
                          playbackSpeed * factor));
   
-  // Display as rows per second
-  speedDisplay.textContent = `${playbackSpeed} rows/s`;
+  // Display as rows per second with remaining time
+  const remaining = (data.length - currentIndex) / playbackSpeed;
+  speedDisplay.textContent = `${playbackSpeed} rows/s (~${remaining.toFixed(1)}s left)`;
 }
 
 function toggleDirection() {
   playbackDirection *= -1;
   reverseBtn.textContent = playbackDirection === 1 ? "⏪ Reverse" : "⏩ Forward";
+  
+  // Visual feedback on chart
+  chart.options.scales.x.title.text = playbackDirection === 1 ? 
+    "Time Progression (indexer)" : "Time Reversed (indexer)";
+  chart.update();
+  
   if (playbackInterval) startPlayback();
 }
-
 // Helper Functions
 function getColor(index) {
   const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
