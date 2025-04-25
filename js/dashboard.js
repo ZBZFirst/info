@@ -4,7 +4,7 @@ const config = {
   animationSpeed: 1000,
   maxDataPoints: 100,
   timeColumn: "timestamp", // Must match your column name
-  valueColumns: ["flow", "pressure", "volume"] // Update with your actual column names
+  valueColumns: ["flow", "pressure", "phase", "volume"] // Update with your actual column names
 };
 
 // Global State
