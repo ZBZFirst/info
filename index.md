@@ -8,7 +8,8 @@ title: Paul's Desktop Reference
 <div class="dashboard-container">
   <header class="dashboard-header">
     <h1>Paul's Data Analytics Dashboard</h1>
-    <h2>Real-time Time Series Visualization</h2>
+    <h2>Breathing Simulator for Healthcare Workers</h2>
+    <h3>The data below was collected from a Professor who connected himself to a Mechanical Ventilator and then extracted the sensor data via an Arduino Uno.</h3>
   </header>
 
   <div class="dashboard-controls">
@@ -38,7 +39,6 @@ title: Paul's Desktop Reference
   </div>
 </div>
 
-<!-- Correct order -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.min.js"></script>
