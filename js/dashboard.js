@@ -28,6 +28,11 @@ const reverseBtn = document.getElementById("reverseBtn");
 const speedDisplay = document.getElementById("speedDisplay");
 const tableHeader = document.getElementById("tableHeader");
 const tableBody = document.getElementById("tableBody");
+const chartContainer = document.querySelector('.chart-container');
+const fullscreenBtn = document.createElement('button');
+fullscreenBtn.className = 'fullscreen-toggle';
+fullscreenBtn.innerHTML = '⛶ Fullscreen';
+chartContainer.appendChild(fullscreenBtn);
 
 // Simplified File Discovery - Only checks /info/js/
 async function findDataFile() {
@@ -111,6 +116,35 @@ async function initDashboard() {
     if (worker) worker.terminate();
   }
 }
+
+function toggleFullscreen() {
+  const isFullscreen = chartContainer.dataset.fullscreen === "true";
+  chartContainer.dataset.fullscreen = !isFullscreen;
+  
+  // Update button icon
+  fullscreenBtn.innerHTML = isFullscreen ? '⛶ Fullscreen' : '✕ Exit';
+  
+  // Handle chart resize
+  if (window.chart) {
+    window.chart.resize();
+  }
+}
+
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+// Handle ESC key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && chartContainer.dataset.fullscreen === "true") {
+    toggleFullscreen();
+  }
+});
+
+// Handle mobile device orientation changes
+window.addEventListener('orientationchange', () => {
+  if (chartContainer.dataset.fullscreen === "true" && window.chart) {
+    setTimeout(() => window.chart.resize(), 200);
+  }
+});
 
 // Rest of your existing functions remain exactly the same:
 function initChart() {
