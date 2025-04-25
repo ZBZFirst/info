@@ -24,17 +24,9 @@ title: Paul's Desktop Reference
   </div>
 
   <div class="dashboard-content">
-    <div class="chart-container">
-      <canvas id="timeSeriesChart"></canvas>
-    </div>
-    <div class="data-table-container">
-      <h3>Current Data Stream</h3>
-      <table id="dataTable">
-        <thead>
-          <tr id="tableHeader"></tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
+    <div class="chart-container"><canvas id="timeSeriesChart"></canvas></div>
+      <div class="data-table-container"><h3>Current Data Stream</h3><table id="dataTable">
+        <thead><tr id="tableHeader"></tr></thead><tbody id="tableBody"></tbody></table>
     </div>
   </div>
 </div>
