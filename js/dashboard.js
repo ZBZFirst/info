@@ -10,11 +10,21 @@ const config = {
 };
 
 // Global State
+const charts = {
+  main: null,
+  flow: null,
+  pressure: null,
+  volume: null,
+  pvLoop: null,
+  fvLoop: null
+};
+
+// Global States
 let data = [];
+let breathSegments = { pv: [], fv: [] };
 let currentIndex = 0;
 let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
-let chart = null;
 let worker = null;
 let lastUpdateTime = 0;
 let rowsToSkip = 0;
@@ -60,47 +70,97 @@ async function initDashboard() {
     console.log("Initializing dashboard...");
     const dataFile = await findDataFile();
     
-    // Initialize Web Worker with XLSX included
-  const workerCode = `
-    importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
-    
-    self.onmessage = async (e) => {
-      if (e.data.command === "load") {
-        try {
-          const response = await fetch(e.data.url);
-          if (!response.ok) throw new Error("HTTP " + response.status);
+    // Initialize all charts before worker starts
+    charts.main = initTimeSeriesChart('timeSeriesChart', config.valueColumns);
+    charts.flow = initTimeSeriesChart('timeSeriesChartFlow', ['flow']);
+    charts.pressure = initTimeSeriesChart('timeSeriesChartPressure', ['pressure']);
+    charts.volume = initTimeSeriesChart('timeSeriesChartVolume', ['volume']);
+    charts.pvLoop = initLoopChart('PVLoop', 'PV Loop');
+    charts.fvLoop = initLoopChart('FVLoop', 'FV Loop');
+
+    // Initialize Web Worker with enhanced processing
+    const workerCode = `
+      importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+      
+      function processBreathSegments(data) {
+        const segments = { pv: [], fv: [] };
+        let currentBreath = [];
+        let lastPhase = null;
+        let breathCount = 0;
+        
+        data.forEach(row => {
+          if (row.phase === 2) return; // Skip invalid data
           
-          const arrayBuffer = await response.arrayBuffer();
-          const workbook = XLSX.read(arrayBuffer);
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+          // Detect breath start (phase 1 after non-1)
+          if (row.phase === 1 && lastPhase !== 1) {
+            // Only store if we have a complete breath (min 10 points)
+            if (currentBreath.length > 10) {
+              segments.pv.push({
+                id: breathCount++,
+                points: currentBreath.map(d => ({x: d.volume, y: d.pressure}))
+              });
+              segments.fv.push({
+                id: breathCount++,
+                points: currentBreath.map(d => ({x: d.flow, y: d.volume}))
+              });
+              
+              // Keep only last 3 breaths
+              if (segments.pv.length > 3) segments.pv.shift();
+              if (segments.fv.length > 3) segments.fv.shift();
+            }
+            currentBreath = [];
+          }
           
-          // Simply add index to each row and pass timestamp through unchanged
-          const processedData = jsonData.map((row, index) => ({
-            ...row,
-            indexer: index,
-            displayTime: row[e.data.timeColumn] // Just use the raw timestamp value
-          }));
-          
-          self.postMessage({ command: "data", data: processedData });
-        } catch (error) {
-          self.postMessage({ command: "error", error: error.message });
-        }
+          currentBreath.push(row);
+          lastPhase = row.phase;
+        });
+        
+        return segments;
       }
-    };
-  `;
+
+      self.onmessage = async (e) => {
+        if (e.data.command === "load") {
+          try {
+            const response = await fetch(e.data.url);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer);
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            
+            const processedData = jsonData.map((row, index) => ({
+              ...row,
+              indexer: index,
+              displayTime: row[e.data.timeColumn]
+            }));
+            
+            const breathSegments = processBreathSegments(jsonData);
+            
+            self.postMessage({ 
+              command: "data", 
+              data: processedData,
+              breathSegments
+            });
+          } catch (error) {
+            self.postMessage({ command: "error", error: error.message });
+          }
+        }
+      };
+    `;
 
     worker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})));
     
     worker.onmessage = (e) => {
       if (e.data.command === "data") {
         data = e.data.data;
-        initChart();
+        breathSegments = e.data.breathSegments;
         initTable();
         updateDisplay(0);
         startPlayback();
       } else if (e.data.command === "error") {
-        throw new Error(e.data.error);
+        console.error("Worker error:", e.data.error);
+        alert("Data processing error: " + e.data.error);
       }
     };
     
@@ -114,6 +174,11 @@ async function initDashboard() {
     console.error("Initialization failed:", error);
     alert("Error: " + error.message);
     if (worker) worker.terminate();
+    
+    // Fallback UI state
+    document.querySelectorAll('.chart-container').forEach(container => {
+      container.innerHTML += '<div class="error-message">Failed to load data</div>';
+    });
   }
 }
 
@@ -205,70 +270,163 @@ function initTable() {
   });
 }
 
+function initTimeSeriesChart(canvasId, columns) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: columns.map((col, i) => ({
+        label: col,
+        data: [],
+        borderColor: getColor(i),
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        tension: 0.1,
+        pointRadius: 0
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 0 },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: true, text: 'Time Progression (indexer)' }
+        },
+        y: { title: { display: true, text: 'Value' } }
+      }
+    }
+  });
+}
+
+function initLoopChart(canvasId, label) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: label,
+        data: [],
+        borderColor: '#4e79a7',
+        backgroundColor: 'rgba(78, 121, 167, 0.1)',
+        borderWidth: 2,
+        showLine: true,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { title: { display: true, text: canvasId === 'PVLoop' ? 'Volume' : 'Flow' } },
+        y: { title: { display: true, text: canvasId === 'PVLoop' ? 'Pressure' : 'Volume' } }
+      }
+    }
+  });
+}
+
 function updateDisplay(index) {
-  if (!data.length || !chart?.data?.datasets) return;
+  if (!data.length) return;
   
   index = Math.max(0, Math.min(index, data.length - 1));
   currentIndex = index;
   const currentData = data[index];
   
-  // Clear all data if we looped around (index went back to 0 going forward)
-  if (currentIndex === 0 && playbackDirection === 1) {
-    config.valueColumns.forEach((col, i) => {
-      if (chart.data.datasets[i]) {
-        chart.data.datasets[i].data = [];
-      }
-    });
+  // Update all time-series charts
+  updateTimeSeriesCharts(currentData);
+  
+  // Update loop charts if we have breath segments
+  if (breathSegments.pv.length > 0) {
+    updateLoopCharts();
   }
   
-  // Handle backwards movement - remove any points beyond current index
-  if (playbackDirection === -1) {
-    config.valueColumns.forEach((col, i) => {
-      if (chart.data.datasets[i]) {
-        // Remove any points where x > currentIndex
-        chart.data.datasets[i].data = chart.data.datasets[i].data.filter(
-          point => point.x <= currentIndex
-        );
-      }
-    });
-  }
-  
-  // Add new data point (only if we don't already have this index)
+  // Update the data table
+  updateTable(currentData);
+}
+
+function updateTimeSeriesCharts(currentData) {
+  // Main chart (all values)
   config.valueColumns.forEach((col, i) => {
-    if (chart.data.datasets[i]) {
-      // Check if this index already exists in the data
-      const exists = chart.data.datasets[i].data.some(
-        point => point.x === currentData.indexer
-      );
-      
-      if (!exists) {
-        // Maintain max data points by removing oldest if needed
-        if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
-          chart.data.datasets[i].data.shift();
-        }
-        
-        // Add new point
-        chart.data.datasets[i].data.push({
-          x: currentData.indexer,
-          y: currentData[col]
-        });
-        
-        // Sort data by x value to maintain proper line drawing
-        chart.data.datasets[i].data.sort((a, b) => a.x - b.x);
-      }
-    }
+    updateChartDataset(
+      charts.main, 
+      i, 
+      currentData.indexer, 
+      currentData[col],
+      config.maxDataPoints
+    );
   });
   
-  chart.update('none');
+  // Individual parameter charts
+  updateChartDataset(charts.flow, 0, currentData.indexer, currentData.flow, config.maxDataPoints);
+  updateChartDataset(charts.pressure, 0, currentData.indexer, currentData.pressure, config.maxDataPoints);
+  updateChartDataset(charts.volume, 0, currentData.indexer, currentData.volume, config.maxDataPoints);
+}
+
+function updateLoopCharts() {
+  // Update PV Loop with last 3 breaths (different colors)
+  charts.pvLoop.data.datasets = breathSegments.pv.map((segment, i) => ({
+    label: `Breath ${breathSegments.pv.length - i}`,
+    data: segment.points,
+    borderColor: getColor(i),
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    tension: 0.1,
+    pointRadius: 0,
+    showLine: true
+  }));
   
-  // Update Table (unchanged)
+  // Update FV Loop similarly
+  charts.fvLoop.data.datasets = breathSegments.fv.map((segment, i) => ({
+    label: `Breath ${breathSegments.fv.length - i}`,
+    data: segment.points,
+    borderColor: getColor(i),
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    tension: 0.1,
+    pointRadius: 0,
+    showLine: true
+  }));
+  
+  charts.pvLoop.update();
+  charts.fvLoop.update();
+}
+
+function updateChartDataset(chart, datasetIndex, x, y, maxPoints) {
+  const dataset = chart.data.datasets[datasetIndex];
+  
+  // Check if point already exists
+  const exists = dataset.data.some(point => point.x === x);
+  if (exists) return;
+  
+  // Maintain data limits
+  if (maxPoints && dataset.data.length >= maxPoints) {
+    dataset.data.shift();
+  }
+  
+  // Add new point
+  dataset.data.push({ x, y });
+  
+  // Sort by x value (important for reverse playback)
+  dataset.data.sort((a, b) => a.x - b.x);
+  
+  // Efficient update
+  chart.update('none');
+}
+
+function updateTable(currentData) {
   tableBody.innerHTML = "";
   const row = document.createElement("tr");
+  
+  // Highlight current row
+  row.classList.add('current-row');
+  
   ["indexer", "displayTime", ...config.valueColumns].forEach(key => {
     const td = document.createElement("td");
     td.textContent = currentData[key];
     row.appendChild(td);
   });
+  
   tableBody.appendChild(row);
 }
 
