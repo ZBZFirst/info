@@ -1,15 +1,10 @@
-// Enhanced Dashboard Configuration
+// Dashboard Configuration
 const config = {
   maxDataPoints: 100,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 1000, // ms between updates
-  testFiles: ["data.xlsx", "data1.xlsx"], // Files to try
-  searchPaths: [
-    "js/",              // Current directory
-    "../",         // Local data folder
-    ""            // One level up
-  ]
+  initialSpeed: 1000,
+  dataFiles: ["data.xlsx", "data1.xlsx"] // Files to try in /info/js/
 };
 
 // Global State
@@ -30,162 +25,83 @@ const speedDisplay = document.getElementById("speedDisplay");
 const tableHeader = document.getElementById("tableHeader");
 const tableBody = document.getElementById("tableBody");
 
-// Initialize Web Worker
-function createWorker() {
-  const workerCode = `
-    const processData = (data, timeColumn) => {
-      let startTime = null;
-      return data.map((row, index) => {
-        const [seconds, millis] = String(row[timeColumn]).split(':').map(Number);
-        const currentTime = (seconds * 1000) + millis;
-        startTime = startTime || currentTime;
-        
-        return {
-          ...row,
-          relTime: currentTime - startTime,
-          indexer: index,
-          displayTime: seconds + ":" + millis.toString().padStart(3, '0')
-        };
-      });
-    };
-
-    self.onmessage = async (e) => {
-      if (e.data.command === "load") {
-        try {
-          const response = await fetch(e.data.url);
-          if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
-          
-          const arrayBuffer = await response.arrayBuffer();
-          const workbook = XLSX.read(arrayBuffer);
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-          
-          self.postMessage({
-            command: "data",
-            data: processData(jsonData, e.data.timeColumn),
-            valueColumns: e.data.valueColumns
-          });
-        } catch (error) {
-          self.postMessage({ command: "error", error: error.message });
-        }
+// Simplified File Discovery - Only checks /info/js/
+async function findDataFile() {
+  const basePath = window.location.origin + '/info/js/';
+  
+  for (const file of config.dataFiles) {
+    const fileUrl = basePath + file;
+    try {
+      const response = await fetch(fileUrl);
+      if (response.ok) {
+        console.log("Found data file:", fileUrl);
+        return fileUrl;
       }
-    };
-  `;
-
-  const blob = new Blob([workerCode], {type: 'application/javascript'});
-  const worker = new Worker(URL.createObjectURL(blob));
-  worker.objectURL = URL.createObjectURL(blob);
-  return worker;
-}
-
-// Enhanced File Discovery with Path Debugging
-async function discoverDataFile() {
-  const scriptPath = document.currentScript.src;
-  const basePath = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
-  console.log("Base script path:", basePath);
-
-  const testUrls = [];
-  
-  // Generate all possible file URLs to test
-  config.searchPaths.forEach(path => {
-    config.testFiles.forEach(file => {
-      const fullPath = new URL(path + file, basePath + '/').href;
-      testUrls.push(fullPath);
-      console.log("Testing path:", fullPath);
-    });
-  });
-
-  // Try each URL with timeout
-  const tests = testUrls.map(url => 
-    Promise.race([
-      fetch(url).then(res => res.ok ? url : null),
-      new Promise(resolve => setTimeout(() => {
-        console.log("Timeout reached for:", url);
-        resolve(null);
-      }, 2000))
-    ]).catch(e => {
-      console.log("Fetch failed for:", url, e);
-      return null;
-    })
-  );
-
-  const results = await Promise.all(tests);
-  const foundUrl = results.find(url => url !== null);
-  
-  if (!foundUrl) {
-    console.error("No valid files found at these locations:", testUrls);
-    throw new Error("No valid data files found in configured paths");
+    } catch (e) {
+      console.log("Failed to load:", fileUrl, e);
+    }
   }
   
-  console.log("Using data file:", foundUrl);
-  return foundUrl;
-}
-
-// Data Validation
-function validateData(jsonData) {
-  if (!Array.isArray(jsonData) || jsonData.length === 0) {
-    console.error("Data is empty or not an array");
-    return false;
-  }
-
-  const firstRow = jsonData[0];
-  if (!firstRow) {
-    console.error("First row is undefined");
-    return false;
-  }
-
-  // Check required columns exist and have valid values
-  const hasValidTimestamp = config.timeColumn in firstRow && 
-                          String(firstRow[config.timeColumn]).includes(':');
-  
-  const hasValidValues = config.valueColumns.every(col => 
-    col in firstRow && !isNaN(parseFloat(firstRow[col]))
-  );
-
-  if (!hasValidTimestamp) {
-    console.error("Missing or invalid timestamp column");
-  }
-  if (!hasValidValues) {
-    console.error("Missing or invalid value columns");
-  }
-
-  return hasValidTimestamp && hasValidValues;
+  throw new Error(`None of these files were found in /info/js/: ${config.dataFiles.join(', ')}`);
 }
 
 // Initialize Dashboard
 async function initDashboard() {
   try {
-    // Discover and load data file
-    const dataFile = await discoverDataFile();
-    if (!dataFile) throw new Error("No valid data files found");
+    console.log("Initializing dashboard...");
+    const dataFile = await findDataFile();
     
-    console.log("Loading data from:", dataFile);
-    worker = createWorker();
+    // Initialize Web Worker
+    worker = new Worker(URL.createObjectURL(new Blob([`
+      self.onmessage = async (e) => {
+        if (e.data.command === "load") {
+          try {
+            const response = await fetch(e.data.url);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer);
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            
+            // Process timestamps
+            let startTime = null;
+            const processedData = jsonData.map((row, index) => {
+              const [seconds, millis] = String(row[e.data.timeColumn]).split(':').map(Number);
+              const currentTime = (seconds * 1000) + millis;
+              startTime = startTime || currentTime;
+              
+              return {
+                ...row,
+                relTime: currentTime - startTime,
+                indexer: index,
+                displayTime: seconds + ":" + millis.toString().padStart(3, '0')
+              };
+            });
+            
+            self.postMessage({ command: "data", data: processedData });
+          } catch (error) {
+            self.postMessage({ command: "error", error: error.message });
+          }
+        }
+      };
+    `], {type: 'application/javascript'})));
     
     worker.onmessage = (e) => {
       if (e.data.command === "data") {
-        if (validateData(e.data.data)) {
-          data = e.data.data;
-          initChart();
-          initTable();
-          updateDisplay(0);
-        } else {
-          throw new Error("Invalid data structure");
-        }
+        data = e.data.data;
+        initChart();
+        initTable();
+        updateDisplay(0);
       } else if (e.data.command === "error") {
         throw new Error(e.data.error);
       }
     };
     
-    worker.onerror = (e) => {
-      throw new Error("Worker error: " + e.message);
-    };
-    
     worker.postMessage({
       command: "load",
       url: dataFile,
-      timeColumn: config.timeColumn,
-      valueColumns: config.valueColumns
+      timeColumn: config.timeColumn
     });
     
   } catch (error) {
@@ -195,16 +111,147 @@ async function initDashboard() {
   }
 }
 
-// Clean up when page unloads
-window.addEventListener('beforeunload', () => {
-  if (worker) {
-    worker.terminate();
-    URL.revokeObjectURL(worker.objectURL);
+// Rest of your existing functions remain exactly the same:
+function initChart() {
+  const ctx = document.getElementById("timeSeriesChart").getContext("2d");
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      datasets: config.valueColumns.map((col, i) => ({
+        label: col,
+        data: [],
+        borderColor: getColor(i),
+        backgroundColor: "transparent",
+        borderWidth: 2,
+        tension: 0.1,
+        pointRadius: 0
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 0 },
+      scales: {
+        x: {
+          type: "linear",
+          title: { display: true, text: "Time Progression (indexer)" },
+          ticks: {
+            callback: function(value) {
+              const point = data[value];
+              return point ? value + "\n" + point.displayTime : value;
+            }
+          }
+        },
+        y: { title: { display: true, text: "Value" } }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (ctx) => "Indexer: " + data[ctx[0].dataIndex].indexer,
+            afterLabel: (ctx) => {
+              const point = data[ctx.dataIndex];
+              return `Time: ${point.displayTime}\nRel. Time: ${point.relTime}ms`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function initTable() {
+  tableHeader.innerHTML = "";
+  ["indexer", "time", ...config.valueColumns].forEach(text => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    tableHeader.appendChild(th);
+  });
+}
+
+function updateDisplay(index) {
+  if (!data.length || !chart?.data?.datasets) return;
+  
+  index = Math.max(0, Math.min(index, data.length - 1));
+  currentIndex = index;
+  const currentData = data[index];
+  
+  // Update Chart
+  config.valueColumns.forEach((col, i) => {
+    if (chart.data.datasets[i]) {
+      if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
+        chart.data.datasets[i].data.shift();
+      }
+      chart.data.datasets[i].data.push({
+        x: currentData.indexer,
+        y: currentData[col]
+      });
+    }
+  });
+  chart.update('none');
+  
+  // Update Table
+  tableBody.innerHTML = "";
+  const row = document.createElement("tr");
+  ["indexer", "displayTime", ...config.valueColumns].forEach(key => {
+    const td = document.createElement("td");
+    td.textContent = currentData[key];
+    row.appendChild(td);
+  });
+  tableBody.appendChild(row);
+}
+
+// Playback Control
+let playbackInterval = null;
+
+function startPlayback() {
+  if (playbackInterval) clearInterval(playbackInterval);
+  playbackInterval = setInterval(() => {
+    currentIndex = (currentIndex + playbackDirection + data.length) % data.length;
+    updateDisplay(currentIndex);
+  }, playbackSpeed);
+  playBtn.textContent = "⏸ Pause";
+}
+
+function stopPlayback() {
+  if (playbackInterval) {
+    clearInterval(playbackInterval);
+    playbackInterval = null;
   }
+  playBtn.textContent = "▶ Play";
+}
+
+function changeSpeed(factor) {
+  playbackSpeed = Math.max(50, playbackSpeed * factor);
+  speedDisplay.textContent = (1 / playbackSpeed * 1000).toFixed(1) + "x";
+  if (playbackInterval) startPlayback();
+}
+
+function toggleDirection() {
+  playbackDirection *= -1;
+  reverseBtn.textContent = playbackDirection === 1 ? "⏪ Reverse" : "⏩ Forward";
+  if (playbackInterval) startPlayback();
+}
+
+// Helper Functions
+function getColor(index) {
+  const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
+  return colors[index % colors.length];
+}
+
+// Event Listeners
+playBtn.addEventListener("click", () => playbackInterval ? stopPlayback() : startPlayback());
+stopBtn.addEventListener("click", stopPlayback);
+slowBtn.addEventListener("click", () => changeSpeed(1.5));
+fastBtn.addEventListener("click", () => changeSpeed(0.67));
+reverseBtn.addEventListener("click", toggleDirection);
+
+// Clean up
+window.addEventListener('beforeunload', () => {
+  if (worker) worker.terminate();
+  if (playbackInterval) clearInterval(playbackInterval);
 });
 
-// Rest of your existing functions remain exactly the same:
-// initChart(), initTable(), updateDisplay(), 
-// playback controls, event listeners, etc.
-
+// Start the dashboard
 document.addEventListener("DOMContentLoaded", initDashboard);
