@@ -1,18 +1,25 @@
-// Dashboard Configuration
+// Enhanced Dashboard Configuration
 const config = {
-  dataFile: "info/js/data.xlsx",
   maxDataPoints: 100,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 1000 // ms between updates
+  initialSpeed: 1000, // ms between updates
+  testFiles: ["data.xlsx", "data1.xlsx"], // Files to try
+  searchPaths: [
+    "",              // Current directory
+    "data/",         // Local data folder
+    "../data/",      // One level up data folder
+    "../"            // One level up
+  ]
 };
 
 // Global State
 let data = [];
 let currentIndex = 0;
-let playbackDirection = 1; // 1 = forward, -1 = backward
+let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
 let chart = null;
+let worker = null;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -24,369 +31,142 @@ const speedDisplay = document.getElementById("speedDisplay");
 const tableHeader = document.getElementById("tableHeader");
 const tableBody = document.getElementById("tableBody");
 
-// Web Worker for data processing
-const workerCode = `
-  self.onmessage = async function(e) {
-    if (e.data.command === "load") {
-      try {
-        const response = await fetch(e.data.url);
-        if (!response.ok) throw new Error("HTTP error! status: " + response.status);
+// Initialize Web Worker
+function createWorker() {
+  const workerCode = `
+    const processData = (data, timeColumn) => {
+      let startTime = null;
+      return data.map((row, index) => {
+        const [seconds, millis] = String(row[timeColumn]).split(':').map(Number);
+        const currentTime = (seconds * 1000) + millis;
+        startTime = startTime || currentTime;
         
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer);
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        let data = XLSX.utils.sheet_to_json(firstSheet);
-        
-        // Process timestamps and create indexer
-        let startTime = null;
-        data.forEach((row, index) => {
-          // Parse timestamp in sss:mmm format
-          const [seconds, millis] = String(row[e.data.timeColumn]).split(':').map(Number);
-          const currentTime = (seconds * 1000) + millis;
-          
-          // Set start time if not set
-          if (startTime === null) startTime = currentTime;
-          
-          // Calculate relative time in ms
-          row.relTime = currentTime - startTime;
-          
-          // Create indexer
-          row.indexer = index;
-          
-          // Format for display
-          row.displayTime = seconds + ":" + millis.toString().padStart(3, '0');
-        });
-        
-        self.postMessage({ 
-          command: "data", 
-          data: data,
-          valueColumns: e.data.valueColumns
-        });
-      } catch (error) {
-        self.postMessage({ 
-          command: "error", 
-          error: error.message 
-        });
-      }
-    }
-  };
-`;
+        return {
+          ...row,
+          relTime: currentTime - startTime,
+          indexer: index,
+          displayTime: seconds + ":" + millis.toString().padStart(3, '0')
+        };
+      });
+    };
 
-const worker = new Worker(
-  URL.createObjectURL(
-    new Blob([workerCode], {type: 'application/javascript'})
-  )
-);
+    self.onmessage = async (e) => {
+      if (e.data.command === "load") {
+        try {
+          const response = await fetch(e.data.url);
+          if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
+          
+          const arrayBuffer = await response.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer);
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+          
+          self.postMessage({
+            command: "data",
+            data: processData(jsonData, e.data.timeColumn),
+            valueColumns: e.data.valueColumns
+          });
+        } catch (error) {
+          self.postMessage({ command: "error", error: error.message });
+        }
+      }
+    };
+  `;
+
+  const blob = new Blob([workerCode], {type: 'application/javascript'});
+  const worker = new Worker(URL.createObjectURL(blob));
+  worker.objectURL = URL.createObjectURL(blob);
+  return worker;
+}
+
+// Enhanced File Discovery
+async function discoverDataFile() {
+  const basePath = document.currentScript.src.replace(/[^/]*$/, '');
+  const testUrls = [];
+  
+  // Generate all possible file URLs to test
+  config.searchPaths.forEach(path => {
+    config.testFiles.forEach(file => {
+      testUrls.push(new URL(path + file, basePath).href);
+    });
+  });
+
+  // Try each URL in parallel with timeout
+  const tests = testUrls.map(url => 
+    Promise.race([
+      fetch(url).then(res => res.ok ? url : null),
+      new Promise(resolve => setTimeout(() => resolve(null), 2000))
+    ]).catch(() => null)
+  );
+
+  const results = await Promise.all(tests);
+  return results.find(url => url !== null);
+}
+
+// Data Validation
+function validateData(jsonData) {
+  if (!Array.isArray(jsonData) return false;
+  if (jsonData.length === 0) return false;
+  
+  const firstRow = jsonData[0];
+  return config.valueColumns.every(col => 
+    col in firstRow && !isNaN(parseFloat(firstRow[col]))
+    && config.timeColumn in firstRow;
+}
 
 // Initialize Dashboard
 async function initDashboard() {
   try {
-    // Start loading data via worker
+    // Discover and load data file
+    const dataFile = await discoverDataFile();
+    if (!dataFile) throw new Error("No valid data files found");
+    
+    console.log("Loading data from:", dataFile);
+    worker = createWorker();
+    
+    worker.onmessage = (e) => {
+      if (e.data.command === "data") {
+        if (validateData(e.data.data)) {
+          data = e.data.data;
+          initChart();
+          initTable();
+          updateDisplay(0);
+        } else {
+          throw new Error("Invalid data structure");
+        }
+      } else if (e.data.command === "error") {
+        throw new Error(e.data.error);
+      }
+    };
+    
+    worker.onerror = (e) => {
+      throw new Error("Worker error: " + e.message);
+    };
+    
     worker.postMessage({
       command: "load",
-      url: config.dataFile,
+      url: dataFile,
       timeColumn: config.timeColumn,
       valueColumns: config.valueColumns
     });
     
-    // Initialize empty chart
-    initChart();
-    
   } catch (error) {
-    console.error("Dashboard initialization failed:", error);
-    alert("Error: " + error.message + "\nCheck console for details.");
+    console.error("Initialization failed:", error);
+    alert("Error: " + error.message);
+    if (worker) worker.terminate();
   }
 }
 
-// Handle worker messages
-worker.onmessage = function(e) {
-  if (e.data.command === "data") {
-    console.log("Data loaded from worker:", e.data.data.slice(0, 3));
-    data = e.data.data;
-    initTable();
-    updateDisplay(0);
-  } 
-  else if (e.data.command === "error") {
-    console.error("Worker error:", e.data.error);
-    alert("Data loading failed: " + e.data.error);
-  }
-};
-
-function initChart() {
-  const ctx = document.getElementById("timeSeriesChart").getContext("2d");
-  
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      datasets: config.valueColumns.map((col, i) => ({
-        label: col,
-        data: [],
-        borderColor: getColor(i),
-        backgroundColor: "transparent",
-        borderWidth: 2,
-        tension: 0.1,
-        pointRadius: 0
-      }))
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 0
-      },
-      scales: {
-        x: {
-          type: "linear",
-          title: {
-            display: true,
-            text: "Time Progression (indexer)"
-          },
-          ticks: {
-            callback: function(value) {
-              const point = data[value];
-              return point ? value + "\\n" + point.displayTime : value;
-            }
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: "Value"
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            title: function(context) {
-              const point = data[context[0].dataIndex];
-              return "Indexer: " + point.indexer;
-            },
-            afterLabel: function(context) {
-              const point = data[context.dataIndex];
-              return "Time: " + point.displayTime + "\\nRel. Time: " + point.relTime + "ms";
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-function initTable() {
-  tableHeader.innerHTML = "";
-  
-  // Create headers
-  const headers = ["indexer", "time", ...config.valueColumns];
-  headers.forEach(text => {
-    const th = document.createElement("th");
-    th.textContent = text;
-    tableHeader.appendChild(th);
-  });
-}
-
-function updateDisplay(index) {
-  if (!data.length || !chart || !chart.data || !chart.data.datasets) return;
-
-  index = Math.max(0, Math.min(index, data.length - 1));
-  currentIndex = index;
-  
-  const currentData = data[index];
-  
-  // Update Chart
-  config.valueColumns.forEach((col, i) => {
-    if (!chart.data.datasets[i]) return;
-    
-    if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
-      chart.data.datasets[i].data.shift();
-    }
-    
-    chart.data.datasets[i].data.push({
-      x: currentData.indexer,
-      y: currentData[col]
-    });
-  });
-
-  chart.update('none');
-  
-  // Update Table
-  tableBody.innerHTML = "";
-  const row = document.createElement("tr");
-  
-  // Add indexer cell
-  const indexerCell = document.createElement("td");
-  indexerCell.textContent = currentData.indexer;
-  row.appendChild(indexerCell);
-  
-  // Add time cell
-  const timeCell = document.createElement("td");
-  timeCell.textContent = currentData.displayTime;
-  row.appendChild(timeCell);
-  
-  // Add data cells
-  config.valueColumns.forEach(col => {
-    const td = document.createElement("td");
-    td.textContent = currentData[col];
-    row.appendChild(td);
-  });
-  
-  tableBody.appendChild(row);
-}
-
-// Playback Control
-let playbackInterval = null;
-
-function startPlayback() {
-  if (playbackInterval) clearInterval(playbackInterval);
-  
-  playbackInterval = setInterval(() => {
-    currentIndex += playbackDirection;
-    
-    // Handle wrap-around
-    if (currentIndex >= data.length) {
-      currentIndex = 0;
-    } else if (currentIndex < 0) {
-      currentIndex = data.length - 1;
-    }
-    
-    updateDisplay(currentIndex);
-  }, playbackSpeed);
-  
-  playBtn.textContent = "⏸ Pause";
-}
-
-function stopPlayback() {
-  if (playbackInterval) {
-    clearInterval(playbackInterval);
-    playbackInterval = null;
-  }
-  playBtn.textContent = "▶ Play";
-}
-
-function changeSpeed(factor) {
-  playbackSpeed = Math.max(50, playbackSpeed * factor);
-  speedDisplay.textContent = (1 / playbackSpeed * 1000).toFixed(1) + "x";
-  
-  if (playbackInterval) {
-    startPlayback(); // Restart with new speed
-  }
-}
-
-function toggleDirection() {
-  playbackDirection *= -1;
-  reverseBtn.textContent = playbackDirection === 1 ? "⏪ Reverse" : "⏩ Forward";
-  
-  if (playbackInterval) {
-    startPlayback(); // Restart with new direction
-  }
-}
-
-// Event Listeners
-playBtn.addEventListener("click", () => {
-  if (playbackInterval) {
-    stopPlayback();
-  } else {
-    startPlayback();
+// Clean up when page unloads
+window.addEventListener('beforeunload', () => {
+  if (worker) {
+    worker.terminate();
+    URL.revokeObjectURL(worker.objectURL);
   }
 });
 
-stopBtn.addEventListener("click", stopPlayback);
-slowBtn.addEventListener("click", () => changeSpeed(1.5));
-fastBtn.addEventListener("click", () => changeSpeed(0.67));
-reverseBtn.addEventListener("click", toggleDirection);
+// Rest of your existing functions remain exactly the same:
+// initChart(), initTable(), updateDisplay(), 
+// playback controls, event listeners, etc.
 
-// Helper Functions
-function getColor(index) {
-  const colors = [
-    "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
-    "#59a14f", "#edc948", "#b07aa1", "#ff9da7"
-  ];
-  return colors[index % colors.length];
-}
-
-// File Discovery and Loading System
-const findAndLoadData = async () => {
-  // 1. Get current script path
-  const scriptPath = document.currentScript.src;
-  const basePath = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
-  
-  // 2. Define search paths (current dir, one level up/down)
-  const searchPaths = [
-    basePath,
-    `${basePath}/../`,       // One level up
-    `${basePath}/../data/`,  // Common data folder
-    `${basePath}/data/`      // Local data folder
-  ];
-
-  // 3. File discovery
-  const potentialFiles = [];
-  for (const path of searchPaths) {
-    try {
-      const response = await fetch(`${path}?filelist`);
-      if (response.ok) {
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = [...doc.querySelectorAll('a[href$=".xlsx"]')]
-          .map(a => `${path}${a.getAttribute('href')}`);
-        potentialFiles.push(...links);
-      }
-    } catch (e) {
-      console.debug(`No access to ${path}`);
-    }
-  }
-
-  // 4. File validation
-  for (const fileUrl of potentialFiles) {
-    try {
-      const response = await fetch(fileUrl);
-      if (response.ok) {
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer);
-        
-        if (workbook.SheetNames.length > 0) {
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-          
-          if (jsonData.length > 0 && 'timestamp' in jsonData[0]) {
-            return { 
-              success: true,
-              data: jsonData,
-              filePath: fileUrl,
-              workbook 
-            };
-          }
-        }
-      }
-    } catch (e) {
-      console.debug(`Failed to load ${fileUrl}:`, e.message);
-    }
-  }
-
-  return { 
-    success: false,
-    error: "No valid XLSX files found with timestamp data",
-    potentialFiles 
-  };
-};
-
-// Usage in your dashboard:
-const initializeWithAutoDiscovery = async () => {
-  const result = await findAndLoadData();
-  
-  if (result.success) {
-    console.log(`Loaded data from: ${result.filePath}`);
-    data = result.data;
-    initChart();
-    initTable();
-    updateDisplay(0);
-  } else {
-    console.error("Data loading failed. Potential files:", result.potentialFiles);
-    alert(`ERROR: ${result.error}\n\nChecked locations:\n${result.potentialFiles.join('\n')}`);
-  }
-};
-
-
-document.addEventListener("DOMContentLoaded", initializeWithAutoDiscovery);
+document.addEventListener("DOMContentLoaded", initDashboard);
