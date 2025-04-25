@@ -121,27 +121,39 @@ function initTable() {
   }
 }
 
-// Update Display with Current Data
 function updateDisplay(index) {
-  if (index >= data.length) {
+  // Add these checks at the start
+  if (!chart || !chart.data || !chart.data.datasets) {
+    console.error("Chart not properly initialized");
+    return;
+  }
+
+  if (index >= data.length || !data[index]) {
     stopAnimation();
     return;
   }
-  
+
   const currentData = data[index];
   currentIndex = index;
   
-  // Update Chart
+  // Update Chart with null checks
   config.valueColumns.forEach((col, i) => {
+    if (!chart.data.datasets[i]) return;
+    
     if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
       chart.data.datasets[i].data.shift();
     }
+    
+    // Handle missing data
+    const yValue = currentData[col] !== undefined ? currentData[col] : null;
+    
     chart.data.datasets[i].data.push({
       x: currentData[config.timeColumn],
-      y: currentData[col]
+      y: yValue
     });
   });
-  chart.update();
+
+  chart.update('none'); // 'none' prevents animation for better performance
   
   // Update Table
   tableBody.innerHTML = "";
