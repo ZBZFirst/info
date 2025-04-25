@@ -3,8 +3,10 @@ const config = {
   maxDataPoints: 100,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 20000,
-  dataFiles: ["data.xlsx", "data1.xlsx"] // Files to try in /info/js/
+  initialSpeed: 50,  // Much faster starting speed (lower number = faster)
+  minSpeed: 10,      // New minimum speed limit
+  maxSpeed: 1000,    // New maximum speed limit
+  dataFiles: ["data.xlsx", "data1.xlsx"]
 };
 
 // Global State
@@ -89,6 +91,7 @@ async function initDashboard() {
         initChart();
         initTable();
         updateDisplay(0);
+        startPlayback();
       } else if (e.data.command === "error") {
         throw new Error(e.data.error);
       }
@@ -219,8 +222,12 @@ function stopPlayback() {
 }
 
 function changeSpeed(factor) {
-  playbackSpeed = Math.max(50, playbackSpeed * factor);
-  speedDisplay.textContent = (1 / playbackSpeed * 1000).toFixed(1) + "x";
+  // New speed calculation with bounds checking
+  playbackSpeed = Math.max(config.minSpeed, 
+                         Math.min(config.maxSpeed, 
+                         playbackSpeed * factor));
+  
+  speedDisplay.textContent = (1000 / playbackSpeed).toFixed(1) + "x";
   if (playbackInterval) startPlayback();
 }
 
@@ -239,8 +246,8 @@ function getColor(index) {
 // Event Listeners
 playBtn.addEventListener("click", () => playbackInterval ? stopPlayback() : startPlayback());
 stopBtn.addEventListener("click", stopPlayback);
-slowBtn.addEventListener("click", () => changeSpeed(5));
-fastBtn.addEventListener("click", () => changeSpeed(5));
+slowBtn.addEventListener("click", () => changeSpeed(1));
+fastBtn.addEventListener("click", () => changeSpeed(1));
 reverseBtn.addEventListener("click", toggleDirection);
 
 // Clean up
