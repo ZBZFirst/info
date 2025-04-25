@@ -30,7 +30,7 @@ const worker = new Worker(URL.createObjectURL(new Blob([`
     if (e.data.command === "load") {
       try {
         const response = await fetch(e.data.url);
-        if (!response.ok) throw new Error(\`HTTP error! status: \${response.status}\`);
+        if (!response.ok) throw new Error("HTTP error! status: " + response.status);
         
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer);
@@ -54,7 +54,7 @@ const worker = new Worker(URL.createObjectURL(new Blob([`
           row.indexer = index;
           
           // Format for display
-          row.displayTime = \`\${seconds}:\${millis.toString().padStart(3, '0')}\`;
+          row.displayTime = seconds + ":" + millis.toString().padStart(3, '0');
         });
         
         self.postMessage({ 
