@@ -39,4 +39,4 @@ title: Paul's Desktop Reference
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-<script src="/info//js/dashboard.js"></script>
+<script src="/info/js/dashboard.js"></script>
