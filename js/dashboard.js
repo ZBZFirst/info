@@ -1,9 +1,10 @@
 // Dashboard Configuration
 const config = {
-  animationSpeed: 1000, // Initial speed (ms per update)
-  maxDataPoints: 100,   // Max points to show on chart
-  timeColumn: "timestamp", // Column containing timestamps
-  valueColumns: ["value1", "value2"] // Columns to plot (modify as needed)
+  dataFile: "/info/data.xlsx", // Path to your XLSX file
+  animationSpeed: 1000,
+  maxDataPoints: 100,
+  timeColumn: "timestamp", // Must match your column name
+  valueColumns: ["flow", "pressure", "volume"] // Update with your actual column names
 };
 
 // Global State
