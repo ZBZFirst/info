@@ -221,14 +221,24 @@ function stopPlayback() {
   playBtn.textContent = "▶ Play";
 }
 
+// Modify the changeSpeed function:
 function changeSpeed(factor) {
-  // New speed calculation with bounds checking
-  playbackSpeed = Math.max(config.minSpeed, 
-                         Math.min(config.maxSpeed, 
-                         playbackSpeed * factor));
+  // Calculate new speed (lower number = faster)
+  let newSpeed = playbackSpeed * factor;
   
-  speedDisplay.textContent = (1000 / playbackSpeed).toFixed(1) + "x";
-  if (playbackInterval) startPlayback();
+  // Apply min/max bounds
+  newSpeed = Math.max(config.minSpeed, Math.min(config.maxSpeed, newSpeed));
+  
+  // Only update if changed
+  if (newSpeed !== playbackSpeed) {
+    playbackSpeed = newSpeed;
+    
+    // Update display (show interval time in ms)
+    speedDisplay.textContent = `${playbackSpeed}ms`;
+    
+    // Restart playback if active
+    if (playbackInterval) startPlayback();
+  }
 }
 
 function toggleDirection() {
@@ -246,8 +256,8 @@ function getColor(index) {
 // Event Listeners
 playBtn.addEventListener("click", () => playbackInterval ? stopPlayback() : startPlayback());
 stopBtn.addEventListener("click", stopPlayback);
-slowBtn.addEventListener("click", () => changeSpeed(1.5));
-fastBtn.addEventListener("click", () => changeSpeed(0.5));
+slowBtn.addEventListener("click", () => changeSpeed(1.3));  // ~30% slower
+fastBtn.addEventListener("click", () => changeSpeed(0.7));  // ~30% faster
 reverseBtn.addEventListener("click", toggleDirection);
 
 // Clean up
