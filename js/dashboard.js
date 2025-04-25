@@ -4,7 +4,7 @@ const config = {
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
   initialSpeed: 50,  // Much faster starting speed (lower number = faster)
-  minSpeed: 10,      // New minimum speed limit
+  minSpeed: 1,      // New minimum speed limit
   maxSpeed: 3000,    // New maximum speed limit
   dataFiles: ["data.xlsx", "data1.xlsx"]
 };
