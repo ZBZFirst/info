@@ -23,35 +23,49 @@ const tableBody = document.getElementById("tableBody");
 
 // Initialize Dashboard
 async function initDashboard() {
-  // Load XLSX file
-  const response = await fetch("data.xlsx");
-  const arrayBuffer = await response.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer);
-  
-  // Get first sheet data
-  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  data = XLSX.utils.sheet_to_json(firstSheet);
-  
-  // Format timestamps (if needed)
-  data.forEach(row => {
-    if (row[config.timeColumn] && typeof row[config.timeColumn] === "string") {
-      row[config.timeColumn] = new Date(row[config.timeColumn]);
-    }
-  });
-  
-  // Initialize Chart
-  initChart();
-  
-  // Initialize Table
-  initTable();
-  
-  // Start with first data point
-  updateDisplay(0);
+  try {
+    // Load XLSX file
+    const response = await fetch(config.dataFile);
+    if (!response.ok) throw new Error("Failed to load data file");
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer);
+    
+    // Get first sheet data
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    data = XLSX.utils.sheet_to_json(firstSheet);
+    
+    // Validate data
+    if (!data.length) throw new Error("No data found in spreadsheet");
+    
+    // Format timestamps
+    data.forEach(row => {
+      if (row[config.timeColumn]) {
+        // Handle both string and Excel serial dates
+        if (typeof row[config.timeColumn] === "number") {
+          row[config.timeColumn] = XLSX.SSF.parse_date_code(row[config.timeColumn]);
+        } else {
+          row[config.timeColumn] = new Date(row[config.timeColumn]);
+        }
+      }
+    });
+    
+    // Initialize Chart and Table
+    initChart();
+    initTable();
+    updateDisplay(0);
+    
+  } catch (error) {
+    console.error("Dashboard initialization failed:", error);
+    alert("Error loading data. Check console for details.");
+  }
 }
 
-// Initialize Chart
 function initChart() {
   const ctx = document.getElementById("timeSeriesChart").getContext("2d");
+  
+  // Destroy previous chart if exists
+  if (chart) chart.destroy();
   
   chart = new Chart(ctx, {
     type: "line",
@@ -67,11 +81,13 @@ function initChart() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: {
           type: "time",
           time: {
-            unit: "minute"
+            tooltipFormat: 'yyyy-MM-dd HH:mm:ss',
+            unit: 'minute'
           },
           title: {
             display: true,
