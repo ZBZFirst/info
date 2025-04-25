@@ -5,7 +5,7 @@ const config = {
   valueColumns: ["flow", "pressure", "phase", "volume"],
   initialSpeed: 50,  // Much faster starting speed (lower number = faster)
   minSpeed: 1,      // New minimum speed limit
-  maxSpeed: 3000,    // New maximum speed limit
+  maxSpeed: 1000,    // New maximum speed limit
   dataFiles: ["data.xlsx", "data1.xlsx"]
 };
 
@@ -16,6 +16,8 @@ let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
 let chart = null;
 let worker = null;
+let lastUpdateTime = 0;
+let rowsToSkip = 0;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -206,10 +208,23 @@ let playbackInterval = null;
 
 function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
+  
+  lastUpdateTime = performance.now();
   playbackInterval = setInterval(() => {
-    currentIndex = (currentIndex + playbackDirection + data.length) % data.length;
-    updateDisplay(currentIndex);
-  }, playbackSpeed);
+    const now = performance.now();
+    const elapsed = now - lastUpdateTime;
+    lastUpdateTime = now;
+    
+    // Calculate how many rows to advance based on speed
+    rowsToSkip += (playbackSpeed * elapsed) / 1000;
+    const rowsToAdvance = Math.floor(rowsToSkip);
+    rowsToSkip -= rowsToAdvance;
+    
+    if (rowsToAdvance > 0) {
+      currentIndex = (currentIndex + (playbackDirection * rowsToAdvance) + data.length) % data.length;
+      updateDisplay(currentIndex);
+    }
+  }, 16); // ~60fps
   playBtn.textContent = "⏸ Pause";
 }
 
@@ -221,24 +236,14 @@ function stopPlayback() {
   playBtn.textContent = "▶ Play";
 }
 
-// Modify the changeSpeed function:
+// Updated speed control
 function changeSpeed(factor) {
-  // Calculate new speed (lower number = faster)
-  let newSpeed = playbackSpeed * factor;
+  playbackSpeed = Math.max(config.minSpeed, 
+                         Math.min(config.maxSpeed, 
+                         playbackSpeed * factor));
   
-  // Apply min/max bounds
-  newSpeed = Math.max(config.minSpeed, Math.min(config.maxSpeed, newSpeed));
-  
-  // Only update if changed
-  if (newSpeed !== playbackSpeed) {
-    playbackSpeed = newSpeed;
-    
-    // Update display (show interval time in ms)
-    speedDisplay.textContent = `${playbackSpeed}ms`;
-    
-    // Restart playback if active
-    if (playbackInterval) startPlayback();
-  }
+  // Display as rows per second
+  speedDisplay.textContent = `${playbackSpeed} rows/s`;
 }
 
 function toggleDirection() {
