@@ -178,7 +178,7 @@ function updateDisplay(index) {
   currentIndex = index;
   const currentData = data[index];
   
-  // Clear all data if we looped around (index went back to 0)
+  // Clear all data if we looped around (index went back to 0 going forward)
   if (currentIndex === 0 && playbackDirection === 1) {
     config.valueColumns.forEach((col, i) => {
       if (chart.data.datasets[i]) {
@@ -187,28 +187,41 @@ function updateDisplay(index) {
     });
   }
   
-  // If going backwards, remove the last point from each dataset
+  // Handle backwards movement - remove any points beyond current index
   if (playbackDirection === -1) {
     config.valueColumns.forEach((col, i) => {
-      if (chart.data.datasets[i] && chart.data.datasets[i].data.length > 0) {
-        chart.data.datasets[i].data.pop();
+      if (chart.data.datasets[i]) {
+        // Remove any points where x > currentIndex
+        chart.data.datasets[i].data = chart.data.datasets[i].data.filter(
+          point => point.x <= currentIndex
+        );
       }
     });
   }
   
-  // Add new data point
+  // Add new data point (only if we don't already have this index)
   config.valueColumns.forEach((col, i) => {
     if (chart.data.datasets[i]) {
-      // Maintain max data points by removing oldest if needed
-      if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
-        chart.data.datasets[i].data.shift();
-      }
+      // Check if this index already exists in the data
+      const exists = chart.data.datasets[i].data.some(
+        point => point.x === currentData.indexer
+      );
       
-      // Add new point
-      chart.data.datasets[i].data.push({
-        x: currentData.indexer,
-        y: currentData[col]
-      });
+      if (!exists) {
+        // Maintain max data points by removing oldest if needed
+        if (chart.data.datasets[i].data.length >= config.maxDataPoints) {
+          chart.data.datasets[i].data.shift();
+        }
+        
+        // Add new point
+        chart.data.datasets[i].data.push({
+          x: currentData.indexer,
+          y: currentData[col]
+        });
+        
+        // Sort data by x value to maintain proper line drawing
+        chart.data.datasets[i].data.sort((a, b) => a.x - b.x);
+      }
     }
   });
   
