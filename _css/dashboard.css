@@ -1,0 +1,109 @@
+/* Dashboard Structure */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.dashboard-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e1e4e8;
+  padding-bottom: 1rem;
+}
+
+.dashboard-header h1 {
+  color: #24292e;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-header h2 {
+  color: #586069;
+  font-weight: normal;
+  font-size: 1.25rem;
+  margin-top: 0;
+}
+
+/* Controls Section */
+.dashboard-controls {
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e1e4e8;
+}
+
+.control-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control-panel button {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.control-panel button:hover {
+  background-color: #e5e7eb;
+}
+
+.speed-indicator {
+  margin-left: auto;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+/* Content Area */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+  padding: 1rem;
+}
+
+.data-table-container {
+  max-height: 500px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+  padding: 1rem;
+}
+
+.data-table-container h3 {
+  margin-top: 0;
+  color: #24292e;
+  font-size: 1.1rem;
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #e1e4e8;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f6f8fa;
+  position
