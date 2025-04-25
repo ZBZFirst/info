@@ -52,41 +52,34 @@ async function initDashboard() {
     const dataFile = await findDataFile();
     
     // Initialize Web Worker with XLSX included
-    const workerCode = `
-      importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
-      
-      self.onmessage = async (e) => {
-        if (e.data.command === "load") {
-          try {
-            const response = await fetch(e.data.url);
-            if (!response.ok) throw new Error("HTTP " + response.status);
-            
-            const arrayBuffer = await response.arrayBuffer();
-            const workbook = XLSX.read(arrayBuffer);
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-            
-            let startTime = null;
-            const processedData = jsonData.map((row, index) => {
-              const [seconds, millis] = String(row[e.data.timeColumn]).split(':').map(Number);
-              const currentTime = (seconds * 1000) + millis;
-              startTime = startTime || currentTime;
-              
-              return {
-                ...row,
-                relTime: currentTime - startTime,
-                indexer: index,
-                displayTime: seconds + ":" + millis.toString().padStart(3, '0')
-              };
-            });
-            
-            self.postMessage({ command: "data", data: processedData });
-          } catch (error) {
-            self.postMessage({ command: "error", error: error.message });
-          }
+  const workerCode = `
+    importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+    
+    self.onmessage = async (e) => {
+      if (e.data.command === "load") {
+        try {
+          const response = await fetch(e.data.url);
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          
+          const arrayBuffer = await response.arrayBuffer();
+          const workbook = XLSX.read(arrayBuffer);
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+          
+          // Simply add index to each row and pass timestamp through unchanged
+          const processedData = jsonData.map((row, index) => ({
+            ...row,
+            indexer: index,
+            displayTime: row[e.data.timeColumn] // Just use the raw timestamp value
+          }));
+          
+          self.postMessage({ command: "data", data: processedData });
+        } catch (error) {
+          self.postMessage({ command: "error", error: error.message });
         }
-      };
-    `;
+      }
+    };
+  `;
 
     worker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})));
     
