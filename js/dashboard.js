@@ -306,5 +306,87 @@ function getColor(index) {
   return colors[index % colors.length];
 }
 
-// Initialize on Load
-document.addEventListener("DOMContentLoaded", initDashboard);
+// File Discovery and Loading System
+const findAndLoadData = async () => {
+  // 1. Get current script path
+  const scriptPath = document.currentScript.src;
+  const basePath = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
+  
+  // 2. Define search paths (current dir, one level up/down)
+  const searchPaths = [
+    basePath,
+    `${basePath}/../`,       // One level up
+    `${basePath}/../data/`,  // Common data folder
+    `${basePath}/data/`      // Local data folder
+  ];
+
+  // 3. File discovery
+  const potentialFiles = [];
+  for (const path of searchPaths) {
+    try {
+      const response = await fetch(`${path}?filelist`);
+      if (response.ok) {
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = [...doc.querySelectorAll('a[href$=".xlsx"]')]
+          .map(a => `${path}${a.getAttribute('href')}`);
+        potentialFiles.push(...links);
+      }
+    } catch (e) {
+      console.debug(`No access to ${path}`);
+    }
+  }
+
+  // 4. File validation
+  for (const fileUrl of potentialFiles) {
+    try {
+      const response = await fetch(fileUrl);
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer);
+        
+        if (workbook.SheetNames.length > 0) {
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+          
+          if (jsonData.length > 0 && 'timestamp' in jsonData[0]) {
+            return { 
+              success: true,
+              data: jsonData,
+              filePath: fileUrl,
+              workbook 
+            };
+          }
+        }
+      }
+    } catch (e) {
+      console.debug(`Failed to load ${fileUrl}:`, e.message);
+    }
+  }
+
+  return { 
+    success: false,
+    error: "No valid XLSX files found with timestamp data",
+    potentialFiles 
+  };
+};
+
+// Usage in your dashboard:
+const initializeWithAutoDiscovery = async () => {
+  const result = await findAndLoadData();
+  
+  if (result.success) {
+    console.log(`Loaded data from: ${result.filePath}`);
+    data = result.data;
+    initChart();
+    initTable();
+    updateDisplay(0);
+  } else {
+    console.error("Data loading failed. Potential files:", result.potentialFiles);
+    alert(`ERROR: ${result.error}\n\nChecked locations:\n${result.potentialFiles.join('\n')}`);
+  }
+};
+
+
+document.addEventListener("DOMContentLoaded", initializeWithAutoDiscovery);
