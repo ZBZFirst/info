@@ -51,8 +51,10 @@ async function initDashboard() {
     console.log("Initializing dashboard...");
     const dataFile = await findDataFile();
     
-    // Initialize Web Worker
-    worker = new Worker(URL.createObjectURL(new Blob([`
+    // Initialize Web Worker with XLSX included
+    const workerCode = `
+      importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+      
       self.onmessage = async (e) => {
         if (e.data.command === "load") {
           try {
@@ -64,7 +66,6 @@ async function initDashboard() {
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(firstSheet);
             
-            // Process timestamps
             let startTime = null;
             const processedData = jsonData.map((row, index) => {
               const [seconds, millis] = String(row[e.data.timeColumn]).split(':').map(Number);
@@ -85,7 +86,9 @@ async function initDashboard() {
           }
         }
       };
-    `], {type: 'application/javascript'})));
+    `;
+
+    worker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})));
     
     worker.onmessage = (e) => {
       if (e.data.command === "data") {
