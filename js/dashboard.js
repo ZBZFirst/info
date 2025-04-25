@@ -1,6 +1,6 @@
 // Dashboard Configuration
 const config = {
-  dataFile: "/info/data.xlsx",
+  dataFile: "data.xlsx",
   maxDataPoints: 100,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
