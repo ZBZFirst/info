@@ -1,11 +1,11 @@
 // Dashboard Configuration
 const config = {
-  maxDataPoints: 100,
+  maxDataPoints: 4000,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
   initialSpeed: 50,  // Much faster starting speed (lower number = faster)
   minSpeed: 10,      // New minimum speed limit
-  maxSpeed: 1000,    // New maximum speed limit
+  maxSpeed: 3000,    // New maximum speed limit
   dataFiles: ["data.xlsx", "data1.xlsx"]
 };
 
