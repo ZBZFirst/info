@@ -24,7 +24,7 @@ const tableBody = document.getElementById("tableBody");
 // Initialize Dashboard
 async function initDashboard() {
   // Load XLSX file
-  const response = await fetch("/_data/data.xlsx");
+  const response = await fetch("data.xlsx");
   const arrayBuffer = await response.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer);
   
