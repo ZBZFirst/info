@@ -3,9 +3,9 @@ const config = {
   maxDataPoints: 4000,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 50,
-  minSpeed: 1,
-  maxSpeed: 1000,
+  initialSpeed: 50,  // Much faster starting speed (lower number = faster)
+  minSpeed: 1,      // New minimum speed limit
+  maxSpeed: 1000,    // New maximum speed limit
   dataFiles: ["data.xlsx", "data1.xlsx"]
 };
 
@@ -27,10 +27,7 @@ let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
 let worker = null;
 let lastUpdateTime = 0;
-let playbackInterval = null;
-let lastProcessedTime = 0;
-let nextIndex = 0;
-const targetUPS = 1000; // Updates per second (not tied to frame rate)
+let rowsToSkip = 0;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -47,9 +44,10 @@ fullscreenBtn.className = 'fullscreen-toggle';
 fullscreenBtn.innerHTML = '⛶ Fullscreen';
 chartContainer.appendChild(fullscreenBtn);
 
+// Simplified File Discovery - Only checks /info/js/
 async function findDataFile() {
   const basePath = window.location.origin + '/info/js/';
-  
+
   for (const file of config.dataFiles) {
     const fileUrl = basePath + file;
     try {
@@ -62,15 +60,17 @@ async function findDataFile() {
       console.log("Failed to load:", fileUrl, e);
     }
   }
-  
+
   throw new Error(`None of these files were found in /info/js/: ${config.dataFiles.join(', ')}`);
 }
 
+// Initialize Dashboard
 async function initDashboard() {
   try {
     console.log("Initializing dashboard...");
     const dataFile = await findDataFile();
-    
+
+    // Initialize all charts before worker starts
     charts.main = initTimeSeriesChart('timeSeriesChart', config.valueColumns);
     charts.flow = initTimeSeriesChart('timeSeriesChartFlow', ['flow']);
     charts.pressure = initTimeSeriesChart('timeSeriesChartPressure', ['pressure']);
@@ -150,7 +150,7 @@ async function initDashboard() {
     `;
 
     worker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})));
-    
+
     worker.onmessage = (e) => {
       if (e.data.command === "data") {
         data = e.data.data;
@@ -163,18 +163,18 @@ async function initDashboard() {
         alert("Data processing error: " + e.data.error);
       }
     };
-    
+
     worker.postMessage({
       command: "load",
       url: dataFile,
       timeColumn: config.timeColumn
     });
-    
+
   } catch (error) {
     console.error("Initialization failed:", error);
     alert("Error: " + error.message);
     if (worker) worker.terminate();
-    
+
     // Fallback UI state
     document.querySelectorAll('.chart-container').forEach(container => {
       container.innerHTML += '<div class="error-message">Failed to load data</div>';
@@ -185,10 +185,10 @@ async function initDashboard() {
 function toggleFullscreen() {
   const isFullscreen = chartContainer.dataset.fullscreen === "true";
   chartContainer.dataset.fullscreen = !isFullscreen;
-  
+
   // Update button icon
   fullscreenBtn.innerHTML = isFullscreen ? '⛶ Fullscreen' : '✕ Exit';
-  
+
   // Handle chart resize
   if (window.chart) {
     window.chart.resize();
@@ -328,19 +328,20 @@ function initLoopChart(canvasId, label) {
 
 function updateDisplay(index) {
   if (!data.length) return;
-  
+
   index = Math.max(0, Math.min(index, data.length - 1));
+  currentIndex = index;
   const currentData = data[index];
-  
-  // Throttle chart updates
-  if (playbackSpeed < 300 || index % 10 === 0) {
-    updateTimeSeriesCharts(currentData);
-    if (breathSegments.pv.length > 0) {
-      updateLoopCharts();
-    }
+
+  // Update all time-series charts
+  updateTimeSeriesCharts(currentData);
+
+  // Update loop charts if we have breath segments
+  if (breathSegments.pv.length > 0) {
+    updateLoopCharts();
   }
-  
-  // Always update table (less expensive)
+
+  // Update the data table
   updateTable(currentData);
 }
 
@@ -355,7 +356,7 @@ function updateTimeSeriesCharts(currentData) {
       config.maxDataPoints
     );
   });
-  
+
   // Individual parameter charts
   updateChartDataset(charts.flow, 0, currentData.indexer, currentData.flow, config.maxDataPoints);
   updateChartDataset(charts.pressure, 0, currentData.indexer, currentData.pressure, config.maxDataPoints);
@@ -374,7 +375,7 @@ function updateLoopCharts() {
     pointRadius: 0,
     showLine: true
   }));
-  
+
   // Update FV Loop similarly
   charts.fvLoop.data.datasets = breathSegments.fv.map((segment, i) => ({
     label: `Breath ${breathSegments.fv.length - i}`,
@@ -386,29 +387,29 @@ function updateLoopCharts() {
     pointRadius: 0,
     showLine: true
   }));
-  
+
   charts.pvLoop.update();
   charts.fvLoop.update();
 }
 
 function updateChartDataset(chart, datasetIndex, x, y, maxPoints) {
   const dataset = chart.data.datasets[datasetIndex];
-  
+
   // Check if point already exists
   const exists = dataset.data.some(point => point.x === x);
   if (exists) return;
-  
+
   // Maintain data limits
   if (maxPoints && dataset.data.length >= maxPoints) {
     dataset.data.shift();
   }
-  
+
   // Add new point
   dataset.data.push({ x, y });
-  
+
   // Sort by x value (important for reverse playback)
   dataset.data.sort((a, b) => a.x - b.x);
-  
+
   // Efficient update
   chart.update('none');
 }
@@ -416,74 +417,58 @@ function updateChartDataset(chart, datasetIndex, x, y, maxPoints) {
 function updateTable(currentData) {
   tableBody.innerHTML = "";
   const row = document.createElement("tr");
-  
+
   // Highlight current row
   row.classList.add('current-row');
-  
+
   ["indexer", "displayTime", ...config.valueColumns].forEach(key => {
     const td = document.createElement("td");
     td.textContent = currentData[key];
     row.appendChild(td);
   });
-  
+
   tableBody.appendChild(row);
 }
 
+// Playback Control
+let playbackInterval = null;
 
 function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
-  
-  lastProcessedTime = performance.now();
-  nextIndex = currentIndex;
-  
-  // Use requestAnimationFrame for smoother rendering
-  function playbackFrame() {
-    const now = performance.now();
-    const elapsed = now - lastProcessedTime;
-    lastProcessedTime = now;
-    
-    // Calculate how many rows to process based on speed and elapsed time
-    const rowsToProcess = Math.floor(playbackSpeed * elapsed / 1000);
-    
-    if (rowsToProcess > 0) {
-      // Process in batches to maintain UI responsiveness
-      const batchSize = Math.min(rowsToProcess, 200); // Process max 200 rows per frame
-      let processed = 0;
-      
-      while (processed < batchSize) {
-        nextIndex = (nextIndex + playbackDirection + data.length) % data.length;
-        
-        // Clear data when looping
-        if ((playbackDirection === 1 && nextIndex === 0) || 
-            (playbackDirection === -1 && nextIndex === data.length - 1)) {
-          clearChartData();
-        }
-        
-        // Only render every Nth point at high speeds
-        if (playbackSpeed < 500 || processed % 10 === 0) {
-          updateDisplay(nextIndex);
-        }
-        
-        processed++;
-      }
-      
-      currentIndex = nextIndex;
-    }
-    
-    playbackInterval = requestAnimationFrame(playbackFrame);
-  }
-  
-  playbackInterval = requestAnimationFrame(playbackFrame);
-  playBtn.textContent = "⏸ Pause";
-}
 
-// Helper to clear chart data when looping
-function clearChartData() {
-  config.valueColumns.forEach((col, i) => {
-    if (chart.data.datasets[i]) {
-      chart.data.datasets[i].data = [];
+  lastUpdateTime = performance.now();
+  let lastIndex = currentIndex;
+
+  playbackInterval = setInterval(() => {
+    const now = performance.now();
+    const elapsed = now - lastUpdateTime;
+    lastUpdateTime = now;
+
+    // Calculate how many rows to advance based on speed
+    rowsToSkip += (playbackSpeed * elapsed) / 1000;
+    const rowsToAdvance = Math.floor(rowsToSkip);
+    rowsToSkip -= rowsToAdvance;
+
+    if (rowsToAdvance > 0) {
+      const newIndex = (currentIndex + (playbackDirection * rowsToAdvance) + data.length) % data.length;
+
+      // Detect if we looped around
+      if ((playbackDirection === 1 && newIndex < currentIndex) || 
+          (playbackDirection === -1 && newIndex > currentIndex)) {
+        // Clear all data when we loop
+        config.valueColumns.forEach((col, i) => {
+          if (chart.data.datasets[i]) {
+            chart.data.datasets[i].data = [];
+          }
+        });
+      }
+
+      currentIndex = newIndex;
+      updateDisplay(currentIndex);
+      lastIndex = currentIndex;
     }
-  });
+  }, 16); // ~60fps
+  playBtn.textContent = "⏸ Pause";
 }
 
 function stopPlayback() {
@@ -496,32 +481,26 @@ function stopPlayback() {
 
 // Updated speed control
 function changeSpeed(factor) {
-  const baseChange = playbackSpeed > 500 ? 2 : 1.3; // More aggressive changes at high speeds
   playbackSpeed = Math.max(config.minSpeed, 
                          Math.min(config.maxSpeed, 
-                         playbackSpeed * (factor > 1 ? baseChange : 1/baseChange)));
-  
-  // Update display with precise timing
-  const remainingPoints = playbackDirection === 1 ? 
-    data.length - currentIndex : 
-    currentIndex;
-  const remainingTime = remainingPoints / playbackSpeed;
-  
-  speedDisplay.textContent = `${Math.round(playbackSpeed)} rows/sec (~${remainingTime.toFixed(2)}s left)`;
+                         playbackSpeed * factor));
+
+  // Display as rows per second with remaining time
+  const remaining = (data.length - currentIndex) / playbackSpeed;
+  speedDisplay.textContent = `${playbackSpeed} rows/s (~${remaining.toFixed(1)}s left)`;
 }
 
 function toggleDirection() {
   playbackDirection *= -1;
   reverseBtn.textContent = playbackDirection === 1 ? "⏪ Reverse" : "⏩ Forward";
-  
+
   // Visual feedback on chart
   chart.options.scales.x.title.text = playbackDirection === 1 ? 
     "Time Progression (indexer)" : "Time Reversed (indexer)";
   chart.update();
-  
+
   if (playbackInterval) startPlayback();
 }
-
 // Helper Functions
 function getColor(index) {
   const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
@@ -531,8 +510,8 @@ function getColor(index) {
 // Event Listeners
 playBtn.addEventListener("click", () => playbackInterval ? stopPlayback() : startPlayback());
 stopBtn.addEventListener("click", stopPlayback);
-slowBtn.addEventListener("click", () => changeSpeed(0.7));  // ~30% slower
-fastBtn.addEventListener("click", () => changeSpeed(1.3));  // ~30% faster
+slowBtn.addEventListener("click", () => changeSpeed(1.3));  // ~30% slower
+fastBtn.addEventListener("click", () => changeSpeed(0.7));  // ~30% faster
 reverseBtn.addEventListener("click", toggleDirection);
 
 // Clean up
