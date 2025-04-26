@@ -91,12 +91,12 @@ async function initDashboard() {
         let lastPhase = null;
         let breathCount = 0;
         
-        data.forEach(row => {
-          if (row.phase === 2) return; // Skip invalid data
+        // Process only every 10th row initially for responsiveness
+        for (let i = 0; i < data.length; i += 10) {
+          const row = data[i];
+          if (row.phase === 2) continue;
           
-          // Detect breath start (phase 1 after non-1)
           if (row.phase === 1 && lastPhase !== 1) {
-            // Only store if we have a complete breath (min 10 points)
             if (currentBreath.length > 10) {
               segments.pv.push({
                 id: breathCount++,
@@ -107,7 +107,6 @@ async function initDashboard() {
                 points: currentBreath.map(d => ({x: d.flow, y: d.volume}))
               });
               
-              // Keep only last 3 breaths
               if (segments.pv.length > 3) segments.pv.shift();
               if (segments.fv.length > 3) segments.fv.shift();
             }
@@ -116,7 +115,7 @@ async function initDashboard() {
           
           currentBreath.push(row);
           lastPhase = row.phase;
-        });
+        }
         
         return segments;
       }
