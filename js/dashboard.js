@@ -28,6 +28,9 @@ let playbackSpeed = config.initialSpeed;
 let worker = null;
 let lastUpdateTime = 0;
 let rowsToSkip = 0;
+let animationFrameId = null;
+let lastProcessedIndex = 0;
+let playbackStartTimestamp = 0;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -442,39 +445,50 @@ let lastFrameTime = 0;
 let accumulatedTime = 0;
 
 function startPlayback() {
-  if (playbackInterval) clearInterval(playbackInterval);
-
-  lastFrameTime = performance.now();
+  if (animationFrameId) return; // Already playing
   
-  playbackInterval = setInterval(() => {
-    const now = performance.now();
-    const deltaTime = now - lastFrameTime;
-    lastFrameTime = now;
-
-    // Calculate how much time has passed in playback (adjusted by speed and direction)
-    accumulatedTime += deltaTime * playbackSpeed * playbackDirection;
-
-    // Handle bounds checking based on direction
-    if (playbackDirection === 1) {
-      if (accumulatedTime >= data.length) {
-        // Reached end - loop back to start
-        accumulatedTime = 0;
-        clearChartData();
-      }
-    } else {
-      if (accumulatedTime < 0) {
-        // Reached beginning - loop to end
-        accumulatedTime = data.length - 1;
-        clearChartData();
-      }
-    }
-
-    // Clamp the index to valid range
-    currentIndex = Math.max(0, Math.min(Math.floor(accumulatedTime), data.length - 1));
-    updateDisplay(currentIndex);
-  }, 16); // ~60fps
-  
+  playbackStartTimestamp = performance.now() - (currentIndex / playbackSpeed);
+  lastProcessedIndex = currentIndex;
   playBtn.textContent = "⏸ Pause";
+  
+  function playbackFrame(timestamp) {
+    // Calculate how much real time has elapsed
+    const elapsedRealTime = timestamp - playbackStartTimestamp;
+    
+    // Calculate how much virtual time should have elapsed
+    const elapsedVirtualTime = elapsedRealTime * playbackSpeed;
+    
+    // Determine target index (1 row = 1ms)
+    let targetIndex = Math.floor(elapsedVirtualTime);
+    
+    // Handle direction
+    if (playbackDirection === -1) {
+      targetIndex = data.length - 1 - targetIndex;
+    }
+    
+    // Handle looping
+    if (targetIndex >= data.length) {
+      targetIndex %= data.length;
+      playbackStartTimestamp = timestamp;
+      clearChartData();
+    } else if (targetIndex < 0) {
+      targetIndex = data.length - 1 - (Math.abs(targetIndex) % data.length);
+      playbackStartTimestamp = timestamp;
+      clearChartData();
+    }
+    
+    // Process all rows between last processed and target
+    const step = targetIndex > lastProcessedIndex ? 1 : -1;
+    for (let i = lastProcessedIndex; i !== targetIndex; i += step) {
+      currentIndex = i;
+      updateDisplay(currentIndex);
+    }
+    
+    lastProcessedIndex = targetIndex;
+    animationFrameId = requestAnimationFrame(playbackFrame);
+  }
+  
+  animationFrameId = requestAnimationFrame(playbackFrame);
 }
 
 function clearChartData() {
@@ -488,28 +502,33 @@ function clearChartData() {
 
 
 function stopPlayback() {
-  if (playbackInterval) {
-    clearInterval(playbackInterval);
-    playbackInterval = null;
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
   }
   playBtn.textContent = "▶ Play";
 }
 
 function changeSpeed(factor) {
-  playbackSpeed = Math.max(config.minSpeed, 
-                         Math.min(config.maxSpeed, 
+  const wasPlaying = animationFrameId !== null;
+  const currentTimestamp = performance.now();
+  
+  // Calculate current virtual time
+  const currentVirtualTime = wasPlaying 
+    ? (currentTimestamp - playbackStartTimestamp) * playbackSpeed
+    : currentIndex;
+  
+  // Adjust speed
+  playbackSpeed = Math.max(config.minSpeed,
+                         Math.min(config.maxSpeed,
                          playbackSpeed * factor));
-
-  // Display speed multiplier and estimated time remaining
-  let remainingTime;
-  if (playbackDirection === 1) {
-    remainingTime = (data.length - currentIndex) / playbackSpeed;
-  } else {
-    remainingTime = currentIndex / playbackSpeed;
+  
+  // Adjust start timestamp to maintain position
+  if (wasPlaying) {
+    playbackStartTimestamp = currentTimestamp - (currentVirtualTime / playbackSpeed);
   }
   
-  const remainingSeconds = remainingTime / 1000;
-  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (${playbackDirection === 1 ? '▶' : '◀'} ~${remainingSeconds.toFixed(1)}s)`;
+  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (${playbackDirection === 1 ? '▶' : '◀'})`;
 }
 
 function toggleDirection() {
