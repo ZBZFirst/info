@@ -27,6 +27,10 @@ let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
 let worker = null;
 let lastUpdateTime = 0;
+let playbackInterval = null;
+let lastProcessedTime = 0;
+let nextIndex = 0;
+const targetUPS = 1000; // Updates per second (not tied to frame rate)
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -326,18 +330,17 @@ function updateDisplay(index) {
   if (!data.length) return;
   
   index = Math.max(0, Math.min(index, data.length - 1));
-  currentIndex = index;
   const currentData = data[index];
   
-  // Update all time-series charts
-  updateTimeSeriesCharts(currentData);
-  
-  // Update loop charts if we have breath segments
-  if (breathSegments.pv.length > 0) {
-    updateLoopCharts();
+  // Throttle chart updates
+  if (playbackSpeed < 300 || index % 10 === 0) {
+    updateTimeSeriesCharts(currentData);
+    if (breathSegments.pv.length > 0) {
+      updateLoopCharts();
+    }
   }
   
-  // Update the data table
+  // Always update table (less expensive)
   updateTable(currentData);
 }
 
@@ -432,28 +435,48 @@ let playbackInterval = null;
 function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
   
-  lastUpdateTime = performance.now();
-  let lastRenderedIndex = currentIndex;
+  lastProcessedTime = performance.now();
+  nextIndex = currentIndex;
   
-  playbackInterval = setInterval(() => {
+  // Use requestAnimationFrame for smoother rendering
+  function playbackFrame() {
     const now = performance.now();
-    const elapsed = now - lastUpdateTime;
-    lastUpdateTime = now;
+    const elapsed = now - lastProcessedTime;
+    lastProcessedTime = now;
     
-    // Calculate exact position (can be fractional)
-    const targetPos = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
+    // Calculate how many rows to process based on speed and elapsed time
+    const rowsToProcess = Math.floor(playbackSpeed * elapsed / 1000);
     
-    // Render all intermediate points
-    while (
-      (playbackDirection === 1 && lastRenderedIndex < targetPos) ||
-      (playbackDirection === -1 && lastRenderedIndex > targetPos)
-    ) {
-      lastRenderedIndex += playbackDirection;
-      updateDisplay(lastRenderedIndex);
+    if (rowsToProcess > 0) {
+      // Process in batches to maintain UI responsiveness
+      const batchSize = Math.min(rowsToProcess, 200); // Process max 200 rows per frame
+      let processed = 0;
+      
+      while (processed < batchSize) {
+        nextIndex = (nextIndex + playbackDirection + data.length) % data.length;
+        
+        // Clear data when looping
+        if ((playbackDirection === 1 && nextIndex === 0) || 
+            (playbackDirection === -1 && nextIndex === data.length - 1)) {
+          clearChartData();
+        }
+        
+        // Only render every Nth point at high speeds
+        if (playbackSpeed < 500 || processed % 10 === 0) {
+          updateDisplay(nextIndex);
+        }
+        
+        processed++;
+      }
+      
+      currentIndex = nextIndex;
     }
     
-    currentIndex = targetPos;
-  }, 16);
+    playbackInterval = requestAnimationFrame(playbackFrame);
+  }
+  
+  playbackInterval = requestAnimationFrame(playbackFrame);
+  playBtn.textContent = "⏸ Pause";
 }
 
 // Helper to clear chart data when looping
@@ -475,13 +498,18 @@ function stopPlayback() {
 
 // Updated speed control
 function changeSpeed(factor) {
+  const baseChange = playbackSpeed > 500 ? 2 : 1.3; // More aggressive changes at high speeds
   playbackSpeed = Math.max(config.minSpeed, 
                          Math.min(config.maxSpeed, 
-                         playbackSpeed * factor));
+                         playbackSpeed * (factor > 1 ? baseChange : 1/baseChange)));
   
-  // Display as rows per second with remaining time
-  const remaining = (data.length - currentIndex) / playbackSpeed;
-  speedDisplay.textContent = `${playbackSpeed} rows/s (~${remaining.toFixed(1)}s left)`;
+  // Update display with precise timing
+  const remainingPoints = playbackDirection === 1 ? 
+    data.length - currentIndex : 
+    currentIndex;
+  const remainingTime = remainingPoints / playbackSpeed;
+  
+  speedDisplay.textContent = `${Math.round(playbackSpeed)} rows/sec (~${remainingTime.toFixed(2)}s left)`;
 }
 
 function toggleDirection() {
@@ -495,6 +523,7 @@ function toggleDirection() {
   
   if (playbackInterval) startPlayback();
 }
+
 // Helper Functions
 function getColor(index) {
   const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
