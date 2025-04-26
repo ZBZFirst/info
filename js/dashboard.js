@@ -439,39 +439,47 @@ function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
 
   lastFrameTime = performance.now();
-  accumulatedTime = 0;
-
+  
   playbackInterval = setInterval(() => {
     const now = performance.now();
     const deltaTime = now - lastFrameTime;
     lastFrameTime = now;
 
-    // Calculate how much time has passed in playback (adjusted by speed)
-    accumulatedTime += deltaTime * playbackSpeed;
+    // Calculate how much time has passed in playback (adjusted by speed and direction)
+    accumulatedTime += deltaTime * playbackSpeed * playbackDirection;
 
-    // Each row represents 1ms, so accumulatedTime is in ms
-    const targetIndex = Math.floor(accumulatedTime);
-    
-    if (targetIndex >= data.length) {
-      // Reached end of data - loop or stop
-      accumulatedTime = 0;
-      currentIndex = 0;
-      
-      // Clear all data when we loop
-      Object.values(charts).forEach(chart => {
-        chart.data.datasets.forEach(dataset => {
-          dataset.data = [];
-        });
-      });
+    // Handle bounds checking based on direction
+    if (playbackDirection === 1) {
+      if (accumulatedTime >= data.length) {
+        // Reached end - loop back to start
+        accumulatedTime = 0;
+        clearChartData();
+      }
     } else {
-      currentIndex = targetIndex;
+      if (accumulatedTime < 0) {
+        // Reached beginning - loop to end
+        accumulatedTime = data.length - 1;
+        clearChartData();
+      }
     }
 
+    // Clamp the index to valid range
+    currentIndex = Math.max(0, Math.min(Math.floor(accumulatedTime), data.length - 1));
     updateDisplay(currentIndex);
   }, 16); // ~60fps
   
   playBtn.textContent = "⏸ Pause";
 }
+
+function clearChartData() {
+  // Clear all chart data when looping
+  Object.values(charts).forEach(chart => {
+    chart.data.datasets.forEach(dataset => {
+      dataset.data = [];
+    });
+  });
+}
+
 
 function stopPlayback() {
   if (playbackInterval) {
@@ -481,31 +489,37 @@ function stopPlayback() {
   playBtn.textContent = "▶ Play";
 }
 
-// Updated speed control
 function changeSpeed(factor) {
   playbackSpeed = Math.max(config.minSpeed, 
                          Math.min(config.maxSpeed, 
                          playbackSpeed * factor));
 
   // Display speed multiplier and estimated time remaining
-  const remainingTime = (data.length - currentIndex) / playbackSpeed;
+  let remainingTime;
+  if (playbackDirection === 1) {
+    remainingTime = (data.length - currentIndex) / playbackSpeed;
+  } else {
+    remainingTime = currentIndex / playbackSpeed;
+  }
+  
   const remainingSeconds = remainingTime / 1000;
-  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (~${remainingSeconds.toFixed(1)}s left)`;
+  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (${playbackDirection === 1 ? '▶' : '◀'} ~${remainingSeconds.toFixed(1)}s)`;
 }
 
 function toggleDirection() {
   playbackDirection *= -1;
   reverseBtn.textContent = playbackDirection === 1 ? "⏪ Reverse" : "⏩ Forward";
   
-  // We'll need to modify the playback system to handle reverse
-  // For now, just toggle the direction indicator
-  if (playbackInterval) startPlayback();
-}
+  // Update chart titles to reflect direction
+  Object.values(charts).forEach(chart => {
+    if (chart.options.scales && chart.options.scales.x) {
+      chart.options.scales.x.title.text = playbackDirection === 1 ? 
+        "Time Progression (indexer)" : "Time Reversed (indexer)";
+    }
+    chart.update();
+  });
 
-// Helper Functions
-function getColor(index) {
-  const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
-  return colors[index % colors.length];
+  if (playbackInterval) startPlayback();
 }
 
 // Event Listeners
