@@ -429,8 +429,6 @@ function updateTable(currentData) {
   tableBody.appendChild(row);
 }
 
-// Playback Control
-let playbackInterval = null;
 
 function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
