@@ -88,33 +88,56 @@ async function initDashboard() {
       function processBreathSegments(data) {
         const segments = { pv: [], fv: [] };
         let currentBreath = [];
-        let lastPhase = null;
+        let inBreath = false;
         let breathCount = 0;
-        
-        // Process only every 10th row initially for responsiveness
-        for (let i = 0; i < data.length; i += 10) {
+      
+        for (let i = 0; i < data.length; i++) {
           const row = data[i];
-          if (row.phase === 2) continue;
           
-          if (row.phase === 1 && lastPhase !== 1) {
-            if (currentBreath.length > 10) {
-              segments.pv.push({
-                id: breathCount++,
-                points: currentBreath.map(d => ({x: d.volume, y: d.pressure}))
-              });
-              segments.fv.push({
-                id: breathCount++,
-                points: currentBreath.map(d => ({x: d.flow, y: d.volume}))
-              });
-              
-              if (segments.pv.length > 3) segments.pv.shift();
-              if (segments.fv.length > 3) segments.fv.shift();
-            }
-            currentBreath = [];
+          // Detect breath start (phase changes from 0 to 1)
+          if (row.phase === 1 && !inBreath) {
+            inBreath = true;
+            currentBreath = []; // Start new breath
           }
           
-          currentBreath.push(row);
-          lastPhase = row.phase;
+          // If we're in a breath, collect data
+          if (inBreath) {
+            currentBreath.push(row);
+            
+            // Detect breath end (phase changes from 1 to 0)
+            if (row.phase === 0 && inBreath) {
+              inBreath = false;
+              
+              // Only store if we have a complete breath (minimum points)
+              if (currentBreath.length >= 10) {
+                // PV Loop data (Pressure vs Volume)
+                segments.pv.push({
+                  id: breathCount,
+                  points: currentBreath.map(d => ({
+                    x: d.volume,
+                    y: d.pressure,
+                    timestamp: d.timestamp
+                  }))
+                });
+                
+                // FV Loop data (Flow vs Volume)
+                segments.fv.push({
+                  id: breathCount,
+                  points: currentBreath.map(d => ({
+                    x: d.flow,
+                    y: d.volume,
+                    timestamp: d.timestamp
+                  }))
+                });
+                
+                breathCount++;
+                
+                // Keep only last 3 breaths
+                if (segments.pv.length > 3) segments.pv.shift();
+                if (segments.fv.length > 3) segments.fv.shift();
+              }
+            }
+          }
         }
         
         return segments;
@@ -313,43 +336,97 @@ function initLoopChart(canvasId, label) {
   return new Chart(ctx, {
     type: 'scatter',
     data: {
-      datasets: [{
-        label: label,
-        data: [],
-        borderColor: '#4e79a7',
-        backgroundColor: 'rgba(78, 121, 167, 0.1)',
-        borderWidth: 2,
-        showLine: true,
-        pointRadius: 0
-      }]
+      datasets: [] // Start with empty datasets
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { title: { display: true, text: canvasId === 'PVLoop' ? 'Volume' : 'Flow' } },
-        y: { title: { display: true, text: canvasId === 'PVLoop' ? 'Pressure' : 'Volume' } }
+        x: { 
+          title: { display: true, text: canvasId === 'PVLoop' ? 'Volume' : 'Flow' },
+          min: 0,
+          max: 1000 // Set appropriate initial bounds
+        },
+        y: { 
+          title: { display: true, text: canvasId === 'PVLoop' ? 'Pressure' : 'Volume' },
+          min: 0,
+          max: 100 // Set appropriate initial bounds
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const point = context.raw;
+              return [
+                `Breath: ${context.dataset.label}`,
+                canvasId === 'PVLoop' 
+                  ? `Pressure: ${point.y.toFixed(2)}` 
+                  : `Volume: ${point.y.toFixed(2)}`,
+                canvasId === 'PVLoop' 
+                  ? `Volume: ${point.x.toFixed(2)}` 
+                  : `Flow: ${point.x.toFixed(2)}`,
+                `Time: ${point.timestamp || ''}`
+              ];
+            }
+          }
+        }
       }
     }
   });
 }
 
+let currentBreathPhase = 0;
+let currentBreathData = [];
+
 function updateDisplay(index) {
   if (!data.length) return;
 
-  index = Math.max(0, Math.min(index, data.length - 1));
-  currentIndex = index;
   const currentData = data[index];
-
-  // Update all time-series charts
-  updateTimeSeriesCharts(currentData);
-
-  // Update loop charts if we have breath segments
-  if (breathSegments.pv.length > 0) {
-    updateLoopCharts();
+  
+  // Track breath phase changes
+  if (currentData.phase !== currentBreathPhase) {
+    // Phase changed from 0 to 1 (new breath starting)
+    if (currentData.phase === 1 && currentBreathPhase === 0) {
+      currentBreathData = [];
+    }
+    // Phase changed from 1 to 0 (breath ending)
+    else if (currentData.phase === 0 && currentBreathPhase === 1) {
+      if (currentBreathData.length >= 10) {
+        // Add to breath segments
+        const breathId = breathSegments.pv.length;
+        
+        breathSegments.pv.push({
+          id: breathId,
+          points: currentBreathData.map(d => ({x: d.volume, y: d.pressure}))
+        });
+        
+        breathSegments.fv.push({
+          id: breathId,
+          points: currentBreathData.map(d => ({x: d.flow, y: d.volume}))
+        });
+        
+        // Keep only last 3 breaths
+        if (breathSegments.pv.length > 3) breathSegments.pv.shift();
+        if (breathSegments.fv.length > 3) breathSegments.fv.shift();
+        
+        updateLoopCharts();
+      }
+    }
+    currentBreathPhase = currentData.phase;
   }
 
-  // Update the data table
+  // If we're in a breath (phase = 1), collect data
+  if (currentBreathPhase === 1) {
+    currentBreathData.push(currentData);
+  }
+
+  // Rest of your update logic...
+  updateTimeSeriesCharts(currentData);
   updateTable(currentData);
 }
 
@@ -372,9 +449,11 @@ function updateTimeSeriesCharts(currentData) {
 }
 
 function updateLoopCharts() {
-  // Update PV Loop with last 3 breaths (different colors)
-  charts.pvLoop.data.datasets = breathSegments.pv.map((segment, i) => ({
-    label: `Breath ${breathSegments.pv.length - i}`,
+  if (!breathSegments.pv.length) return;
+
+  // Update PV Loop with last 3 breaths
+  charts.pvLoop.data.datasets = breathSegments.pv.slice(-3).map((segment, i) => ({
+    label: `Breath ${segment.id}`,
     data: segment.points,
     borderColor: getColor(i),
     backgroundColor: 'transparent',
@@ -385,10 +464,10 @@ function updateLoopCharts() {
   }));
 
   // Update FV Loop similarly
-  charts.fvLoop.data.datasets = breathSegments.fv.map((segment, i) => ({
-    label: `Breath ${breathSegments.fv.length - i}`,
+  charts.fvLoop.data.datasets = breathSegments.fv.slice(-3).map((segment, i) => ({
+    label: `Breath ${segment.id}`,
     data: segment.points,
-    borderColor: getColor(i),
+    borderColor: getColor(i + 3), // Different color range
     backgroundColor: 'transparent',
     borderWidth: 2,
     tension: 0.1,
@@ -396,8 +475,11 @@ function updateLoopCharts() {
     showLine: true
   }));
 
-  charts.pvLoop.update();
-  charts.fvLoop.update();
+  // Only update if we have new data
+  if (charts.pvLoop.data.datasets.length > 0) {
+    charts.pvLoop.update();
+    charts.fvLoop.update();
+  }
 }
 
 function updateChartDataset(chart, datasetIndex, x, y, maxPoints) {
