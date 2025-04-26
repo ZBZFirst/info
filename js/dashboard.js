@@ -516,8 +516,8 @@ function getColor(index) {
 // Event Listeners
 playBtn.addEventListener("click", () => playbackInterval ? stopPlayback() : startPlayback());
 stopBtn.addEventListener("click", stopPlayback);
-slowBtn.addEventListener("click", () => changeSpeed(1.3));  // ~30% slower
-fastBtn.addEventListener("click", () => changeSpeed(0.7));  // ~30% faster
+slowBtn.addEventListener("click", () => changeSpeed(0.7));  // ~30% slower
+fastBtn.addEventListener("click", () => changeSpeed(1.3));  // ~30% faster
 reverseBtn.addEventListener("click", toggleDirection);
 
 // Clean up
