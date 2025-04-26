@@ -27,7 +27,8 @@ let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
 let worker = null;
 let lastUpdateTime = 0;
-let rowsToSkip = 0;
+const targetIndex = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
+const step = playbackDirection > 0 ? 1 : -1;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -444,31 +445,41 @@ function startPlayback() {
     const elapsed = now - lastUpdateTime;
     lastUpdateTime = now;
     
-    // Calculate how many rows to advance based on speed
-    rowsToSkip += (playbackSpeed * elapsed) / 1000;
-    const rowsToAdvance = Math.floor(rowsToSkip);
-    rowsToSkip -= rowsToAdvance;
+    // Calculate exact target index (no fractional tracking needed)
+    const targetIndex = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
     
-    if (rowsToAdvance > 0) {
-      const newIndex = (currentIndex + (playbackDirection * rowsToAdvance) + data.length) % data.length;
-      
-      // Detect if we looped around
-      if ((playbackDirection === 1 && newIndex < currentIndex) || 
-          (playbackDirection === -1 && newIndex > currentIndex)) {
-        // Clear all data when we loop
-        config.valueColumns.forEach((col, i) => {
-          if (chart.data.datasets[i]) {
-            chart.data.datasets[i].data = [];
-          }
-        });
+    // Handle direction and looping
+    if (playbackDirection === 1) {
+      if (targetIndex >= data.length) {
+        // Loop around to start
+        currentIndex = 0;
+        clearChartData(); // Clear when looping
+      } else {
+        currentIndex = Math.min(data.length - 1, targetIndex);
       }
-      
-      currentIndex = newIndex;
-      updateDisplay(currentIndex);
-      lastIndex = currentIndex;
+    } else { // Reverse direction
+      if (targetIndex < 0) {
+        // Loop around to end
+        currentIndex = data.length - 1;
+        clearChartData(); // Clear when looping
+      } else {
+        currentIndex = Math.max(0, targetIndex);
+      }
     }
+    
+    updateDisplay(Math.floor(currentIndex)); // Ensure integer index
   }, 16); // ~60fps
+  
   playBtn.textContent = "⏸ Pause";
+}
+
+// Helper to clear chart data when looping
+function clearChartData() {
+  config.valueColumns.forEach((col, i) => {
+    if (chart.data.datasets[i]) {
+      chart.data.datasets[i].data = [];
+    }
+  });
 }
 
 function stopPlayback() {
