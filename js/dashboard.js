@@ -3,9 +3,9 @@ const config = {
   maxDataPoints: 4000,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 50,  // Much faster starting speed (lower number = faster)
-  minSpeed: 1,      // New minimum speed limit
-  maxSpeed: 1000,    // New maximum speed limit
+  initialSpeed: 1.0,    // 1.0 = real-time (1ms per row)
+  minSpeed: 0.1,        // 10x slower (10ms per row)
+  maxSpeed: 100.0,      // 100x faster (0.01ms per row)
   dataFiles: ["data.xlsx", "data1.xlsx"]
 };
 
@@ -432,42 +432,44 @@ function updateTable(currentData) {
 
 // Playback Control
 let playbackInterval = null;
+let lastFrameTime = 0;
+let accumulatedTime = 0;
 
 function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
 
-  lastUpdateTime = performance.now();
-  let lastIndex = currentIndex;
+  lastFrameTime = performance.now();
+  accumulatedTime = 0;
 
   playbackInterval = setInterval(() => {
     const now = performance.now();
-    const elapsed = now - lastUpdateTime;
-    lastUpdateTime = now;
+    const deltaTime = now - lastFrameTime;
+    lastFrameTime = now;
 
-    // Calculate how many rows to advance based on speed
-    rowsToSkip += (playbackSpeed * elapsed) / 1000;
-    const rowsToAdvance = Math.floor(rowsToSkip);
-    rowsToSkip -= rowsToAdvance;
+    // Calculate how much time has passed in playback (adjusted by speed)
+    accumulatedTime += deltaTime * playbackSpeed;
 
-    if (rowsToAdvance > 0) {
-      const newIndex = (currentIndex + (playbackDirection * rowsToAdvance) + data.length) % data.length;
-
-      // Detect if we looped around
-      if ((playbackDirection === 1 && newIndex < currentIndex) || 
-          (playbackDirection === -1 && newIndex > currentIndex)) {
-        // Clear all data when we loop
-        config.valueColumns.forEach((col, i) => {
-          if (chart.data.datasets[i]) {
-            chart.data.datasets[i].data = [];
-          }
+    // Each row represents 1ms, so accumulatedTime is in ms
+    const targetIndex = Math.floor(accumulatedTime);
+    
+    if (targetIndex >= data.length) {
+      // Reached end of data - loop or stop
+      accumulatedTime = 0;
+      currentIndex = 0;
+      
+      // Clear all data when we loop
+      Object.values(charts).forEach(chart => {
+        chart.data.datasets.forEach(dataset => {
+          dataset.data = [];
         });
-      }
-
-      currentIndex = newIndex;
-      updateDisplay(currentIndex);
-      lastIndex = currentIndex;
+      });
+    } else {
+      currentIndex = targetIndex;
     }
+
+    updateDisplay(currentIndex);
   }, 16); // ~60fps
+  
   playBtn.textContent = "⏸ Pause";
 }
 
@@ -485,22 +487,21 @@ function changeSpeed(factor) {
                          Math.min(config.maxSpeed, 
                          playbackSpeed * factor));
 
-  // Display as rows per second with remaining time
-  const remaining = (data.length - currentIndex) / playbackSpeed;
-  speedDisplay.textContent = `${playbackSpeed} rows/s (~${remaining.toFixed(1)}s left)`;
+  // Display speed multiplier and estimated time remaining
+  const remainingTime = (data.length - currentIndex) / playbackSpeed;
+  const remainingSeconds = remainingTime / 1000;
+  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (~${remainingSeconds.toFixed(1)}s left)`;
 }
 
 function toggleDirection() {
   playbackDirection *= -1;
   reverseBtn.textContent = playbackDirection === 1 ? "⏪ Reverse" : "⏩ Forward";
-
-  // Visual feedback on chart
-  chart.options.scales.x.title.text = playbackDirection === 1 ? 
-    "Time Progression (indexer)" : "Time Reversed (indexer)";
-  chart.update();
-
+  
+  // We'll need to modify the playback system to handle reverse
+  // For now, just toggle the direction indicator
   if (playbackInterval) startPlayback();
 }
+
 // Helper Functions
 function getColor(index) {
   const colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
