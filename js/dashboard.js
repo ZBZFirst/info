@@ -438,37 +438,34 @@ function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
   
   lastUpdateTime = performance.now();
-  let lastIndex = currentIndex;
   
   playbackInterval = setInterval(() => {
     const now = performance.now();
-    const elapsed = now - lastUpdateTime;
+    const elapsed = now - lastUpdateTime; // Define elapsed FIRST
     lastUpdateTime = now;
     
-    // Calculate exact target index (no fractional tracking needed)
-    const targetIndex = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
+    // Calculate target position (continuous, not per-row)
+    const targetPosition = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
     
-    // Handle direction and looping
+    // Handle wrapping and direction
     if (playbackDirection === 1) {
-      if (targetIndex >= data.length) {
-        // Loop around to start
+      if (targetPosition >= data.length) {
         currentIndex = 0;
-        clearChartData(); // Clear when looping
+        clearChartData();
       } else {
-        currentIndex = Math.min(data.length - 1, targetIndex);
+        currentIndex = Math.min(data.length - 1, targetPosition);
       }
     } else { // Reverse direction
-      if (targetIndex < 0) {
-        // Loop around to end
+      if (targetPosition < 0) {
         currentIndex = data.length - 1;
-        clearChartData(); // Clear when looping
+        clearChartData();
       } else {
-        currentIndex = Math.max(0, targetIndex);
+        currentIndex = Math.max(0, targetPosition);
       }
     }
     
-    updateDisplay(Math.floor(currentIndex)); // Ensure integer index
-  }, 16); // ~60fps
+    updateDisplay(Math.floor(currentIndex));
+  }, 16);
   
   playBtn.textContent = "⏸ Pause";
 }
