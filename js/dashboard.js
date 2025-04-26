@@ -3,9 +3,9 @@ const config = {
   maxDataPoints: 4000,
   timeColumn: "timestamp",
   valueColumns: ["flow", "pressure", "phase", "volume"],
-  initialSpeed: 50,  // Much faster starting speed (lower number = faster)
-  minSpeed: 1,      // New minimum speed limit
-  maxSpeed: 1000,    // New maximum speed limit
+  initialSpeed: 50,
+  minSpeed: 1,
+  maxSpeed: 1000,
   dataFiles: ["data.xlsx", "data1.xlsx"]
 };
 
@@ -43,7 +43,6 @@ fullscreenBtn.className = 'fullscreen-toggle';
 fullscreenBtn.innerHTML = '⛶ Fullscreen';
 chartContainer.appendChild(fullscreenBtn);
 
-// Simplified File Discovery - Only checks /info/js/
 async function findDataFile() {
   const basePath = window.location.origin + '/info/js/';
   
@@ -63,13 +62,11 @@ async function findDataFile() {
   throw new Error(`None of these files were found in /info/js/: ${config.dataFiles.join(', ')}`);
 }
 
-// Initialize Dashboard
 async function initDashboard() {
   try {
     console.log("Initializing dashboard...");
     const dataFile = await findDataFile();
     
-    // Initialize all charts before worker starts
     charts.main = initTimeSeriesChart('timeSeriesChart', config.valueColumns);
     charts.flow = initTimeSeriesChart('timeSeriesChartFlow', ['flow']);
     charts.pressure = initTimeSeriesChart('timeSeriesChartPressure', ['pressure']);
@@ -436,36 +433,27 @@ function startPlayback() {
   if (playbackInterval) clearInterval(playbackInterval);
   
   lastUpdateTime = performance.now();
+  let lastRenderedIndex = currentIndex;
   
   playbackInterval = setInterval(() => {
     const now = performance.now();
-    const elapsed = now - lastUpdateTime; // Define elapsed FIRST
+    const elapsed = now - lastUpdateTime;
     lastUpdateTime = now;
     
-    // Calculate target position (continuous, not per-row)
-    const targetPosition = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
+    // Calculate exact position (can be fractional)
+    const targetPos = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
     
-    // Handle wrapping and direction
-    if (playbackDirection === 1) {
-      if (targetPosition >= data.length) {
-        currentIndex = 0;
-        clearChartData();
-      } else {
-        currentIndex = Math.min(data.length - 1, targetPosition);
-      }
-    } else { // Reverse direction
-      if (targetPosition < 0) {
-        currentIndex = data.length - 1;
-        clearChartData();
-      } else {
-        currentIndex = Math.max(0, targetPosition);
-      }
+    // Render all intermediate points
+    while (
+      (playbackDirection === 1 && lastRenderedIndex < targetPos) ||
+      (playbackDirection === -1 && lastRenderedIndex > targetPos)
+    ) {
+      lastRenderedIndex += playbackDirection;
+      updateDisplay(lastRenderedIndex);
     }
     
-    updateDisplay(Math.floor(currentIndex));
+    currentIndex = targetPos;
   }, 16);
-  
-  playBtn.textContent = "⏸ Pause";
 }
 
 // Helper to clear chart data when looping
