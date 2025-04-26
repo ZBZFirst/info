@@ -28,9 +28,6 @@ let playbackSpeed = config.initialSpeed;
 let worker = null;
 let lastUpdateTime = 0;
 let rowsToSkip = 0;
-let animationFrameId = null;
-let lastProcessedIndex = 0;
-let playbackStartTimestamp = 0;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
@@ -88,57 +85,35 @@ async function initDashboard() {
       function processBreathSegments(data) {
         const segments = { pv: [], fv: [] };
         let currentBreath = [];
-        let inBreath = false;
+        let lastPhase = null;
         let breathCount = 0;
-      
-        for (let i = 0; i < data.length; i++) {
-          const row = data[i];
+        
+        data.forEach(row => {
+          if (row.phase === 2) return; // Skip invalid data
           
-          // Detect breath start (phase changes from 0 to 1)
-          if (row.phase === 1 && !inBreath) {
-            inBreath = true;
-            currentBreath = []; // Start new breath
-          }
-          
-          // If we're in a breath, collect data
-          if (inBreath) {
-            currentBreath.push(row);
-            
-            // Detect breath end (phase changes from 1 to 0)
-            if (row.phase === 0 && inBreath) {
-              inBreath = false;
+          // Detect breath start (phase 1 after non-1)
+          if (row.phase === 1 && lastPhase !== 1) {
+            // Only store if we have a complete breath (min 10 points)
+            if (currentBreath.length > 10) {
+              segments.pv.push({
+                id: breathCount++,
+                points: currentBreath.map(d => ({x: d.volume, y: d.pressure}))
+              });
+              segments.fv.push({
+                id: breathCount++,
+                points: currentBreath.map(d => ({x: d.flow, y: d.volume}))
+              });
               
-              // Only store if we have a complete breath (minimum points)
-              if (currentBreath.length >= 10) {
-                // PV Loop data (Pressure vs Volume)
-                segments.pv.push({
-                  id: breathCount,
-                  points: currentBreath.map(d => ({
-                    x: d.volume,
-                    y: d.pressure,
-                    timestamp: d.timestamp
-                  }))
-                });
-                
-                // FV Loop data (Flow vs Volume)
-                segments.fv.push({
-                  id: breathCount,
-                  points: currentBreath.map(d => ({
-                    x: d.flow,
-                    y: d.volume,
-                    timestamp: d.timestamp
-                  }))
-                });
-                
-                breathCount++;
-                
-                // Keep only last 3 breaths
-                if (segments.pv.length > 3) segments.pv.shift();
-                if (segments.fv.length > 3) segments.fv.shift();
-              }
+              // Keep only last 3 breaths
+              if (segments.pv.length > 3) segments.pv.shift();
+              if (segments.fv.length > 3) segments.fv.shift();
             }
+            currentBreath = [];
           }
-        }
+          
+          currentBreath.push(row);
+          lastPhase = row.phase;
+        });
         
         return segments;
       }
@@ -336,97 +311,43 @@ function initLoopChart(canvasId, label) {
   return new Chart(ctx, {
     type: 'scatter',
     data: {
-      datasets: [] // Start with empty datasets
+      datasets: [{
+        label: label,
+        data: [],
+        borderColor: '#4e79a7',
+        backgroundColor: 'rgba(78, 121, 167, 0.1)',
+        borderWidth: 2,
+        showLine: true,
+        pointRadius: 0
+      }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { 
-          title: { display: true, text: canvasId === 'PVLoop' ? 'Volume' : 'Flow' },
-          min: 0,
-          max: 1000 // Set appropriate initial bounds
-        },
-        y: { 
-          title: { display: true, text: canvasId === 'PVLoop' ? 'Pressure' : 'Volume' },
-          min: 0,
-          max: 100 // Set appropriate initial bounds
-        }
-      },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top'
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const point = context.raw;
-              return [
-                `Breath: ${context.dataset.label}`,
-                canvasId === 'PVLoop' 
-                  ? `Pressure: ${point.y.toFixed(2)}` 
-                  : `Volume: ${point.y.toFixed(2)}`,
-                canvasId === 'PVLoop' 
-                  ? `Volume: ${point.x.toFixed(2)}` 
-                  : `Flow: ${point.x.toFixed(2)}`,
-                `Time: ${point.timestamp || ''}`
-              ];
-            }
-          }
-        }
+        x: { title: { display: true, text: canvasId === 'PVLoop' ? 'Volume' : 'Flow' } },
+        y: { title: { display: true, text: canvasId === 'PVLoop' ? 'Pressure' : 'Volume' } }
       }
     }
   });
 }
 
-let currentBreathPhase = 0;
-let currentBreathData = [];
-
 function updateDisplay(index) {
   if (!data.length) return;
 
+  index = Math.max(0, Math.min(index, data.length - 1));
+  currentIndex = index;
   const currentData = data[index];
-  
-  // Track breath phase changes
-  if (currentData.phase !== currentBreathPhase) {
-    // Phase changed from 0 to 1 (new breath starting)
-    if (currentData.phase === 1 && currentBreathPhase === 0) {
-      currentBreathData = [];
-    }
-    // Phase changed from 1 to 0 (breath ending)
-    else if (currentData.phase === 0 && currentBreathPhase === 1) {
-      if (currentBreathData.length >= 10) {
-        // Add to breath segments
-        const breathId = breathSegments.pv.length;
-        
-        breathSegments.pv.push({
-          id: breathId,
-          points: currentBreathData.map(d => ({x: d.volume, y: d.pressure}))
-        });
-        
-        breathSegments.fv.push({
-          id: breathId,
-          points: currentBreathData.map(d => ({x: d.flow, y: d.volume}))
-        });
-        
-        // Keep only last 3 breaths
-        if (breathSegments.pv.length > 3) breathSegments.pv.shift();
-        if (breathSegments.fv.length > 3) breathSegments.fv.shift();
-        
-        updateLoopCharts();
-      }
-    }
-    currentBreathPhase = currentData.phase;
-  }
 
-  // If we're in a breath (phase = 1), collect data
-  if (currentBreathPhase === 1) {
-    currentBreathData.push(currentData);
-  }
-
-  // Rest of your update logic...
+  // Update all time-series charts
   updateTimeSeriesCharts(currentData);
+
+  // Update loop charts if we have breath segments
+  if (breathSegments.pv.length > 0) {
+    updateLoopCharts();
+  }
+
+  // Update the data table
   updateTable(currentData);
 }
 
@@ -449,11 +370,9 @@ function updateTimeSeriesCharts(currentData) {
 }
 
 function updateLoopCharts() {
-  if (!breathSegments.pv.length) return;
-
-  // Update PV Loop with last 3 breaths
-  charts.pvLoop.data.datasets = breathSegments.pv.slice(-3).map((segment, i) => ({
-    label: `Breath ${segment.id}`,
+  // Update PV Loop with last 3 breaths (different colors)
+  charts.pvLoop.data.datasets = breathSegments.pv.map((segment, i) => ({
+    label: `Breath ${breathSegments.pv.length - i}`,
     data: segment.points,
     borderColor: getColor(i),
     backgroundColor: 'transparent',
@@ -464,10 +383,10 @@ function updateLoopCharts() {
   }));
 
   // Update FV Loop similarly
-  charts.fvLoop.data.datasets = breathSegments.fv.slice(-3).map((segment, i) => ({
-    label: `Breath ${segment.id}`,
+  charts.fvLoop.data.datasets = breathSegments.fv.map((segment, i) => ({
+    label: `Breath ${breathSegments.fv.length - i}`,
     data: segment.points,
-    borderColor: getColor(i + 3), // Different color range
+    borderColor: getColor(i),
     backgroundColor: 'transparent',
     borderWidth: 2,
     tension: 0.1,
@@ -475,11 +394,8 @@ function updateLoopCharts() {
     showLine: true
   }));
 
-  // Only update if we have new data
-  if (charts.pvLoop.data.datasets.length > 0) {
-    charts.pvLoop.update();
-    charts.fvLoop.update();
-  }
+  charts.pvLoop.update();
+  charts.fvLoop.update();
 }
 
 function updateChartDataset(chart, datasetIndex, x, y, maxPoints) {
@@ -526,50 +442,39 @@ let lastFrameTime = 0;
 let accumulatedTime = 0;
 
 function startPlayback() {
-  if (animationFrameId) return; // Already playing
+  if (playbackInterval) clearInterval(playbackInterval);
+
+  lastFrameTime = performance.now();
   
-  playbackStartTimestamp = performance.now() - (currentIndex / playbackSpeed);
-  lastProcessedIndex = currentIndex;
+  playbackInterval = setInterval(() => {
+    const now = performance.now();
+    const deltaTime = now - lastFrameTime;
+    lastFrameTime = now;
+
+    // Calculate how much time has passed in playback (adjusted by speed and direction)
+    accumulatedTime += deltaTime * playbackSpeed * playbackDirection;
+
+    // Handle bounds checking based on direction
+    if (playbackDirection === 1) {
+      if (accumulatedTime >= data.length) {
+        // Reached end - loop back to start
+        accumulatedTime = 0;
+        clearChartData();
+      }
+    } else {
+      if (accumulatedTime < 0) {
+        // Reached beginning - loop to end
+        accumulatedTime = data.length - 1;
+        clearChartData();
+      }
+    }
+
+    // Clamp the index to valid range
+    currentIndex = Math.max(0, Math.min(Math.floor(accumulatedTime), data.length - 1));
+    updateDisplay(currentIndex);
+  }, 16); // ~60fps
+  
   playBtn.textContent = "⏸ Pause";
-  
-  function playbackFrame(timestamp) {
-    // Calculate how much real time has elapsed
-    const elapsedRealTime = timestamp - playbackStartTimestamp;
-    
-    // Calculate how much virtual time should have elapsed
-    const elapsedVirtualTime = elapsedRealTime * playbackSpeed;
-    
-    // Determine target index (1 row = 1ms)
-    let targetIndex = Math.floor(elapsedVirtualTime);
-    
-    // Handle direction
-    if (playbackDirection === -1) {
-      targetIndex = data.length - 1 - targetIndex;
-    }
-    
-    // Handle looping
-    if (targetIndex >= data.length) {
-      targetIndex %= data.length;
-      playbackStartTimestamp = timestamp;
-      clearChartData();
-    } else if (targetIndex < 0) {
-      targetIndex = data.length - 1 - (Math.abs(targetIndex) % data.length);
-      playbackStartTimestamp = timestamp;
-      clearChartData();
-    }
-    
-    // Process all rows between last processed and target
-    const step = targetIndex > lastProcessedIndex ? 1 : -1;
-    for (let i = lastProcessedIndex; i !== targetIndex; i += step) {
-      currentIndex = i;
-      updateDisplay(currentIndex);
-    }
-    
-    lastProcessedIndex = targetIndex;
-    animationFrameId = requestAnimationFrame(playbackFrame);
-  }
-  
-  animationFrameId = requestAnimationFrame(playbackFrame);
 }
 
 function clearChartData() {
@@ -583,33 +488,28 @@ function clearChartData() {
 
 
 function stopPlayback() {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
+  if (playbackInterval) {
+    clearInterval(playbackInterval);
+    playbackInterval = null;
   }
   playBtn.textContent = "▶ Play";
 }
 
 function changeSpeed(factor) {
-  const wasPlaying = animationFrameId !== null;
-  const currentTimestamp = performance.now();
-  
-  // Calculate current virtual time
-  const currentVirtualTime = wasPlaying 
-    ? (currentTimestamp - playbackStartTimestamp) * playbackSpeed
-    : currentIndex;
-  
-  // Adjust speed
-  playbackSpeed = Math.max(config.minSpeed,
-                         Math.min(config.maxSpeed,
+  playbackSpeed = Math.max(config.minSpeed, 
+                         Math.min(config.maxSpeed, 
                          playbackSpeed * factor));
-  
-  // Adjust start timestamp to maintain position
-  if (wasPlaying) {
-    playbackStartTimestamp = currentTimestamp - (currentVirtualTime / playbackSpeed);
+
+  // Display speed multiplier and estimated time remaining
+  let remainingTime;
+  if (playbackDirection === 1) {
+    remainingTime = (data.length - currentIndex) / playbackSpeed;
+  } else {
+    remainingTime = currentIndex / playbackSpeed;
   }
   
-  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (${playbackDirection === 1 ? '▶' : '◀'})`;
+  const remainingSeconds = remainingTime / 1000;
+  speedDisplay.textContent = `${playbackSpeed.toFixed(1)}x (${playbackDirection === 1 ? '▶' : '◀'} ~${remainingSeconds.toFixed(1)}s)`;
 }
 
 function toggleDirection() {
