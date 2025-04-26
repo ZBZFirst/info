@@ -27,8 +27,6 @@ let playbackDirection = 1;
 let playbackSpeed = config.initialSpeed;
 let worker = null;
 let lastUpdateTime = 0;
-const targetIndex = currentIndex + (playbackDirection * playbackSpeed * elapsed / 1000);
-const step = playbackDirection > 0 ? 1 : -1;
 
 // DOM Elements
 const playBtn = document.getElementById("playBtn");
