@@ -174,9 +174,12 @@ function removePointFromCharts(dataPoint) {
 }
 
 function processRows(count) {
-  const newIndex = appState.playback.currentIndex + 
-                  (count * appState.playback.direction);
-  appState.playback.currentIndex = Math.max(0, Math.min(newIndex, appState.dataset.length - 1));
+  let newIndex = appState.playback.currentIndex + (count * appState.playback.direction);
+  
+  if (appState.playback.direction > 0 && newIndex >= appState.dataset.length) {newIndex = 0;debug.add('Playback wrapped to beginning');}
+  else if (newIndex < 0) {newIndex = 0;}
+
+  appState.playback.currentIndex = newIndex;
   updateDataTable(appState.dataset[appState.playback.currentIndex]);
   updateVisualizations(appState.playback.currentIndex);
 }
