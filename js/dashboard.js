@@ -88,12 +88,18 @@ function initializeCharts() {
 }
 
 function updateVisualizations(currentData) {
-  // For time series - only keep most recent point per timestamp
-  appState.chartData.timeSeries = appState.chartData.timeSeries.filter(
-    point => point.x !== currentData.timestamp
+  // Remove any existing points with the same x-value (timestamp or volume)
+  const removeExistingPoints = (array, xValue) => {
+    return array.filter(point => point.x !== xValue);
+  };
+
+  // Update time series data (remove old points at this timestamp)
+  appState.chartData.timeSeries = removeExistingPoints(
+    appState.chartData.timeSeries, 
+    currentData.timestamp
   );
   
-  // Add new point
+  // Add new time series point
   appState.chartData.timeSeries.push({
     x: currentData.timestamp,
     flow: currentData.flow,
@@ -101,17 +107,20 @@ function updateVisualizations(currentData) {
     volume: currentData.volume
   });
 
-  // For loop charts - same approach
-  appState.chartData.pvPoints = appState.chartData.pvPoints.filter(
-    point => point.x !== currentData.volume
+  // Update PV loop data (remove old points at this volume)
+  appState.chartData.pvPoints = removeExistingPoints(
+    appState.chartData.pvPoints,
+    currentData.volume
   );
   appState.chartData.pvPoints.push({
     x: currentData.volume,
     y: currentData.pressure
   });
 
-  appState.chartData.fvPoints = appState.chartData.fvPoints.filter(
-    point => point.x !== currentData.volume
+  // Update FV loop data (remove old points at this volume)
+  appState.chartData.fvPoints = removeExistingPoints(
+    appState.chartData.fvPoints,
+    currentData.volume
   );
   appState.chartData.fvPoints.push({
     x: currentData.volume,
@@ -227,7 +236,26 @@ function playbackLoop(currentTime) {
   requestAnimationFrame(playbackLoop);
 }
 
+function removePointFromCharts(dataPoint) {
+  // Remove from time series
+  appState.chartData.timeSeries = appState.chartData.timeSeries.filter(
+    point => point.x !== dataPoint.timestamp
+  );
 
+  // Remove from PV loop
+  appState.chartData.pvPoints = appState.chartData.pvPoints.filter(
+    point => point.x !== dataPoint.volume
+  );
+
+  // Remove from FV loop
+  appState.chartData.fvPoints = appState.chartData.fvPoints.filter(
+    point => point.x !== dataPoint.volume
+  );
+
+  // Update charts immediately
+  updateTimeSeriesCharts();
+  updateLoopCharts();
+}
 
 // ======================
 // UPDATED ROW PROCESSING
@@ -244,17 +272,32 @@ function processRows(count) {
     if (appState.playback.direction > 0) {
       if (newIndex >= appState.dataset.length) {
         newIndex = 0;
-        shouldResetCharts = true; // Flag to clear charts
+        shouldResetCharts = true;
       }
     }
     // Handle reverse direction (stop at 0)
     else {
-      if (newIndex <= 0) {
+      if (newIndex < 0) {
         newIndex = 0;
-        break; // Stop processing further rows
+        break;
       }
+      
+      // When rewinding, remove the point we're moving away from
+      const currentData = appState.dataset[newIndex + 1]; // +1 because we already decremented
+      removePointFromCharts(currentData);
     }
   }
+
+  appState.playback.currentIndex = newIndex;
+  const currentData = appState.dataset[newIndex];
+
+  if (shouldResetCharts) {
+    resetAllCharts();
+  }
+
+  updateDataTable(currentData);
+  updateVisualizations(currentData);
+}
 
   // Update current index
   appState.playback.currentIndex = newIndex;
