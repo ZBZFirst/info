@@ -377,15 +377,6 @@ function toggleDirection() {
   console.log(`Direction changed to ${appState.playback.direction > 0 ? 'forward' : 'reverse'}`);
 }
 
-function startPlayback() {
-  if (appState.playback.active) return;
-  
-  appState.playback.active = true;
-  appState.metrics.startTime = performance.now();
-  appState.playback.lastUpdateTime = performance.now();
-  requestAnimationFrame(playbackLoop);
-}
-
 function stopPlayback() {
   appState.playback.active = false;
   console.log("Playback stopped");
