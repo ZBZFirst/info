@@ -50,12 +50,8 @@ async function initializeApplication() {
     initializeAllCharts();
     
     // Phase 2: Load and prepare static data
-    console.log("Locating data file...");
-    const fileUrl = await locateDataFile();
-    console.log(`Data file found at: ${fileUrl}`);
-    
     console.log("Loading Excel data...");
-    const rawData = await loadExcelData(fileUrl);
+    const rawData = await loadExcelData(config.dataFiles[0]);
     console.log(`Loaded ${rawData.length} records from Excel file`);
     
     // Phase 3: Process data in single pass
@@ -76,6 +72,9 @@ async function initializeApplication() {
     
     console.log("Application initialization complete!");
     
+    // Initial render of first data point
+    renderCurrentFrame();
+    
   } catch (error) {
     console.error("Initialization failed:", error);
     handleInitializationError(error);
@@ -83,7 +82,35 @@ async function initializeApplication() {
 }
 
 // ======================
-// DATA PROCESSING
+// DATA LOADING
+// ======================
+async function loadExcelData(filePath) {
+  console.log(`Loading Excel data from ${filePath}...`);
+  
+  try {
+    // Using SheetJS (xlsx) library to parse Excel file
+    const response = await fetch(filePath);
+    const arrayBuffer = await response.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+    const workbook = XLSX.read(data, { type: 'array' });
+    
+    // Get first worksheet
+    const worksheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[worksheetName];
+    
+    // Convert to JSON
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    console.log(`Successfully parsed ${jsonData.length} records`);
+    
+    return jsonData;
+  } catch (error) {
+    console.error("Failed to load Excel data:", error);
+    throw error;
+  }
+}
+
+// ======================
+// DATA PROCESSING (keep existing implementations)
 // ======================
 function preprocessDataset(rawData) {
   console.log(`Preprocessing ${rawData.length} records...`);
@@ -107,7 +134,7 @@ function extractBreathPatterns(data) {
   let breathing = false;
   let breathCount = 0;
 
-  data.forEach((record, index) => {
+  data.forEach(record => {
     if (record.phase === 1 && !breathing) {
       // Breath start detected
       if (currentBreath.length >= 10) {
@@ -151,7 +178,7 @@ function commitBreathSegment(target, breathData) {
 }
 
 // ======================
-// PLAYBACK ENGINE
+// PLAYBACK ENGINE (keep existing implementation)
 // ======================
 function startPlayback() {
   if (appState.playback.active) {
@@ -205,7 +232,7 @@ function renderCurrentFrame() {
 }
 
 // ======================
-// CHART MANAGEMENT
+// CHART MANAGEMENT (keep existing implementation)
 // ======================
 function initializeAllCharts() {
   console.log("Initializing all chart components...");
@@ -238,7 +265,7 @@ function updateTimeSeriesCharts(dataPoint) {
 }
 
 // ======================
-// UTILITIES
+// UTILITIES (keep existing implementation)
 // ======================
 function getParameterRange(param) {
   const ranges = {
@@ -260,57 +287,33 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApplication();
 });
 
-// Mock functions for demonstration (since these aren't defined in original code)
-function locateDataFile() {
-  console.log("Mock: Locating data file...");
-  return Promise.resolve("/path/to/data.xlsx");
-}
-
-function loadExcelData() {
-  console.log("Mock: Loading Excel data...");
-  // Generate mock data
-  const mockData = Array.from({length: 1000}, (_, i) => ({
-    timestamp: i * 10,
-    flow: Math.sin(i / 10) * 50,
-    pressure: 20 + Math.cos(i / 5) * 10,
-    phase: i % 100 < 50 ? 1 : 0,
-    volume: Math.min(800, i * 0.8)
-  }));
-  return Promise.resolve(mockData);
-}
-
+// Error handling
 function handleInitializationError(error) {
   console.error("Initialization error:", error);
+  // Display error to user
+  const errorElement = document.createElement('div');
+  errorElement.className = 'error-message';
+  errorElement.textContent = `Failed to initialize application: ${error.message}`;
+  document.body.prepend(errorElement);
 }
 
+// Control handlers (minimal implementation)
 function setupControlHandlers() {
-  console.log("Mock: Setting up control handlers");
-}
-
-function updateStatusDisplay() {
-  console.log("Mock: Updating status display");
-}
-
-function createTimeSeriesChart() {
-  console.log("Mock: Creating time series chart");
-}
-
-function createLoopChart() {
-  console.log("Mock: Creating loop chart");
-}
-
-function getChartInstance() {
-  return {}; // Mock chart instance
-}
-
-function addDataPoint() {
-  // Mock function
-}
-
-function updateLoopVisualizations() {
-  console.log("Mock: Updating loop visualizations");
-}
-
-function updateDataTable() {
-  console.log("Mock: Updating data table");
+  console.log("Setting up control handlers");
+  
+  document.getElementById('play-btn').addEventListener('click', () => {
+    console.log("Play button clicked");
+    startPlayback();
+  });
+  
+  document.getElementById('pause-btn').addEventListener('click', () => {
+    console.log("Pause button clicked");
+    appState.playback.active = false;
+  });
+  
+  document.getElementById('speed-control').addEventListener('change', (e) => {
+    const newSpeed = parseFloat(e.target.value);
+    console.log(`Speed changed to ${newSpeed}x`);
+    appState.playback.speed = newSpeed;
+  });
 }
