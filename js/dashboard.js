@@ -103,6 +103,9 @@ function startPlayback() {
   requestAnimationFrame(playbackLoop);
 }
 
+// ======================
+// MODIFIED PLAYBACK ENGINE
+// ======================
 function processRows(count) {
   const newIndex = appState.playback.currentIndex + count;
   
@@ -120,8 +123,17 @@ function processRows(count) {
   // Get current data point
   const currentData = appState.dataset[appState.playback.currentIndex];
   
-  // This is where we would normally update visualizations
-  console.debug(`Processing row ${appState.playback.currentIndex}:`, currentData);
+  // Always update the table, regardless of visualization state
+  updateDataTable(currentData);
+  
+  // This is where we would update visualizations if they exist
+  try {
+    if (typeof updateVisualizations === 'function') {
+      updateVisualizations(currentData);
+    }
+  } catch (error) {
+    console.warn("Visualization update failed, but data processing continues:", error);
+  }
 }
 
 function updateDebugInfo() {
@@ -154,6 +166,59 @@ function createDebugElement() {
 }
 
 // ======================
+// TABLE MANAGEMENT
+// ======================
+function initializeDataTable() {
+  const tableHeader = document.getElementById('tableHeader');
+  const tableBody = document.getElementById('tableBody');
+  
+  // Clear any existing content
+  tableHeader.innerHTML = '';
+  tableBody.innerHTML = '';
+  
+  // Create header row
+  const headers = ['Index', 'Timestamp', ...config.valueColumns];
+  headers.forEach(headerText => {
+    const th = document.createElement('th');
+    th.textContent = headerText;
+    tableHeader.appendChild(th);
+  });
+  
+  console.log("Data table initialized with columns:", headers);
+}
+
+function updateDataTable(currentData) {
+  const tableBody = document.getElementById('tableBody');
+  
+  // Clear previous row (or keep for history if you prefer)
+  tableBody.innerHTML = '';
+  
+  // Create new row
+  const row = document.createElement('tr');
+  
+  // Add cells in the same order as the header
+  const cells = [
+    currentData.index,
+    currentData.timestamp,
+    ...config.valueColumns.map(col => currentData[col])
+  ];
+  
+  cells.forEach(cellValue => {
+    const td = document.createElement('td');
+    td.textContent = typeof cellValue === 'number' ? cellValue.toFixed(2) : cellValue;
+    row.appendChild(td);
+  });
+  
+  tableBody.appendChild(row);
+  
+  // Optional: Scroll to show the new row
+  tableBody.parentElement.scrollTop = tableBody.parentElement.scrollHeight;
+}
+
+
+
+
+// ======================
 // CONTROL FUNCTIONS
 // ======================
 function setPlaybackSpeed(speed) {
@@ -173,13 +238,18 @@ function stopPlayback() {
 }
 
 // ======================
-// INITIALIZATION
+// UPDATED INITIALIZATION
 // ======================
 async function initialize() {
   const success = await loadAndProcessData();
   if (success) {
+    initializeDataTable(); // Initialize table structure
     setupControls();
     updateDebugInfo();
+    
+    // Show first data point immediately
+    updateDataTable(appState.dataset[0]);
+    
     console.log("System ready - use startPlayback() to begin");
   }
 }
