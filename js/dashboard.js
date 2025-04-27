@@ -59,12 +59,9 @@ function initializeCharts() {
   appState.charts.flow = new Chart(document.getElementById('timeSeriesChartFlow').getContext('2d'),CHART_CONFIGS.flow);
   appState.charts.pressure = new Chart(document.getElementById('timeSeriesChartPressure').getContext('2d'),CHART_CONFIGS.pressure);
   appState.charts.volume = new Chart(document.getElementById('timeSeriesChartVolume').getContext('2d'),CHART_CONFIGS.volume);
-  debug.add('Initializing PV Loop', {config: CHART_CONFIGS.pvLoop.options.scales,expectedVolumeRange: AXIS_RANGES.volume});
   appState.charts.pvLoop = new Chart(document.getElementById('PVLoop').getContext('2d'),CHART_CONFIGS.pvLoop);
   appState.charts.fvLoop = new Chart(document.getElementById('FVLoop').getContext('2d'),CHART_CONFIGS.fvLoop);
-
-    
-    console.log("All charts initialized");
+  console.log("All charts initialized");
 }
 
 function updateVisualizations(currentIndex) {
