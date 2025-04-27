@@ -88,35 +88,38 @@ function initializeCharts() {
 }
 
 function updateVisualizations(currentData) {
-  // Add new data point to buffers
+  // For time series - only keep most recent point per timestamp
+  appState.chartData.timeSeries = appState.chartData.timeSeries.filter(
+    point => point.x !== currentData.timestamp
+  );
+  
+  // Add new point
   appState.chartData.timeSeries.push({
     x: currentData.timestamp,
     flow: currentData.flow,
     pressure: currentData.pressure,
     volume: currentData.volume
   });
-  
+
+  // For loop charts - same approach
+  appState.chartData.pvPoints = appState.chartData.pvPoints.filter(
+    point => point.x !== currentData.volume
+  );
   appState.chartData.pvPoints.push({
     x: currentData.volume,
     y: currentData.pressure
   });
-  
+
+  appState.chartData.fvPoints = appState.chartData.fvPoints.filter(
+    point => point.x !== currentData.volume
+  );
   appState.chartData.fvPoints.push({
     x: currentData.volume,
     y: currentData.flow
   });
-  
-  // Limit data points for performance
-  if (appState.chartData.timeSeries.length > config.maxDataPoints) {
-    appState.chartData.timeSeries.shift();
-    appState.chartData.pvPoints.shift();
-    appState.chartData.fvPoints.shift();
-  }
-  
-  // Update time-series charts
+
+  // Update all charts
   updateTimeSeriesCharts();
-  
-  // Update loop charts
   updateLoopCharts();
 }
 
@@ -231,26 +234,59 @@ function playbackLoop(currentTime) {
 // ======================
 function processRows(count) {
   let newIndex = appState.playback.currentIndex;
-  
-  // Process each row individually in the correct direction
+  let shouldResetCharts = false;
+
+  // Process each row in the current direction
   for (let i = 0; i < Math.abs(count); i++) {
     newIndex += appState.playback.direction;
-    
-    // Handle wrapping based on current direction
+
+    // Handle forward direction (with reset at end)
     if (appState.playback.direction > 0) {
-      if (newIndex >= appState.dataset.length) newIndex = 0;
-    } else {
-      if (newIndex < 0) newIndex = appState.dataset.length - 1;
+      if (newIndex >= appState.dataset.length) {
+        newIndex = 0;
+        shouldResetCharts = true; // Flag to clear charts
+      }
+    }
+    // Handle reverse direction (stop at 0)
+    else {
+      if (newIndex <= 0) {
+        newIndex = 0;
+        break; // Stop processing further rows
+      }
     }
   }
-  
+
+  // Update current index
   appState.playback.currentIndex = newIndex;
   const currentData = appState.dataset[newIndex];
-  
+
+  // Clear all charts if we looped around in forward direction
+  if (shouldResetCharts) {
+    resetAllCharts();
+  }
+
   updateDataTable(currentData);
   updateVisualizations(currentData);
 }
 
+function resetAllCharts() {
+  // Clear all data buffers
+  appState.chartData = {
+    timeSeries: [],
+    pvPoints: [],
+    fvPoints: []
+  };
+
+  // Reset all chart datasets
+  Object.values(appState.charts).forEach(chart => {
+    chart.data.datasets.forEach(dataset => {
+      dataset.data = [];
+    });
+    chart.update();
+  });
+
+  console.log("Charts reset for new playback cycle");
+}
 
 function updateDebugInfo() {
   const debugInfo = `
@@ -385,19 +421,22 @@ function setPlaybackSpeed(speed) {
 }
 
 function toggleDirection() {
-  // Reverse the direction
+  // If trying to reverse when already at start, do nothing
+  if (appState.playback.direction > 0 && appState.playback.currentIndex === 0) {
+    console.log("Already at beginning - cannot reverse");
+    return;
+  }
+
+  // Toggle direction
   appState.playback.direction *= -1;
-  
-  // Reset the last update time to prevent jump when changing direction
   appState.playback.lastUpdateTime = performance.now();
-  
-  // Update the button text
+
+  // Update UI
   const reverseBtn = document.getElementById('reverseBtn');
   reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
   
   console.log(`Direction changed to ${appState.playback.direction > 0 ? 'Forward' : 'Reverse'}`);
 }
-
 
 function stopPlayback() {
   appState.playback.active = false;
