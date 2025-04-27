@@ -111,11 +111,11 @@ const createTimeSeries = (metric, showPoints = false) => ({
   }
 });
 
-const createLoopChart = (xMetric, yMetric) => ({
+const createLoopChart = (yMetric) => ({
   ...LOOP_CHART_BASE,
   data: {
     datasets: [{
-      label: `${yMetric} vs ${xMetric}`,
+      label: `${yMetric} vs Volume`,
       borderColor: COLORS[yMetric],
       backgroundColor: 'transparent',
       borderWidth: 2,
@@ -129,11 +129,11 @@ const createLoopChart = (xMetric, yMetric) => ({
     scales: {
       x: {
         ...LOOP_CHART_BASE.options.scales.x,
-        min: AXIS_RANGES[xMetric].min,
-        max: AXIS_RANGES[xMetric].max,
+        min: AXIS_RANGES.volume.min,  // Explicitly use volume min
+        max: AXIS_RANGES.volume.max,  // Explicitly use volume max
         title: { 
           display: true,
-          text: `${xMetric} (${getUnits(xMetric)})` 
+          text: `Volume (${getUnits('volume')})` 
         }
       },
       y: {
@@ -160,6 +160,7 @@ overview: {...TIME_SERIES_BASE,data: {datasets: ['flow', 'pressure', 'volume'].m
   pressure: createTimeSeries('pressure'),
   volume: createTimeSeries('volume'),
 
-  pvLoop: createLoopChart('volume', 'pressure'),
-  fvLoop: createLoopChart('volume', 'flow')
+  pvLoop: createLoopChart('pressure'),  // Volume is implied as x-axis
+  fvLoop: createLoopChart('flow')       // Volume is implied as x-axis
+};
 };
