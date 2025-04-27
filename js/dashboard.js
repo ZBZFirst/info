@@ -9,7 +9,7 @@ const config = {
     normal: 1.0, // Real-time (1ms/row)
     max: 100.0   // 100x faster
   },
-  dataFiles: ["/js/data.xlsx"],
+  dataFiles: ["info/js/data.xlsx"],
   targetRowsPerSecond: 1000 // Base iteration rate
 };
 
