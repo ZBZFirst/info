@@ -222,7 +222,45 @@ function updateDataTable(currentData) {
 }
 
 
-
+// ======================
+// PLAYBACK ENGINE
+// ======================
+function startPlayback() {
+  if (appState.playback.active) return;
+  
+  appState.playback.active = true;
+  appState.metrics.startTime = performance.now();
+  appState.playback.lastUpdateTime = performance.now();
+  
+  function playbackLoop(currentTime) {
+    if (!appState.playback.active) return;
+    
+    // Calculate time delta and virtual time progression
+    const delta = currentTime - appState.playback.lastUpdateTime;
+    const virtualDelta = delta * appState.playback.speed * appState.playback.direction;
+    
+    // Calculate how many rows to process based on target rate
+    const targetRows = Math.floor((virtualDelta * config.targetRowsPerSecond) / 1000);
+    
+    if (targetRows > 0) {
+      // Process the calculated number of rows
+      processRows(targetRows);
+      
+      // Update metrics
+      appState.playback.rowsProcessed += targetRows;
+      const elapsed = (currentTime - appState.metrics.startTime) / 1000;
+      appState.playback.rowsPerSecond = Math.floor(appState.playback.rowsProcessed / elapsed);
+      
+      // Update debug display
+      updateDebugInfo();
+    }
+    
+    appState.playback.lastUpdateTime = currentTime;
+    requestAnimationFrame(playbackLoop);
+  }
+  
+  requestAnimationFrame(playbackLoop);
+}
 
 // ======================
 // CONTROL FUNCTIONS
