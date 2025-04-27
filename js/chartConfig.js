@@ -129,8 +129,8 @@ const createLoopChart = (yMetric) => ({
     scales: {
       x: {
         ...LOOP_CHART_BASE.options.scales.x,
-        min: AXIS_RANGES.volume.min,  // Explicitly use volume min
-        max: AXIS_RANGES.volume.max,  // Explicitly use volume max
+        min: AXIS_RANGES.volume.min,
+        max: AXIS_RANGES.volume.max,
         title: { 
           display: true,
           text: `Volume (${getUnits('volume')})` 
@@ -160,7 +160,7 @@ overview: {...TIME_SERIES_BASE,data: {datasets: ['flow', 'pressure', 'volume'].m
   pressure: createTimeSeries('pressure'),
   volume: createTimeSeries('volume'),
 
-  pvLoop: createLoopChart('pressure'),  // Volume is implied as x-axis
-  fvLoop: createLoopChart('flow')       // Volume is implied as x-axis
+  pvLoop: createLoopChart('pressure'),
+  fvLoop: createLoopChart('flow')
 };
 
