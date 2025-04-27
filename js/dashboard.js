@@ -88,46 +88,42 @@ function initializeCharts() {
 }
 
 function updateVisualizations(currentData) {
-  // Remove any existing points with the same x-value (timestamp or volume)
-  const removeExistingPoints = (array, xValue) => {
-    return array.filter(point => point.x !== xValue);
+  if (!currentData) return;
+
+  // Helper to maintain single point per x-value
+  const updateDataBuffer = (buffer, xValue, newPoint) => {
+    const filtered = buffer.filter(point => point.x !== xValue);
+    filtered.push(newPoint);
+    return filtered;
   };
 
-  // Update time series data (remove old points at this timestamp)
-  appState.chartData.timeSeries = removeExistingPoints(
-    appState.chartData.timeSeries, 
-    currentData.timestamp
+  // Update time series
+  appState.chartData.timeSeries = updateDataBuffer(
+    appState.chartData.timeSeries,
+    currentData.timestamp,
+    {
+      x: currentData.timestamp,
+      flow: currentData.flow,
+      pressure: currentData.pressure,
+      volume: currentData.volume
+    }
   );
-  
-  // Add new time series point
-  appState.chartData.timeSeries.push({
-    x: currentData.timestamp,
-    flow: currentData.flow,
-    pressure: currentData.pressure,
-    volume: currentData.volume
-  });
 
-  // Update PV loop data (remove old points at this volume)
-  appState.chartData.pvPoints = removeExistingPoints(
+  // Update PV loop
+  appState.chartData.pvPoints = updateDataBuffer(
     appState.chartData.pvPoints,
-    currentData.volume
+    currentData.volume,
+    { x: currentData.volume, y: currentData.pressure }
   );
-  appState.chartData.pvPoints.push({
-    x: currentData.volume,
-    y: currentData.pressure
-  });
 
-  // Update FV loop data (remove old points at this volume)
-  appState.chartData.fvPoints = removeExistingPoints(
+  // Update FV loop
+  appState.chartData.fvPoints = updateDataBuffer(
     appState.chartData.fvPoints,
-    currentData.volume
+    currentData.volume,
+    { x: currentData.volume, y: currentData.flow }
   );
-  appState.chartData.fvPoints.push({
-    x: currentData.volume,
-    y: currentData.flow
-  });
 
-  // Update all charts
+  // Update charts
   updateTimeSeriesCharts();
   updateLoopCharts();
 }
@@ -261,43 +257,51 @@ function removePointFromCharts(dataPoint) {
 // UPDATED ROW PROCESSING
 // ======================
 function processRows(count) {
+  if (!appState.dataset || appState.dataset.length === 0) return;
+
   let newIndex = appState.playback.currentIndex;
   let shouldResetCharts = false;
+  let processedCount = 0;
 
-  // Process each row in the current direction
-  for (let i = 0; i < Math.abs(count); i++) {
+  while (processedCount < count) {
     newIndex += appState.playback.direction;
+    processedCount++;
 
-    // Handle forward direction (with reset at end)
+    // Handle forward direction
     if (appState.playback.direction > 0) {
       if (newIndex >= appState.dataset.length) {
         newIndex = 0;
         shouldResetCharts = true;
+        break; // Reset after this point
       }
-    }
-    // Handle reverse direction (stop at 0)
+    } 
+    // Handle reverse direction
     else {
       if (newIndex < 0) {
         newIndex = 0;
-        break;
+        break; // Stop at beginning
       }
       
-      // When rewinding, remove the point we're moving away from
-      const currentData = appState.dataset[newIndex + 1]; // +1 because we already decremented
-      removePointFromCharts(currentData);
+      // Remove the point we're moving away from when rewinding
+      const prevIndex = newIndex + 1; // +1 because we already decremented
+      if (prevIndex < appState.dataset.length) {
+        removePointFromCharts(appState.dataset[prevIndex]);
+      }
     }
   }
 
+  // Ensure index stays within bounds
+  newIndex = Math.max(0, Math.min(newIndex, appState.dataset.length - 1));
   appState.playback.currentIndex = newIndex;
-  const currentData = appState.dataset[newIndex];
 
   if (shouldResetCharts) {
     resetAllCharts();
   }
 
-  updateDataTable(currentData);
-  updateVisualizations(currentData);
+  updateDataTable(appState.dataset[newIndex]);
+  updateVisualizations(appState.dataset[newIndex]);
 }
+
 
 function resetAllCharts() {
   // Clear all data buffers
@@ -451,19 +455,25 @@ function setPlaybackSpeed(speed) {
 }
 
 function toggleDirection() {
-  // If trying to reverse when already at start, do nothing
-  if (appState.playback.direction > 0 && appState.playback.currentIndex === 0) {
-    console.log("Already at beginning - cannot reverse");
-    return;
-  }
-
+  // Store previous direction
+  const prevDirection = appState.playback.direction;
+  
   // Toggle direction
   appState.playback.direction *= -1;
+  
+  // Reset timing to prevent jumps
   appState.playback.lastUpdateTime = performance.now();
-
+  
   // Update UI
   const reverseBtn = document.getElementById('reverseBtn');
   reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
+  
+  // If we were at index 0 and trying to reverse, do nothing
+  if (prevDirection > 0 && appState.playback.currentIndex === 0) {
+    appState.playback.direction = 1; // Keep forward direction
+    console.log("Already at beginning - cannot reverse");
+    return;
+  }
   
   console.log(`Direction changed to ${appState.playback.direction > 0 ? 'Forward' : 'Reverse'}`);
 }
