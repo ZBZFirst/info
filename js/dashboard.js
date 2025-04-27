@@ -64,75 +64,81 @@ async function loadAndProcessData() {
 }
 
 // ======================
-// PLAYBACK ENGINE
+// MODIFIED PLAYBACK LOOP
 // ======================
-function startPlayback() {
-  if (appState.playback.active) return;
+function playbackLoop(currentTime) {
+  if (!appState.playback.active) {
+    console.log("Playback stopped - exiting animation frame loop");
+    return;
+  }
   
-  appState.playback.active = true;
-  appState.metrics.startTime = performance.now();
-  appState.playback.lastUpdateTime = performance.now();
+  // Calculate time delta since last update
+  const delta = currentTime - appState.playback.lastUpdateTime;
   
-  function playbackLoop(currentTime) {
-    if (!appState.playback.active) return;
-    
-    // Calculate time delta and virtual time progression
-    const delta = currentTime - appState.playback.lastUpdateTime;
+  // Only process if we have meaningful time elapsed
+  if (delta > 0) {
+    // Calculate virtual time progression based on speed and direction
     const virtualDelta = delta * appState.playback.speed * appState.playback.direction;
     
     // Calculate how many rows to process based on target rate
     const targetRows = Math.floor((virtualDelta * config.targetRowsPerSecond) / 1000);
     
-    if (targetRows > 0) {
-      // Process the calculated number of rows
+    if (targetRows !== 0) {
+      // Process the calculated number of rows (can be negative for reverse playback)
       processRows(targetRows);
       
       // Update metrics
-      appState.playback.rowsProcessed += targetRows;
+      appState.playback.rowsProcessed += Math.abs(targetRows);
       const elapsed = (currentTime - appState.metrics.startTime) / 1000;
       appState.playback.rowsPerSecond = Math.floor(appState.playback.rowsProcessed / elapsed);
       
       // Update debug display
       updateDebugInfo();
     }
-    
-    appState.playback.lastUpdateTime = currentTime;
-    requestAnimationFrame(playbackLoop);
   }
   
+  appState.playback.lastUpdateTime = currentTime;
   requestAnimationFrame(playbackLoop);
 }
 
 // ======================
-// MODIFIED PLAYBACK ENGINE
+// UPDATED ROW PROCESSING
 // ======================
 function processRows(count) {
   const newIndex = appState.playback.currentIndex + count;
   
-  // Handle bounds checking
-  if (newIndex >= appState.dataset.length) {
-    appState.playback.currentIndex = 0;
-    console.log("Reached end of dataset - looping back to start");
-  } else if (newIndex < 0) {
-    appState.playback.currentIndex = appState.dataset.length - 1;
-    console.log("Reached start of dataset - looping to end");
+  // Handle bounds checking differently for forward and reverse
+  if (count > 0) {
+    // Forward playback
+    if (newIndex >= appState.dataset.length) {
+      appState.playback.currentIndex = 0;
+      console.log("Reached end of dataset - looping back to start");
+    } else {
+      appState.playback.currentIndex = newIndex;
+    }
   } else {
-    appState.playback.currentIndex = newIndex;
+    // Reverse playback
+    if (newIndex < 0) {
+      appState.playback.currentIndex = appState.dataset.length - 1;
+      console.log("Reached start of dataset - looping to end");
+    } else {
+      appState.playback.currentIndex = newIndex;
+    }
   }
   
   // Get current data point
   const currentData = appState.dataset[appState.playback.currentIndex];
   
-  // Always update the table, regardless of visualization state
+  // Update the table
   updateDataTable(currentData);
   
-  // This is where we would update visualizations if they exist
+  // Optional: Update visualizations if they exist
   try {
     if (typeof updateVisualizations === 'function') {
       updateVisualizations(currentData);
     }
   } catch (error) {
-    console.warn("Visualization update failed, but data processing continues:", error);
+    console.warn("Visualization update failed:", error);
   }
 }
 
@@ -227,8 +233,16 @@ function setPlaybackSpeed(speed) {
   console.log(`Playback speed set to ${appState.playback.speed}x`);
 }
 
+// ======================
+// UPDATED PLAYBACK CONTROLS
+// ======================
 function toggleDirection() {
+  // Reverse the direction
   appState.playback.direction *= -1;
+  
+  // Reset the last update time to prevent large jumps when changing direction
+  appState.playback.lastUpdateTime = performance.now();
+  
   console.log(`Playback direction changed to ${appState.playback.direction > 0 ? 'forward' : 'reverse'}`);
 }
 
