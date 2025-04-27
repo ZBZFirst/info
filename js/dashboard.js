@@ -124,6 +124,7 @@ function processRows(count) {
   } catch (error) {
     console.warn("Visualization update failed:", error);
   }
+}
 
 function updateDebugInfo() {
   const debugInfo = `
