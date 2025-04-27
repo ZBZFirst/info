@@ -1,3 +1,5 @@
+import { CHART_CONFIGS } from './chartConfig.js';
+
 // ======================
 // CORE CONFIGURATION
 // ======================
@@ -10,7 +12,8 @@ const config = {
     max: 100.0   // 100x faster
   },
   dataFiles: ["js/data.xlsx"],
-  targetRowsPerSecond: 1000 // Base iteration rate
+  targetRowsPerSecond: 1000, // Base iteration rate
+  maxDataPoints: 5000 // For performance optimization
 };
 
 // ======================
@@ -30,8 +33,132 @@ const appState = {
   metrics: {
     startTime: 0,
     totalRows: 0
+  },
+  charts: {
+    overview: null,
+    flow: null,
+    pressure: null,
+    volume: null,
+    pvLoop: null,
+    fvLoop: null
+  },
+  chartData: {
+    timeSeries: [],
+    pvPoints: [],
+    fvPoints: []
   }
 };
+
+// ======================
+// CHART MANAGEMENT
+// ======================
+function initializeCharts() {
+  // Initialize all charts with their configurations
+  appState.charts.overview = new Chart(
+    document.getElementById('timeSeriesChart').getContext('2d'),
+    CHART_CONFIGS.overview
+  );
+  
+  appState.charts.flow = new Chart(
+    document.getElementById('timeSeriesChartFlow').getContext('2d'),
+    CHART_CONFIGS.flow
+  );
+  
+  appState.charts.pressure = new Chart(
+    document.getElementById('timeSeriesChartPressure').getContext('2d'),
+    CHART_CONFIGS.pressure
+  );
+  
+  appState.charts.volume = new Chart(
+    document.getElementById('timeSeriesChartVolume').getContext('2d'),
+    CHART_CONFIGS.volume
+  );
+  
+  appState.charts.pvLoop = new Chart(
+    document.getElementById('PVLoop').getContext('2d'),
+    CHART_CONFIGS.pvLoop
+  );
+  
+  appState.charts.fvLoop = new Chart(
+    document.getElementById('FVLoop').getContext('2d'),
+    CHART_CONFIGS.fvLoop
+  );
+  
+  console.log("All charts initialized");
+}
+
+function updateVisualizations(currentData) {
+  // Add new data point to buffers
+  appState.chartData.timeSeries.push({
+    x: currentData.timestamp,
+    flow: currentData.flow,
+    pressure: currentData.pressure,
+    volume: currentData.volume
+  });
+  
+  appState.chartData.pvPoints.push({
+    x: currentData.volume,
+    y: currentData.pressure
+  });
+  
+  appState.chartData.fvPoints.push({
+    x: currentData.volume,
+    y: currentData.flow
+  });
+  
+  // Limit data points for performance
+  if (appState.chartData.timeSeries.length > config.maxDataPoints) {
+    appState.chartData.timeSeries.shift();
+    appState.chartData.pvPoints.shift();
+    appState.chartData.fvPoints.shift();
+  }
+  
+  // Update time-series charts
+  updateTimeSeriesCharts();
+  
+  // Update loop charts
+  updateLoopCharts();
+}
+
+function updateTimeSeriesCharts() {
+  // Update overview chart (all metrics)
+  config.valueColumns.forEach(metric => {
+    const datasetIndex = CHART_CONFIGS.overview.data.datasets.findIndex(d => d.label === metric);
+    if (datasetIndex >= 0) {
+      appState.charts.overview.data.datasets[datasetIndex].data = 
+        appState.chartData.timeSeries.map(point => ({
+          x: point.x,
+          y: point[metric]
+        }));
+    }
+  });
+  appState.charts.overview.update();
+  
+  // Update individual charts
+  appState.charts.flow.data.datasets[0].data = 
+    appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.flow }));
+  appState.charts.flow.update();
+  
+  appState.charts.pressure.data.datasets[0].data = 
+    appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.pressure }));
+  appState.charts.pressure.update();
+  
+  appState.charts.volume.data.datasets[0].data = 
+    appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.volume }));
+  appState.charts.volume.update();
+}
+
+function updateLoopCharts() {
+  // Update PV Loop
+  appState.charts.pvLoop.data.datasets[0].data = appState.chartData.pvPoints;
+  appState.charts.pvLoop.update();
+  
+  // Update FV Loop
+  appState.charts.fvLoop.data.datasets[0].data = appState.chartData.fvPoints;
+  appState.charts.fvLoop.update();
+}
+
+
 
 // ======================
 // DATA LOADING & PROCESSING
@@ -97,33 +224,23 @@ function playbackLoop(currentTime) {
   requestAnimationFrame(playbackLoop);
 }
 
+
+
 // ======================
 // UPDATED ROW PROCESSING
 // ======================
 function processRows(count) {
   let newIndex = appState.playback.currentIndex + count;
   
-  // Handle wrapping in both directions
-  if (newIndex >= appState.dataset.length) {
-    newIndex = 0; // Wrap to start when going forward
-    console.log("Reached end - wrapping to start");
-  } else if (newIndex < 0) {
-    newIndex = appState.dataset.length - 1; // Wrap to end when going backward
-    console.log("Reached start - wrapping to end");
-  }
+  // Handle wrapping
+  if (newIndex >= appState.dataset.length) newIndex = 0;
+  else if (newIndex < 0) newIndex = appState.dataset.length - 1;
   
   appState.playback.currentIndex = newIndex;
   const currentData = appState.dataset[newIndex];
-  updateDataTable(currentData);
   
-  // Optional visualization update
-  try {
-    if (typeof updateVisualizations === 'function') {
-      updateVisualizations(currentData);
-    }
-  } catch (error) {
-    console.warn("Visualization update failed:", error);
-  }
+  updateDataTable(currentData);
+  updateVisualizations(currentData); // Always update visualizations now
 }
 
 function updateDebugInfo() {
@@ -281,12 +398,18 @@ async function initialize() {
   const success = await loadAndProcessData();
   if (success) {
     initializeDataTable();
-    setupControls(); // This now sets up all button handlers
+    initializeCharts(); // Initialize charts before setting up controls
+    setupControls();
     updateDebugInfo();
     updateDataTable(appState.dataset[0]);
-    console.log("System ready - controls are now connected to buttons");
+    
+    // Initialize with first data point
+    updateVisualizations(appState.dataset[0]);
+    
+    console.log("System ready - all visualizations initialized");
   }
 }
+
 // ======================
 // CONTROL FUNCTIONS
 // ======================
