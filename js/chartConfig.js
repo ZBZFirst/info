@@ -163,4 +163,4 @@ overview: {...TIME_SERIES_BASE,data: {datasets: ['flow', 'pressure', 'volume'].m
   pvLoop: createLoopChart('pressure'),  // Volume is implied as x-axis
   fvLoop: createLoopChart('flow')       // Volume is implied as x-axis
 };
-};
+
