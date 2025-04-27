@@ -13,6 +13,8 @@ const config = {
   dataFiles: ["data.xlsx"]
 };
 
+console.log("Configuration loaded:", config);
+
 // ======================
 // APPLICATION STATE
 // ======================
@@ -34,27 +36,48 @@ const appState = {
   }
 };
 
+console.log("Application state initialized:", appState);
+
 // ======================
 // CORE INITIALIZATION
 // ======================
 async function initializeApplication() {
+  console.log("Starting application initialization...");
+  
   try {
     // Phase 1: Setup visual components
+    console.log("Initializing charts...");
     initializeAllCharts();
     
     // Phase 2: Load and prepare static data
+    console.log("Locating data file...");
     const fileUrl = await locateDataFile();
+    console.log(`Data file found at: ${fileUrl}`);
+    
+    console.log("Loading Excel data...");
     const rawData = await loadExcelData(fileUrl);
+    console.log(`Loaded ${rawData.length} records from Excel file`);
     
     // Phase 3: Process data in single pass
+    console.log("Preprocessing dataset...");
     appState.dataset = preprocessDataset(rawData);
+    console.log(`Dataset preprocessed with ${appState.dataset.length} records`);
+    
+    console.log("Extracting breath patterns...");
     appState.breathData = extractBreathPatterns(rawData);
+    console.log(`Extracted ${appState.breathData.pv.length} PV loops and ${appState.breathData.fv.length} FV loops`);
     
     // Phase 4: Enable controls
+    console.log("Setting up control handlers...");
     setupControlHandlers();
+    
+    console.log("Updating status display...");
     updateStatusDisplay();
     
+    console.log("Application initialization complete!");
+    
   } catch (error) {
+    console.error("Initialization failed:", error);
     handleInitializationError(error);
   }
 }
@@ -63,22 +86,32 @@ async function initializeApplication() {
 // DATA PROCESSING
 // ======================
 function preprocessDataset(rawData) {
-  return rawData.map((record, idx) => ({
+  console.log(`Preprocessing ${rawData.length} records...`);
+  const startTime = performance.now();
+  
+  const result = rawData.map((record, idx) => ({
     ...record,
     indexer: idx,
     displayTime: record[config.timeColumn]
   }));
+  
+  const duration = performance.now() - startTime;
+  console.log(`Preprocessing completed in ${duration.toFixed(2)}ms`);
+  return result;
 }
 
 function extractBreathPatterns(data) {
+  console.log("Extracting breath patterns from data...");
   const patterns = { pv: [], fv: [] };
   let currentBreath = [];
   let breathing = false;
+  let breathCount = 0;
 
-  data.forEach(record => {
+  data.forEach((record, index) => {
     if (record.phase === 1 && !breathing) {
       // Breath start detected
       if (currentBreath.length >= 10) {
+        breathCount++;
         commitBreathSegment(patterns, currentBreath);
       }
       currentBreath = [];
@@ -91,10 +124,14 @@ function extractBreathPatterns(data) {
     }
   });
 
+  console.log(`Detected ${breathCount} complete breath cycles`);
   return patterns;
 }
 
 function commitBreathSegment(target, breathData) {
+  const breathId = target.pv.length + 1;
+  console.log(`Processing breath segment #${breathId} with ${breathData.length} data points`);
+  
   target.pv.push({
     points: breathData.map(d => ({ x: d.volume, y: d.pressure }))
   });
@@ -103,29 +140,47 @@ function commitBreathSegment(target, breathData) {
   });
   
   // Maintain fixed-size buffer
-  if (target.pv.length > 3) target.pv.shift();
-  if (target.fv.length > 3) target.fv.shift();
+  if (target.pv.length > 3) {
+    console.log("PV buffer full - removing oldest segment");
+    target.pv.shift();
+  }
+  if (target.fv.length > 3) {
+    console.log("FV buffer full - removing oldest segment");
+    target.fv.shift();
+  }
 }
 
 // ======================
 // PLAYBACK ENGINE
 // ======================
 function startPlayback() {
-  if (appState.playback.active) return;
+  if (appState.playback.active) {
+    console.log("Playback already active - ignoring start request");
+    return;
+  }
   
+  console.log(`Starting playback at index ${appState.playback.currentIndex}, speed ${appState.playback.speed}x`);
   appState.playback.active = true;
   appState.ui.lastRenderTime = performance.now();
   
   const playbackFrame = (timestamp) => {
-    if (!appState.playback.active) return;
+    if (!appState.playback.active) {
+      console.log("Playback stopped - exiting animation frame loop");
+      return;
+    }
     
     // Calculate virtual time progression
     const delta = timestamp - appState.ui.lastRenderTime;
     const virtualDelta = delta * appState.playback.speed * appState.playback.direction;
     
+    const prevIndex = appState.playback.currentIndex;
     appState.playback.currentIndex = Math.floor(
       (appState.playback.currentIndex + virtualDelta) % appState.dataset.length
     );
+    
+    if (prevIndex !== appState.playback.currentIndex) {
+      console.debug(`Playback index updated from ${prevIndex} to ${appState.playback.currentIndex}`);
+    }
     
     // Throttled rendering
     if (delta >= appState.ui.renderInterval) {
@@ -141,6 +196,7 @@ function startPlayback() {
 
 function renderCurrentFrame() {
   const currentData = appState.dataset[appState.playback.currentIndex];
+  console.debug(`Rendering frame at index ${appState.playback.currentIndex}`, currentData);
   
   // Update all visual components
   updateTimeSeriesCharts(currentData);
@@ -152,8 +208,11 @@ function renderCurrentFrame() {
 // CHART MANAGEMENT
 // ======================
 function initializeAllCharts() {
+  console.log("Initializing all chart components...");
+  
   // Time-series charts
   config.valueColumns.forEach(param => {
+    console.log(`Creating time-series chart for ${param}`);
     createTimeSeriesChart(`chart-${param}`, {
       minY: getParameterRange(param).min,
       maxY: getParameterRange(param).max
@@ -161,6 +220,7 @@ function initializeAllCharts() {
   });
   
   // Loop charts
+  console.log("Creating loop visualization charts");
   createLoopChart('pv-loop', 'Pressure-Volume');
   createLoopChart('fv-loop', 'Flow-Volume');
 }
@@ -168,6 +228,11 @@ function initializeAllCharts() {
 function updateTimeSeriesCharts(dataPoint) {
   config.valueColumns.forEach(param => {
     const chart = getChartInstance(`chart-${param}`);
+    if (!chart) {
+      console.warn(`Chart instance not found for parameter: ${param}`);
+      return;
+    }
+    console.debug(`Updating ${param} chart with value: ${dataPoint[param]}`);
     addDataPoint(chart, dataPoint.indexer, dataPoint[param]);
   });
 }
@@ -181,10 +246,71 @@ function getParameterRange(param) {
     pressure: { min: 0, max: 50 },
     volume: { min: 0, max: 1000 }
   };
-  return ranges[param] || { min: 0, max: 100 };
+  const range = ranges[param] || { min: 0, max: 100 };
+  console.debug(`Range for ${param}: ${range.min} to ${range.max}`);
+  return range;
 }
 
 // ======================
 // INITIALIZATION
 // ======================
-document.addEventListener('DOMContentLoaded', initializeApplication);
+console.log("Setting up DOM content loaded listener...");
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOM fully loaded - starting application");
+  initializeApplication();
+});
+
+// Mock functions for demonstration (since these aren't defined in original code)
+function locateDataFile() {
+  console.log("Mock: Locating data file...");
+  return Promise.resolve("/path/to/data.xlsx");
+}
+
+function loadExcelData() {
+  console.log("Mock: Loading Excel data...");
+  // Generate mock data
+  const mockData = Array.from({length: 1000}, (_, i) => ({
+    timestamp: i * 10,
+    flow: Math.sin(i / 10) * 50,
+    pressure: 20 + Math.cos(i / 5) * 10,
+    phase: i % 100 < 50 ? 1 : 0,
+    volume: Math.min(800, i * 0.8)
+  }));
+  return Promise.resolve(mockData);
+}
+
+function handleInitializationError(error) {
+  console.error("Initialization error:", error);
+}
+
+function setupControlHandlers() {
+  console.log("Mock: Setting up control handlers");
+}
+
+function updateStatusDisplay() {
+  console.log("Mock: Updating status display");
+}
+
+function createTimeSeriesChart() {
+  console.log("Mock: Creating time series chart");
+}
+
+function createLoopChart() {
+  console.log("Mock: Creating loop chart");
+}
+
+function getChartInstance() {
+  return {}; // Mock chart instance
+}
+
+function addDataPoint() {
+  // Mock function
+}
+
+function updateLoopVisualizations() {
+  console.log("Mock: Updating loop visualizations");
+}
+
+function updateDataTable() {
+  console.log("Mock: Updating data table");
+}
