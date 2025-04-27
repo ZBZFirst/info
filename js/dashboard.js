@@ -106,11 +106,129 @@ function updateTimeSeriesCharts() {
   appState.charts.volume.update();
 }
 
-function updateLoopCharts() {
-  appState.charts.pvLoop.data.datasets[0].data = appState.chartData.pvPoints;
-  appState.charts.pvLoop.update();
-  appState.charts.fvLoop.data.datasets[0].data = appState.chartData.fvPoints;
-  appState.charts.fvLoop.update();
+// ======================
+// BREATH CYCLE VISUALIZATION
+// ======================
+
+function updateLoops(currentIndex) {
+  if (!appState.dataset || appState.dataset.length === 0) return;
+
+  // Get base configuration from chartConfig.js
+  const { pvLoop, fvLoop } = CHART_CONFIGS;
+  
+  // Detect breath cycles (0->1 transitions in phase)
+  const breathStarts = [];
+  let inBreath = false;
+  
+  // Scan backwards from current position to find last 3 breath starts
+  for (let i = currentIndex; i >= 0 && breathStarts.length < 3; i--) {
+    const currentPhase = appState.dataset[i].phase;
+    const prevPhase = i > 0 ? appState.dataset[i-1].phase : 0;
+    
+    // Detect breath start (transition from <1 to >=1)
+    if (!inBreath && currentPhase >= 1 && prevPhase < 1) {
+      breathStarts.unshift(i); // Add to beginning to maintain order
+      inBreath = true;
+    }
+    // Detect breath end (transition from >0 to 0)
+    else if (inBreath && currentPhase <= 0 && prevPhase > 0) {
+      inBreath = false;
+    }
+  }
+
+  // Prepare datasets for PV and FV loops using configured colors
+  const pvData = [];
+  const fvData = [];
+  
+  // Color progression for breath cycles (current to oldest)
+  const pvColors = [
+    pvLoop.data.datasets[0].borderColor, // Primary color from config
+    blendColors(pvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.5),
+    blendColors(pvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.8)
+  ];
+  
+  const fvColors = [
+    fvLoop.data.datasets[0].borderColor, // Primary color from config
+    blendColors(fvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.5),
+    blendColors(fvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.8)
+  ];
+
+  // Process each detected breath cycle
+  breathStarts.forEach((startIdx, cycleIndex) => {
+    // Find the end of this breath (next 0 in phase after start)
+    let endIdx = startIdx;
+    while (endIdx < appState.dataset.length && 
+           (appState.dataset[endIdx].phase > 0 || endIdx === startIdx)) {
+      endIdx++;
+    }
+    endIdx = Math.min(endIdx, currentIndex);
+    
+    // Extract breath data
+    const breathData = appState.dataset.slice(startIdx, endIdx + 1);
+    
+    // Determine opacity based on cycle age (0 = current, 2 = oldest)
+    const opacity = 1 - (cycleIndex * 0.3); // 100%, 70%, 40%
+    
+    // Add to PV loop data using configured base style
+    pvData.push({
+      ...pvLoop.data.datasets[0], // Copy base config
+      label: `Breath ${breathStarts.length - cycleIndex}`,
+      data: breathData.map(d => ({x: d.volume, y: d.pressure})),
+      borderColor: pvColors[cycleIndex],
+      borderWidth: 2,
+      borderOpacity: opacity,
+      pointRadius: 0
+    });
+    
+    // Add to FV loop data using configured base style
+    fvData.push({
+      ...fvLoop.data.datasets[0], // Copy base config
+      label: `Breath ${breathStarts.length - cycleIndex}`,
+      data: breathData.map(d => ({x: d.volume, y: d.flow})),
+      borderColor: fvColors[cycleIndex],
+      borderWidth: 2,
+      borderOpacity: opacity,
+      pointRadius: 0
+    });
+  });
+
+  // Update PV Loop chart with configured options
+  appState.charts.pvLoop.data.datasets = pvData;
+  appState.charts.pvLoop.options = pvLoop.options;
+  
+  // Update FV Loop chart with configured options
+  appState.charts.fvLoop.data.datasets = fvData;
+  appState.charts.fvLoop.options = fvLoop.options;
+  
+  // Update both charts without animation
+  appState.charts.pvLoop.update('none');
+  appState.charts.fvLoop.update('none');
+  
+  if (config.debug) {
+    console.log('Updated loops with breath cycles:', {
+      currentIndex,
+      breathStarts,
+      pvDataPoints: pvData.reduce((sum, d) => sum + d.data.length, 0),
+      fvDataPoints: fvData.reduce((sum, d) => sum + d.data.length, 0)
+    });
+  }
+}
+
+// Helper function to blend colors
+function blendColors(color1, color2, ratio) {
+  const r1 = parseInt(color1.substring(1, 3), 16);
+  const g1 = parseInt(color1.substring(3, 5), 16);
+  const b1 = parseInt(color1.substring(5, 7), 16);
+  
+  const r2 = parseInt(color2.substring(1, 3), 16);
+  const g2 = parseInt(color2.substring(3, 5), 16);
+  const b2 = parseInt(color2.substring(5, 7), 16);
+  
+  const r = Math.round(r1 * (1 - ratio) + r2 * ratio);
+  const g = Math.round(g1 * (1 - ratio) + g2 * ratio);
+  const b = Math.round(b1 * (1 - ratio) + b2 * ratio);
+  
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
 
