@@ -372,10 +372,23 @@ function setPlaybackSpeed(speed) {
 }
 
 function toggleDirection() {
+  // Reverse the direction
   appState.playback.direction *= -1;
-  appState.playback.lastUpdateTime = performance.now();
-  console.log(`Direction changed to ${appState.playback.direction > 0 ? 'forward' : 'reverse'}`);
+  appState.playback.lastUpdateTime = performance.now(); // Reset to sync the time with the new direction
+  
+  // Optional: Update the button text to show the correct direction
+  const reverseBtn = document.getElementById('reverseBtn');
+  reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
+  
+  console.log(`Direction changed to ${appState.playback.direction > 0 ? 'Forward' : 'Reverse'}`);
+  
+  // If playback is running, restart the loop to apply the new direction immediately
+  if (appState.playback.active) {
+    stopPlayback();
+    startPlayback();
+  }
 }
+
 
 function stopPlayback() {
   appState.playback.active = false;
