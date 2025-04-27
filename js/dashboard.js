@@ -12,6 +12,8 @@ const config = {
     max: 100.0   // 100x faster
   },
   dataFiles: ["js/data.xlsx"],
+  maxVisiblePoints: 5000, // Max points to show on charts
+  wrapAround: false, // Don't loop playback
   targetRowsPerSecond: 1000, // Base iteration rate
   maxDataPoints: 5000 // For performance optimization
 };
@@ -139,45 +141,61 @@ function initializeCharts() {
   console.log("All charts initialized");
 }
 
-function updateVisualizations(currentData) {
-  if (!currentData) return;
+function updateVisualizations(currentIndex) {
+  if (!appState.dataset || appState.dataset.length === 0) return;
 
-  // Helper to maintain single point per x-value
-  const updateDataBuffer = (buffer, xValue, newPoint) => {
-    const filtered = buffer.filter(point => point.x !== xValue);
-    filtered.push(newPoint);
-    return filtered;
-  };
+  // Calculate visible window (last 5000 points or available points)
+  const startIdx = Math.max(0, currentIndex - config.maxDataPoints + 1);
+  const visibleData = appState.dataset.slice(startIdx, currentIndex + 1);
 
-  // Update time series
-  appState.chartData.timeSeries = updateDataBuffer(
-    appState.chartData.timeSeries,
-    currentData.timestamp,
-    {
-      x: currentData.timestamp,
-      flow: currentData.flow,
-      pressure: currentData.pressure,
-      volume: currentData.volume
+  // Update Overview Chart (all metrics)
+  config.valueColumns.forEach(metric => {
+    const datasetIndex = appState.charts.overview.data.datasets
+      .findIndex(d => d.label === metric);
+      
+    if (datasetIndex >= 0) {
+      appState.charts.overview.data.datasets[datasetIndex].data = 
+        visibleData.map(d => ({
+          x: d.timestamp,
+          y: d[metric]
+        }));
     }
-  );
+  });
 
-  // Update PV loop
-  appState.chartData.pvPoints = updateDataBuffer(
-    appState.chartData.pvPoints,
-    currentData.volume,
-    { x: currentData.volume, y: currentData.pressure }
-  );
+  // Update Flow Chart
+  appState.charts.flow.data.datasets[0].data = visibleData.map(d => ({
+    x: d.timestamp,
+    y: d.flow
+  }));
 
-  // Update FV loop
-  appState.chartData.fvPoints = updateDataBuffer(
-    appState.chartData.fvPoints,
-    currentData.volume,
-    { x: currentData.volume, y: currentData.flow }
-  );
+  // Update Pressure Chart
+  appState.charts.pressure.data.datasets[0].data = visibleData.map(d => ({
+    x: d.timestamp,
+    y: d.pressure
+  }));
 
-  // Update charts
-  updateTimeSeriesCharts();
-  updateLoopCharts();
+  // Update Volume Chart
+  appState.charts.volume.data.datasets[0].data = visibleData.map(d => ({
+    x: d.timestamp,
+    y: d.volume
+  }));
+
+  // Batch update all charts
+  appState.charts.overview.update('none');
+  appState.charts.flow.update('none');
+  appState.charts.pressure.update('none');
+  appState.charts.volume.update('none');
+
+  // Debug output
+  if (config.debug) {
+    console.log(`Updated charts to index ${currentIndex}`, {
+      visiblePoints: visibleData.length,
+      timeRange: {
+        start: visibleData[0].timestamp,
+        end: visibleData[visibleData.length-1].timestamp
+      }
+    });
+  }
 }
 
 function updateTimeSeriesCharts() {
@@ -305,105 +323,19 @@ function removePointFromCharts(dataPoint) {
   updateLoopCharts();
 }
 
-// ======================
-// INSTRUMENTED PROCESS ROWS
-// ======================
-function processRows(count, debugMode = false) {
-  if (debugMode) {
-    debug.add('processRows() entered (debug mode)', {
-      count,
-      direction: appState.playback.direction,
-      currentIndex: appState.playback.currentIndex,
-      chartDataSizes: {
-        timeSeries: appState.chartData.timeSeries.length,
-        pvPoints: appState.chartData.pvPoints.length,
-        fvPoints: appState.chartData.fvPoints.length
-      }
-    });
-  }
+function processRows(count) {
+  const newIndex = appState.playback.currentIndex + 
+                  (count * appState.playback.direction);
 
-  if (!appState.dataset || appState.dataset.length === 0) {
-    if (debugMode) debug.add('processRows() aborted: empty dataset');
-    return;
-  }
+  // Clamp to valid range
+  appState.playback.currentIndex = Math.max(0, 
+    Math.min(newIndex, appState.dataset.length - 1));
 
-  let newIndex = appState.playback.currentIndex;
-  let shouldResetCharts = false;
-  let processedCount = 0;
+  // Update table with current point
+  updateDataTable(appState.dataset[appState.playback.currentIndex]);
 
-  while (processedCount < count) {
-    newIndex += appState.playback.direction;
-    processedCount++;
-
-    if (debugMode) {
-      debug.add(`Processing step ${processedCount}`, {
-        newIndex,
-        direction: appState.playback.direction,
-        valueColumns: config.valueColumns.map(col => ({
-          column: col,
-          value: appState.dataset[newIndex]?.[col]
-        }))
-      });
-    }
-
-    // Handle forward direction
-    if (appState.playback.direction > 0) {
-      if (newIndex >= appState.dataset.length) {
-        newIndex = 0;
-        shouldResetCharts = true;
-        if (debugMode) debug.add('Forward wrap-around detected');
-        break;
-      }
-    } 
-    // Handle reverse direction
-    else {
-      if (newIndex < 0) {
-        newIndex = 0;
-        if (debugMode) debug.add('Reverse boundary hit (start of dataset)');
-        break;
-      }
-
-      const prevIndex = newIndex + 1;
-      if (prevIndex < appState.dataset.length) {
-        if (debugMode) {
-          debug.add('Removing point in reverse direction', {
-            removingIndex: prevIndex,
-            point: appState.dataset[prevIndex]
-          });
-        }
-        removePointFromCharts(appState.dataset[prevIndex]);
-      }
-    }
-  }
-
-  newIndex = Math.max(0, Math.min(newIndex, appState.dataset.length - 1));
-  appState.playback.currentIndex = newIndex;
-
-  if (debugMode) {
-    debug.add('Index processing complete', {
-      finalIndex: newIndex,
-      shouldResetCharts
-    });
-  }
-
-  if (shouldResetCharts) {
-    debug.add('Resetting all charts');
-    resetAllCharts();
-  }
-
-  updateDataTable(appState.dataset[newIndex]);
-  updateVisualizations(appState.dataset[newIndex]);
-  
-  if (debugMode) {
-    debug.add('Visualizations updated', {
-      tableData: appState.dataset[newIndex],
-      chartDataSizes: {
-        timeSeries: appState.chartData.timeSeries.length,
-        pvPoints: appState.chartData.pvPoints.length,
-        fvPoints: appState.chartData.fvPoints.length
-      }
-    });
-  }
+  // Update visualizations
+  updateVisualizations(appState.playback.currentIndex);
 }
 
 
