@@ -50,6 +50,58 @@ const appState = {
 };
 
 // ======================
+// ENHANCED DEBUGGING SYSTEM
+// ======================
+const debug = {
+  log: [],
+  maxLogEntries: 100,
+  add: function(message, data = null) {
+    const entry = {
+      timestamp: performance.now(),
+      message,
+      data: data ? JSON.parse(JSON.stringify(data)) : null // Deep clone
+    };
+    this.log.unshift(entry); // Add to beginning
+    if (this.log.length > this.maxLogEntries) this.log.pop();
+    
+    // Immediate console output
+    console.groupCollapsed(`DEBUG: ${message}`);
+    console.log('Timestamp:', entry.timestamp);
+    if (data) console.log('Data:', data);
+    console.groupEnd();
+    
+    this.updateDebugUI();
+  },
+  updateDebugUI: function() {
+    const debugOutput = document.getElementById('debug-output') || 
+                       this.createDebugOutput();
+    debugOutput.innerHTML = this.log.map(entry => 
+      `<div class="debug-entry">
+        <span class="debug-time">${entry.timestamp.toFixed(2)}ms</span>
+        <span class="debug-msg">${entry.message}</span>
+        ${entry.data ? `<pre>${JSON.stringify(entry.data, null, 2)}</pre>` : ''}
+      </div>`
+    ).join('');
+  },
+  createDebugOutput: function() {
+    const div = document.createElement('div');
+    div.id = 'debug-output';
+    div.style.position = 'fixed';
+    div.style.bottom = '0';
+    div.style.right = '0';
+    div.style.width = '400px';
+    div.style.height = '300px';
+    div.style.overflow = 'auto';
+    div.style.background = 'rgba(0,0,0,0.8)';
+    div.style.color = '#0f0';
+    div.style.padding = '10px';
+    div.style.zIndex = '9999';
+    document.body.appendChild(div);
+    return div;
+  }
+};
+
+// ======================
 // CHART MANAGEMENT
 // ======================
 function initializeCharts() {
@@ -254,10 +306,26 @@ function removePointFromCharts(dataPoint) {
 }
 
 // ======================
-// UPDATED ROW PROCESSING
+// INSTRUMENTED PROCESS ROWS
 // ======================
-function processRows(count) {
-  if (!appState.dataset || appState.dataset.length === 0) return;
+function processRows(count, debugMode = false) {
+  if (debugMode) {
+    debug.add('processRows() entered (debug mode)', {
+      count,
+      direction: appState.playback.direction,
+      currentIndex: appState.playback.currentIndex,
+      chartDataSizes: {
+        timeSeries: appState.chartData.timeSeries.length,
+        pvPoints: appState.chartData.pvPoints.length,
+        fvPoints: appState.chartData.fvPoints.length
+      }
+    });
+  }
+
+  if (!appState.dataset || appState.dataset.length === 0) {
+    if (debugMode) debug.add('processRows() aborted: empty dataset');
+    return;
+  }
 
   let newIndex = appState.playback.currentIndex;
   let shouldResetCharts = false;
@@ -267,39 +335,75 @@ function processRows(count) {
     newIndex += appState.playback.direction;
     processedCount++;
 
+    if (debugMode) {
+      debug.add(`Processing step ${processedCount}`, {
+        newIndex,
+        direction: appState.playback.direction,
+        valueColumns: config.valueColumns.map(col => ({
+          column: col,
+          value: appState.dataset[newIndex]?.[col]
+        }))
+      });
+    }
+
     // Handle forward direction
     if (appState.playback.direction > 0) {
       if (newIndex >= appState.dataset.length) {
         newIndex = 0;
         shouldResetCharts = true;
-        break; // Reset after this point
+        if (debugMode) debug.add('Forward wrap-around detected');
+        break;
       }
     } 
     // Handle reverse direction
     else {
       if (newIndex < 0) {
         newIndex = 0;
-        break; // Stop at beginning
+        if (debugMode) debug.add('Reverse boundary hit (start of dataset)');
+        break;
       }
-      
-      // Remove the point we're moving away from when rewinding
-      const prevIndex = newIndex + 1; // +1 because we already decremented
+
+      const prevIndex = newIndex + 1;
       if (prevIndex < appState.dataset.length) {
+        if (debugMode) {
+          debug.add('Removing point in reverse direction', {
+            removingIndex: prevIndex,
+            point: appState.dataset[prevIndex]
+          });
+        }
         removePointFromCharts(appState.dataset[prevIndex]);
       }
     }
   }
 
-  // Ensure index stays within bounds
   newIndex = Math.max(0, Math.min(newIndex, appState.dataset.length - 1));
   appState.playback.currentIndex = newIndex;
 
+  if (debugMode) {
+    debug.add('Index processing complete', {
+      finalIndex: newIndex,
+      shouldResetCharts
+    });
+  }
+
   if (shouldResetCharts) {
+    debug.add('Resetting all charts');
     resetAllCharts();
   }
 
   updateDataTable(appState.dataset[newIndex]);
   updateVisualizations(appState.dataset[newIndex]);
+  
+  if (debugMode) {
+    debug.add('Visualizations updated', {
+      tableData: appState.dataset[newIndex],
+      chartDataSizes: {
+        timeSeries: appState.chartData.timeSeries.length,
+        pvPoints: appState.chartData.pvPoints.length,
+        fvPoints: appState.chartData.fvPoints.length
+      }
+    });
+  }
 }
 
 
@@ -455,27 +559,61 @@ function setPlaybackSpeed(speed) {
 }
 
 function toggleDirection() {
-  // Store previous direction
+  debug.add('Direction toggle initiated', {
+    currentState: {
+      index: appState.playback.currentIndex,
+      direction: appState.playback.direction,
+      active: appState.playback.active,
+      speed: appState.playback.speed
+    },
+    datasetInfo: {
+      length: appState.dataset.length,
+      currentData: appState.dataset[appState.playback.currentIndex]
+    }
+  });
+
   const prevDirection = appState.playback.direction;
   
   // Toggle direction
   appState.playback.direction *= -1;
-  
-  // Reset timing to prevent jumps
-  appState.playback.lastUpdateTime = performance.now();
-  
-  // Update UI
+  debug.add(`Direction changed from ${prevDirection} to ${appState.playback.direction}`);
+
+  // Reset timing
+  const now = performance.now();
+  appState.playback.lastUpdateTime = now;
+  debug.add('Timing reset', { lastUpdateTime: now });
+
+  // UI update
   const reverseBtn = document.getElementById('reverseBtn');
   reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
-  
-  // If we were at index 0 and trying to reverse, do nothing
+  debug.add('UI button updated', { buttonText: reverseBtn.textContent });
+
+  // Boundary check
   if (prevDirection > 0 && appState.playback.currentIndex === 0) {
-    appState.playback.direction = 1; // Keep forward direction
-    console.log("Already at beginning - cannot reverse");
+    appState.playback.direction = 1;
+    debug.add('Boundary protection: Prevented reverse at start', {
+      action: 'Reset direction to forward',
+      index: appState.playback.currentIndex
+    });
     return;
   }
+
+  // Immediate processing debug
+  debug.add('Starting immediate reverse processing', {
+    targetRows: 1,
+    currentIndexBefore: appState.playback.currentIndex
+  });
   
-  console.log(`Direction changed to ${appState.playback.direction > 0 ? 'Forward' : 'Reverse'}`);
+  processRows(1, true); // Pass true for debug mode
+  
+  debug.add('Immediate processing completed', {
+    currentIndexAfter: appState.playback.currentIndex,
+    chartDataSizes: {
+      timeSeries: appState.chartData.timeSeries.length,
+      pvPoints: appState.chartData.pvPoints.length,
+      fvPoints: appState.chartData.fvPoints.length
+    }
+  });
 }
 
 function stopPlayback() {
