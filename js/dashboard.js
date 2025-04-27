@@ -3,7 +3,7 @@ import { CHART_CONFIGS } from './chartConfig.js';
 // ======================
 // CORE CONFIGURATION
 // ======================
-const config = {timeColumn: "timestamp",valueColumns: ["flow", "pressure", "phase", "volume"],playbackRates: {min: 0.1,normal: 1.0,max: 100.0 },dataFiles: ["js/data.xlsx"],maxVisiblePoints: 5000, wrapAround: false,targetRowsPerSecond: 1000,maxDataPoints: 5000};
+const config = {timeColumn: "timestamp",valueColumns: ["flow", "pressure", "phase", "volume"],playbackRates: {min: 0.1,normal: 1.0,max: 100.0 },dataFiles: ["js/data.xlsx"],maxVisiblePoints: 5000, wrapAround: true,targetRowsPerSecond: 1000,maxDataPoints: 5000};
 
 // ======================
 // APPLICATION STATE
