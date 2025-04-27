@@ -107,109 +107,132 @@ function updateTimeSeriesCharts() {
 }
 
 // ======================
-// BREATH CYCLE VISUALIZATION
+// BREATH CYCLE TRACKING FOR BOTH LOOPS
 // ======================
-
 function updateLoops(currentIndex) {
   if (!appState.dataset || appState.dataset.length === 0) return;
 
-  // Get base configuration from chartConfig.js
-  const { pvLoop, fvLoop } = CHART_CONFIGS;
-  
-  // Detect breath cycles (0->1 transitions in phase)
-  const breathStarts = [];
-  let inBreath = false;
-  
-  // Scan backwards from current position to find last 3 breath starts
-  for (let i = currentIndex; i >= 0 && breathStarts.length < 3; i--) {
-    const currentPhase = appState.dataset[i].phase;
-    const prevPhase = i > 0 ? appState.dataset[i-1].phase : 0;
+  const currentData = appState.dataset[currentIndex];
+  const currentPhase = currentData.phase;
+
+  // Initialize breath cycle tracking if needed
+  if (!appState.breathCycles) {
+    appState.breathCycles = {
+      currentPVCycle: [],
+      completedPVCycles: [],
+      currentFVCycle: [],
+      completedFVCycles: [],
+      zeroCount: 0,
+      isInBreath: false
+    };
+  }
+
+  const { 
+    currentPVCycle, 
+    completedPVCycles,
+    currentFVCycle,
+    completedFVCycles,
+    zeroCount, 
+    isInBreath 
+  } = appState.breathCycles;
+
+  // Detect breath state transitions
+  if (currentPhase >= 1 && !isInBreath) {
+    // New breath starting (phase transition to 1)
+    appState.breathCycles.isInBreath = true;
+    appState.breathCycles.zeroCount = 0;
+    currentPVCycle.length = 0; // Clear current cycles
+    currentFVCycle.length = 0;
+  } 
+  else if (currentPhase <= 0 && isInBreath) {
+    // Potential end of breath (phase transition to 0)
+    appState.breathCycles.zeroCount++;
     
-    // Detect breath start (transition from <1 to >=1)
-    if (!inBreath && currentPhase >= 1 && prevPhase < 1) {
-      breathStarts.unshift(i); // Add to beginning to maintain order
-      inBreath = true;
-    }
-    // Detect breath end (transition from >0 to 0)
-    else if (inBreath && currentPhase <= 0 && prevPhase > 0) {
-      inBreath = false;
+    // Confirm end of breath after 50 consecutive zeros
+    if (zeroCount >= 50) {
+      appState.breathCycles.isInBreath = false;
+      
+      // Only store complete cycles with enough points
+      if (currentPVCycle.length > 10) {
+        completedPVCycles.push([...currentPVCycle]);
+        completedFVCycles.push([...currentFVCycle]);
+        
+        // Maintain only the last 3 complete cycles
+        if (completedPVCycles.length > 3) {
+          completedPVCycles.shift();
+          completedFVCycles.shift();
+        }
+      }
+      
+      currentPVCycle.length = 0;
+      currentFVCycle.length = 0;
     }
   }
 
-  // Prepare datasets for PV and FV loops using configured colors
-  const pvData = [];
-  const fvData = [];
-  
-  // Color progression for breath cycles (current to oldest)
-  const pvColors = [
-    pvLoop.data.datasets[0].borderColor, // Primary color from config
-    blendColors(pvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.5),
-    blendColors(pvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.8)
-  ];
-  
-  const fvColors = [
-    fvLoop.data.datasets[0].borderColor, // Primary color from config
-    blendColors(fvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.5),
-    blendColors(fvLoop.data.datasets[0].borderColor, '#AAAAAA', 0.8)
-  ];
+  // Add current point to active cycles if in breath
+  if (isInBreath) {
+    currentPVCycle.push({
+      x: currentData.volume,
+      y: currentData.pressure
+    });
+    
+    currentFVCycle.push({
+      x: currentData.volume,
+      y: currentData.flow
+    });
+  }
 
-  // Process each detected breath cycle
-  breathStarts.forEach((startIdx, cycleIndex) => {
-    // Find the end of this breath (next 0 in phase after start)
-    let endIdx = startIdx;
-    while (endIdx < appState.dataset.length && 
-           (appState.dataset[endIdx].phase > 0 || endIdx === startIdx)) {
-      endIdx++;
+  // Color scheme: Red, Yellow, Blue for last 3 cycles
+  const colors = ['#E15759', '#F28E2B', '#4E79A7']; 
+
+  // Prepare datasets for both loops
+  const prepareLoopData = (completedCycles, currentCycle) => {
+    const datasets = [];
+    
+    // Add completed cycles (newest first)
+    completedCycles.slice().reverse().forEach((cycle, index) => {
+      if (index < 3) { // Only show last 3 cycles
+        datasets.push({
+          data: cycle,
+          borderColor: colors[index],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        });
+      }
+    });
+
+    // Add current incomplete cycle (if any)
+    if (isInBreath && currentCycle.length > 0) {
+      datasets.push({
+        data: currentCycle,
+        borderColor: colors[0], // Red for current
+        backgroundColor: 'transparent',
+        borderWidth: 3, // Thicker line for current
+        pointRadius: 0,
+        fill: false,
+        tension: 0
+      });
     }
-    endIdx = Math.min(endIdx, currentIndex);
-    
-    // Extract breath data
-    const breathData = appState.dataset.slice(startIdx, endIdx + 1);
-    
-    // Determine opacity based on cycle age (0 = current, 2 = oldest)
-    const opacity = 1 - (cycleIndex * 0.3); // 100%, 70%, 40%
-    
-    // Add to PV loop data using configured base style
-    pvData.push({
-      ...pvLoop.data.datasets[0], // Copy base config
-      label: `Breath ${breathStarts.length - cycleIndex}`,
-      data: breathData.map(d => ({x: d.volume, y: d.pressure})),
-      borderColor: pvColors[cycleIndex],
-      borderWidth: 2,
-      borderOpacity: opacity,
-      pointRadius: 0
-    });
-    
-    // Add to FV loop data using configured base style
-    fvData.push({
-      ...fvLoop.data.datasets[0], // Copy base config
-      label: `Breath ${breathStarts.length - cycleIndex}`,
-      data: breathData.map(d => ({x: d.volume, y: d.flow})),
-      borderColor: fvColors[cycleIndex],
-      borderWidth: 2,
-      borderOpacity: opacity,
-      pointRadius: 0
-    });
-  });
 
-  // Update PV Loop chart with configured options
-  appState.charts.pvLoop.data.datasets = pvData;
-  appState.charts.pvLoop.options = pvLoop.options;
-  
-  // Update FV Loop chart with configured options
-  appState.charts.fvLoop.data.datasets = fvData;
-  appState.charts.fvLoop.options = fvLoop.options;
-  
-  // Update both charts without animation
+    return datasets;
+  };
+
+  // Update PV Loop
+  appState.charts.pvLoop.data.datasets = prepareLoopData(completedPVCycles, currentPVCycle);
   appState.charts.pvLoop.update('none');
+
+  // Update FV Loop
+  appState.charts.fvLoop.data.datasets = prepareLoopData(completedFVCycles, currentFVCycle);
   appState.charts.fvLoop.update('none');
-  
-  if (config.debug) {
-    console.log('Updated loops with breath cycles:', {
-      currentIndex,
-      breathStarts,
-      pvDataPoints: pvData.reduce((sum, d) => sum + d.data.length, 0),
-      fvDataPoints: fvData.reduce((sum, d) => sum + d.data.length, 0)
+
+  if (config.debug && isInBreath) {
+    console.log('Current Breath Cycle:', {
+      PVPoints: currentPVCycle.length,
+      FVPoints: currentFVCycle.length,
+      Phase: currentPhase
     });
   }
 }
@@ -300,6 +323,8 @@ function processRows(count) {
   appState.playback.currentIndex = newIndex;
   updateDataTable(appState.dataset[appState.playback.currentIndex]);
   updateVisualizations(appState.playback.currentIndex);
+  updateLoops(appState.playback.currentIndex);
+
 }
 
 
