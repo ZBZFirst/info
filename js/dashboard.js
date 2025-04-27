@@ -72,10 +72,8 @@ function playbackLoop(currentTime) {
     return;
   }
   
-  // Calculate time delta since last update
   const delta = currentTime - appState.playback.lastUpdateTime;
   
-  // Only process if we have meaningful time elapsed
   if (delta > 0) {
     // Calculate virtual time progression based on speed and direction
     const virtualDelta = delta * appState.playback.speed * appState.playback.direction;
@@ -84,7 +82,6 @@ function playbackLoop(currentTime) {
     const targetRows = Math.floor((virtualDelta * config.targetRowsPerSecond) / 1000);
     
     if (targetRows !== 0) {
-      // Process the calculated number of rows (can be negative for reverse playback)
       processRows(targetRows);
       
       // Update metrics
@@ -92,7 +89,6 @@ function playbackLoop(currentTime) {
       const elapsed = (currentTime - appState.metrics.startTime) / 1000;
       appState.playback.rowsPerSecond = Math.floor(appState.playback.rowsProcessed / elapsed);
       
-      // Update debug display
       updateDebugInfo();
     }
   }
@@ -105,34 +101,22 @@ function playbackLoop(currentTime) {
 // UPDATED ROW PROCESSING
 // ======================
 function processRows(count) {
-  const newIndex = appState.playback.currentIndex + count;
+  let newIndex = appState.playback.currentIndex + count;
   
-  // Handle bounds checking differently for forward and reverse
-  if (count > 0) {
-    // Forward playback
-    if (newIndex >= appState.dataset.length) {
-      appState.playback.currentIndex = 0;
-      console.log("Reached end of dataset - looping back to start");
-    } else {
-      appState.playback.currentIndex = newIndex;
-    }
-  } else {
-    // Reverse playback
-    if (newIndex < 0) {
-      appState.playback.currentIndex = appState.dataset.length - 1;
-      console.log("Reached start of dataset - looping to end");
-    } else {
-      appState.playback.currentIndex = newIndex;
-    }
+  // Handle wrapping in both directions
+  if (newIndex >= appState.dataset.length) {
+    newIndex = 0; // Wrap to start when going forward
+    console.log("Reached end - wrapping to start");
+  } else if (newIndex < 0) {
+    newIndex = appState.dataset.length - 1; // Wrap to end when going backward
+    console.log("Reached start - wrapping to end");
   }
   
-  // Get current data point
-  const currentData = appState.dataset[appState.playback.currentIndex];
-  
-  // Update the table
+  appState.playback.currentIndex = newIndex;
+  const currentData = appState.dataset[newIndex];
   updateDataTable(currentData);
   
-  // Optional: Update visualizations if they exist
+  // Optional visualization update
   try {
     if (typeof updateVisualizations === 'function') {
       updateVisualizations(currentData);
@@ -140,7 +124,6 @@ function processRows(count) {
   } catch (error) {
     console.warn("Visualization update failed:", error);
   }
-}
 
 function updateDebugInfo() {
   const debugInfo = `
@@ -272,16 +255,20 @@ function setPlaybackSpeed(speed) {
 }
 
 // ======================
-// UPDATED PLAYBACK CONTROLS
+// IMPROVED DIRECTION TOGGLE
 // ======================
 function toggleDirection() {
   // Reverse the direction
   appState.playback.direction *= -1;
   
-  // Reset the last update time to prevent large jumps when changing direction
+  // Reset timing to prevent jumps
   appState.playback.lastUpdateTime = performance.now();
   
-  console.log(`Playback direction changed to ${appState.playback.direction > 0 ? 'forward' : 'reverse'}`);
+  // Force at least one row change on direction toggle
+  processRows(appState.playback.direction);
+  
+  console.log(`Direction: ${appState.playback.direction > 0 ? '▶ Forward' : '◀ Reverse'}`);
+  updateDebugInfo();
 }
 
 function stopPlayback() {
