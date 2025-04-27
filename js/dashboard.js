@@ -14,15 +14,7 @@ active: false,currentIndex: 0,speed: config.playbackRates.normal,direction: 1,la
 // ======================
 // ENHANCED DEBUGGING SYSTEM
 // ======================
-const debug = {
-  log: [],
-  maxLogEntries: 100,
-  add: function(message, data = null) {
-    const entry = {
-      timestamp: performance.now(),
-      message,
-      data: data ? JSON.parse(JSON.stringify(data)) : null // Deep clone
-    };
+const debug = {log: [],maxLogEntries: 100,add: function(message, data = null) {const entry = {timestamp: performance.now(),message,data: data ? JSON.parse(JSON.stringify(data)) : null};
     this.log.unshift(entry);
     if (this.log.length > this.maxLogEntries) this.log.pop();
     console.groupCollapsed(`DEBUG: ${message}`);
@@ -31,8 +23,7 @@ const debug = {
     console.groupEnd();
     this.updateDebugUI();
   },
-  updateDebugUI: function() {
-    const debugOutput = document.getElementById('debug-output') || 
+  updateDebugUI: function() {const debugOutput = document.getElementById('debug-output') || 
                        this.createDebugOutput();
     debugOutput.innerHTML = this.log.map(entry => 
       `<div class="debug-entry">
