@@ -3,53 +3,13 @@ import { CHART_CONFIGS } from './chartConfig.js';
 // ======================
 // CORE CONFIGURATION
 // ======================
-const config = {
-  timeColumn: "timestamp",
-  valueColumns: ["flow", "pressure", "phase", "volume"],
-  playbackRates: {
-    min: 0.1,
-    normal: 1.0,
-    max: 100.0 
-  },
-  dataFiles: ["js/data.xlsx"],
-  maxVisiblePoints: 5000, 
-  wrapAround: false,
-  targetRowsPerSecond: 1000,
-  maxDataPoints: 5000
-};
+const config = {timeColumn: "timestamp",valueColumns: ["flow", "pressure", "phase", "volume"],playbackRates: {min: 0.1,normal: 1.0,max: 100.0 },dataFiles: ["js/data.xlsx"],maxVisiblePoints: 5000, wrapAround: false,targetRowsPerSecond: 1000,maxDataPoints: 5000};
 
 // ======================
 // APPLICATION STATE
 // ======================
-const appState = {
-  dataset: null,
-  playback: {
-    active: false,
-    currentIndex: 0,
-    speed: config.playbackRates.normal,
-    direction: 1,
-    lastUpdateTime: 0,
-    rowsProcessed: 0,
-    rowsPerSecond: 0
-  },
-  metrics: {
-    startTime: 0,
-    totalRows: 0
-  },
-  charts: {
-    overview: null,
-    flow: null,
-    pressure: null,
-    volume: null,
-    pvLoop: null,
-    fvLoop: null
-  },
-  chartData: {
-    timeSeries: [],
-    pvPoints: [],
-    fvPoints: []
-  }
-};
+const appState = {dataset: null,playback: {
+active: false,currentIndex: 0,speed: config.playbackRates.normal,direction: 1,lastUpdateTime: 0,rowsProcessed: 0,rowsPerSecond: 0},metrics: {startTime: 0,totalRows: 0},charts: {overview: null,flow: null,pressure: null,volume: null,pvLoop: null,fvLoop: null},chartData: {timeSeries: [],pvPoints: [],fvPoints: []}};
 
 // ======================
 // ENHANCED DEBUGGING SYSTEM
@@ -215,15 +175,9 @@ function playbackLoop(currentTime) {
 }
 
 function removePointFromCharts(dataPoint) {
-  appState.chartData.timeSeries = appState.chartData.timeSeries.filter(
-    point => point.x !== dataPoint.timestamp
-  );
-  appState.chartData.pvPoints = appState.chartData.pvPoints.filter(
-    point => point.x !== dataPoint.volume
-  );
-  appState.chartData.fvPoints = appState.chartData.fvPoints.filter(
-    point => point.x !== dataPoint.volume
-  );
+  appState.chartData.timeSeries = appState.chartData.timeSeries.filter(point => point.x !== dataPoint.timestamp);
+  appState.chartData.pvPoints = appState.chartData.pvPoints.filter(point => point.x !== dataPoint.volume);
+  appState.chartData.fvPoints = appState.chartData.fvPoints.filter(point => point.x !== dataPoint.volume);
   updateTimeSeriesCharts();
   updateLoopCharts();
 }
@@ -231,19 +185,14 @@ function removePointFromCharts(dataPoint) {
 function processRows(count) {
   const newIndex = appState.playback.currentIndex + 
                   (count * appState.playback.direction);
-  appState.playback.currentIndex = Math.max(0, 
-    Math.min(newIndex, appState.dataset.length - 1));
+  appState.playback.currentIndex = Math.max(0, Math.min(newIndex, appState.dataset.length - 1));
   updateDataTable(appState.dataset[appState.playback.currentIndex]);
   updateVisualizations(appState.playback.currentIndex);
 }
 
 
 function resetAllCharts() {
-  appState.chartData = {
-    timeSeries: [],
-    pvPoints: [],
-    fvPoints: []
-  };
+  appState.chartData = {timeSeries: [],pvPoints: [],fvPoints: []};
   Object.values(appState.charts).forEach(chart => {
     chart.data.datasets.forEach(dataset => {
       dataset.data = [];
@@ -301,13 +250,8 @@ function updateDataTable(currentData) {
   const tableBody = document.getElementById('tableBody');
   tableBody.innerHTML = '';
   const row = document.createElement('tr');
-  const cells = [
-    currentData.index,
-    currentData.timestamp,
-    ...config.valueColumns.map(col => currentData[col])
-  ];
-  cells.forEach(cellValue => {
-    const td = document.createElement('td');
+  const cells = [currentData.index,currentData.timestamp,...config.valueColumns.map(col => currentData[col])];
+  cells.forEach(cellValue => {const td = document.createElement('td');
     td.textContent = typeof cellValue === 'number' ? cellValue.toFixed(2) : cellValue;
     row.appendChild(td);
   });
@@ -324,8 +268,7 @@ function startPlayback() {
   appState.playback.active = true;
   appState.metrics.startTime = performance.now();
   appState.playback.lastUpdateTime = performance.now();
-  function playbackLoop(currentTime) {
-    if (!appState.playback.active) {
+  function playbackLoop(currentTime) {if (!appState.playback.active) {
       console.log("Playback stopped - exiting animation frame loop");
       return;
     }
@@ -357,17 +300,8 @@ function setPlaybackSpeed(speed) {
 
 function toggleDirection() {
   debug.add('Direction toggle initiated', {
-    currentState: {
-      index: appState.playback.currentIndex,
-      direction: appState.playback.direction,
-      active: appState.playback.active,
-      speed: appState.playback.speed
-    },
-    datasetInfo: {
-      length: appState.dataset.length,
-      currentData: appState.dataset[appState.playback.currentIndex]
-    }
-  });
+    currentState: {index: appState.playback.currentIndex,direction: appState.playback.direction,active: appState.playback.active,speed: appState.playback.speed},
+    datasetInfo: {length: appState.dataset.length,currentData: appState.dataset[appState.playback.currentIndex]}});
   const prevDirection = appState.playback.direction;
   appState.playback.direction *= -1;
   debug.add(`Direction changed from ${prevDirection} to ${appState.playback.direction}`);
@@ -377,27 +311,12 @@ function toggleDirection() {
   const reverseBtn = document.getElementById('reverseBtn');
   reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
   debug.add('UI button updated', { buttonText: reverseBtn.textContent });
-  if (prevDirection > 0 && appState.playback.currentIndex === 0) {
-    appState.playback.direction = 1;
-    debug.add('Boundary protection: Prevented reverse at start', {
-      action: 'Reset direction to forward',
-      index: appState.playback.currentIndex
-    });
+  if (prevDirection > 0 && appState.playback.currentIndex === 0) {appState.playback.direction = 1;debug.add('Boundary protection: Prevented reverse at start', {action: 'Reset direction to forward',index: appState.playback.currentIndex});
     return;
   }
-  debug.add('Starting immediate reverse processing', {
-    targetRows: 1,
-    currentIndexBefore: appState.playback.currentIndex
-  });
+  debug.add('Starting immediate reverse processing', {targetRows: 1,currentIndexBefore: appState.playback.currentIndex});
   processRows(1, true);
-  debug.add('Immediate processing completed', {
-    currentIndexAfter: appState.playback.currentIndex,
-    chartDataSizes: {
-      timeSeries: appState.chartData.timeSeries.length,
-      pvPoints: appState.chartData.pvPoints.length,
-      fvPoints: appState.chartData.fvPoints.length
-    }
-  });
+  debug.add('Immediate processing completed', {currentIndexAfter: appState.playback.currentIndex,chartDataSizes: {timeSeries: appState.chartData.timeSeries.length,pvPoints: appState.chartData.pvPoints.length,fvPoints: appState.chartData.fvPoints.length}});
 }
 
 function stopPlayback() {
@@ -431,26 +350,19 @@ function setupControls() {
   const fastBtn = document.getElementById('fastBtn');
   const reverseBtn = document.getElementById('reverseBtn');
   const speedDisplay = document.getElementById('speedDisplay');
-  playBtn.addEventListener('click', () => {
-    if (appState.playback.active) {
-      stopPlayback();
+  playBtn.addEventListener('click', () => {if (appState.playback.active) {stopPlayback();
       playBtn.textContent = '▶ Play';
-    } else {
-      startPlayback();
+    } else {startPlayback();
       playBtn.textContent = '⏸ Pause';
-    }
-  });
-  stopBtn.addEventListener('click', () => {
-    stopPlayback();
+    }});
+  stopBtn.addEventListener('click', () => {stopPlayback();
     playBtn.textContent = '▶ Play';
   });
-  slowBtn.addEventListener('click', () => {
-    const newSpeed = Math.max(config.playbackRates.min, appState.playback.speed / 2);
+  slowBtn.addEventListener('click', () => {const newSpeed = Math.max(config.playbackRates.min, appState.playback.speed / 2);
     setPlaybackSpeed(newSpeed);
     updateSpeedDisplay();
   });
-  fastBtn.addEventListener('click', () => {
-    const newSpeed = Math.min(config.playbackRates.max, appState.playback.speed * 2);
+  fastBtn.addEventListener('click', () => {const newSpeed = Math.min(config.playbackRates.max, appState.playback.speed * 2);
     setPlaybackSpeed(newSpeed);
     updateSpeedDisplay();
   });
@@ -459,9 +371,7 @@ function setupControls() {
     reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
   });
 
-  function updateSpeedDisplay() {
-    speedDisplay.textContent = `${appState.playback.speed.toFixed(1)}x`;
-  }
+  function updateSpeedDisplay() {speedDisplay.textContent = `${appState.playback.speed.toFixed(1)}x`;}
   updateSpeedDisplay();
 }
 
