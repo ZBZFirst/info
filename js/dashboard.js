@@ -299,19 +299,6 @@ function processRows(count) {
   updateVisualizations(currentData);
 }
 
-  // Update current index
-  appState.playback.currentIndex = newIndex;
-  const currentData = appState.dataset[newIndex];
-
-  // Clear all charts if we looped around in forward direction
-  if (shouldResetCharts) {
-    resetAllCharts();
-  }
-
-  updateDataTable(currentData);
-  updateVisualizations(currentData);
-}
-
 function resetAllCharts() {
   // Clear all data buffers
   appState.chartData = {
