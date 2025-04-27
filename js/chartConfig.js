@@ -1,9 +1,5 @@
 // chartConfig.js
 
-/**
- * COLOR PALETTE - Centralized for easy theming
- * Using perceptually uniform, colorblind-friendly palette
- */
 const COLORS = {
   flow: '#E15759',    // Red
   pressure: '#4E79A7', // Blue
@@ -14,19 +10,18 @@ const COLORS = {
 };
 
 const AXIS_RANGES = {
-  flow: { min: 500, max: 850 },        // Example values - adjust to your data
-  pressure: { min: 300, max: 550 },        // Typical ventilator ranges
-  volume: { min: 200, max: 370 },        // Adjust based on your data
-  phase: { min: -1, max: 3 }      // -π to π for phase
+  flow: { min: 500, max: 850 },
+  pressure: { min: 300, max: 550 },
+  volume: { min: 200, max: 370 },
+  phase: { min: -1, max: 3 }
 };
 
-// Common settings for all time-series charts
 const TIME_SERIES_BASE = {
   type: 'line',
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 0 }, // Critical for performance
+    animation: { duration: 0 },
     interaction: {
       mode: 'index',
       intersect: false
@@ -53,7 +48,6 @@ const TIME_SERIES_BASE = {
   }
 };
 
-// Special settings for loop charts (PV, FV)
 const LOOP_CHART_BASE = {
   type: 'line',
   options: {
@@ -62,7 +56,7 @@ const LOOP_CHART_BASE = {
     animation: { duration: 0 },
     elements: {
       line: {
-        tension: 0 // Straight lines between points
+        tension: 0
       }
     },
     scales: {
@@ -87,11 +81,8 @@ const LOOP_CHART_BASE = {
   }
 };
 
-/**
- * CHART FACTORIES - Reusable creation patterns
- */
 
-// Creates configuration for single metric time-series
+
 const createTimeSeries = (metric, showPoints = false) => ({
   ...TIME_SERIES_BASE,
   data: {
@@ -120,89 +111,22 @@ const createTimeSeries = (metric, showPoints = false) => ({
   }
 });
 
-// Creates configuration for parametric (loop) charts
 const createLoopChart = (xMetric, yMetric) => ({
   ...LOOP_CHART_BASE,
-  data: {
-    datasets: [{
-      label: `${yMetric} vs ${xMetric}`,
-      borderColor: COLORS[yMetric],
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      pointRadius: 0,
-      fill: false,
-      data: []
-    }]
-  },
-  options: {
-    ...LOOP_CHART_BASE.options,
-    scales: {
-      x: {
-        ...LOOP_CHART_BASE.options.scales.x,
-        min: AXIS_RANGES[xMetric].min,
-        max: AXIS_RANGES[xMetric].max,
-        title: { text: `${xMetric} (${getUnits(xMetric)})` }
-      },
-      y: {
-        ...LOOP_CHART_BASE.options.scales.y,
-        min: AXIS_RANGES[yMetric].min,
-        max: AXIS_RANGES[yMetric].max,
-        title: { text: `${yMetric} (${getUnits(yMetric)})` }
-      }
-    }
-  }
-});
+  data: {datasets: [{label: `${yMetric} vs ${xMetric}`,borderColor: COLORS[yMetric],backgroundColor: 'transparent',borderWidth: 2,pointRadius: 0,fill: false,data: []}]},
+  options: {...LOOP_CHART_BASE.options,scales: {x: {...LOOP_CHART_BASE.options.scales.x,min: AXIS_RANGES[xMetric].min,max: AXIS_RANGES[xMetric].max,title: { text: `${xMetric} (${getUnits(xMetric)})` }}, y: {...LOOP_CHART_BASE.options.scales.y,min: AXIS_RANGES[yMetric].min,max: AXIS_RANGES[yMetric].max,title: {text: `${yMetric} (${getUnits(yMetric)})` }}}}});
 
-/**
- * UNIT CONFIGURATION - For axis labeling
- */
 const getUnits = (metric) => {
-  const units = {
-    flow: 'mL/s',
-    pressure: 'cmH₂O',
-    volume: 'mL',
-    phase: 'rad'
-  };
-  return units[metric] || '';
-};
+  const units = {flow: 'mL/s',pressure: 'cmH₂O',volume: 'mL',phase: 'rad'};
+  return units[metric] || '';};
 
-/**
- * EXPORTED CONFIGURATIONS - Ready-to-use chart configs
- */
 export const CHART_CONFIGS = {
-  // Comprehensive multi-line chart
-overview: {
-  ...TIME_SERIES_BASE,
-  data: {
-    datasets: ['flow', 'pressure', 'volume'].map(metric => ({
-      label: metric,
-      borderColor: COLORS[metric],
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      pointRadius: 0,
-      fill: false,
-      data: []
-    }))
-  },
-  options: {
-    ...TIME_SERIES_BASE.options,
-    scales: {
-      ...TIME_SERIES_BASE.options.scales,
-      y: {
-        ...TIME_SERIES_BASE.options.scales.y,
-        min: Math.min(...Object.values(AXIS_RANGES).map(r => r.min)),
-        max: Math.max(...Object.values(AXIS_RANGES).map(r => r.max))
-      }
-    }
-  }
-},
-
-  // Individual metric charts
+overview: {...TIME_SERIES_BASE,data: {datasets: ['flow', 'pressure', 'volume'].map(metric => ({label: metric,borderColor: COLORS[metric],backgroundColor: 'transparent',borderWidth: 2,pointRadius: 0,fill: false,data: []}))},
+  options: {...TIME_SERIES_BASE.options,scales: {...TIME_SERIES_BASE.options.scales,y: {...TIME_SERIES_BASE.options.scales.y,min: Math.min(...Object.values(AXIS_RANGES).map(r => r.min)),max: Math.max(...Object.values(AXIS_RANGES).map(r => r.max))}}}},
   flow: createTimeSeries('flow'),
   pressure: createTimeSeries('pressure'),
   volume: createTimeSeries('volume'),
 
-  // Loop charts
   pvLoop: createLoopChart('volume', 'pressure'),
   fvLoop: createLoopChart('volume', 'flow')
 };
