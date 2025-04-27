@@ -247,29 +247,26 @@ function startPlayback() {
 }
 
 // ======================
-// CONTROL FUNCTIONS
+// UPDATED PLAYBACK CONTROLS
 // ======================
 function setPlaybackSpeed(speed) {
-  appState.playback.speed = Math.max(config.playbackRates.min, 
-                                   Math.min(config.playbackRates.max, speed));
-  console.log(`Playback speed set to ${appState.playback.speed}x`);
+  appState.playback.speed = speed;
+  console.log(`Playback speed set to ${speed}x`);
 }
 
-// ======================
-// IMPROVED DIRECTION TOGGLE
-// ======================
 function toggleDirection() {
-  // Reverse the direction
   appState.playback.direction *= -1;
-  
-  // Reset timing to prevent jumps
   appState.playback.lastUpdateTime = performance.now();
+  console.log(`Direction changed to ${appState.playback.direction > 0 ? 'forward' : 'reverse'}`);
+}
+
+function startPlayback() {
+  if (appState.playback.active) return;
   
-  // Force at least one row change on direction toggle
-  processRows(appState.playback.direction);
-  
-  console.log(`Direction: ${appState.playback.direction > 0 ? '▶ Forward' : '◀ Reverse'}`);
-  updateDebugInfo();
+  appState.playback.active = true;
+  appState.metrics.startTime = performance.now();
+  appState.playback.lastUpdateTime = performance.now();
+  requestAnimationFrame(playbackLoop);
 }
 
 function stopPlayback() {
@@ -278,28 +275,73 @@ function stopPlayback() {
 }
 
 // ======================
-// UPDATED INITIALIZATION
+// MODIFIED INITIALIZATION
 // ======================
 async function initialize() {
   const success = await loadAndProcessData();
   if (success) {
-    initializeDataTable(); // Initialize table structure
-    setupControls();
+    initializeDataTable();
+    setupControls(); // This now sets up all button handlers
     updateDebugInfo();
-    
-    // Show first data point immediately
     updateDataTable(appState.dataset[0]);
-    
-    console.log("System ready - use startPlayback() to begin");
+    console.log("System ready - controls are now connected to buttons");
   }
 }
-
+// ======================
+// CONTROL FUNCTIONS
+// ======================
 function setupControls() {
-  // These would be hooked to actual UI elements
-  window.startPlayback = startPlayback;
-  window.stopPlayback = stopPlayback;
-  window.setPlaybackSpeed = setPlaybackSpeed;
-  window.toggleDirection = toggleDirection;
+  // Get all control buttons
+  const playBtn = document.getElementById('playBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const slowBtn = document.getElementById('slowBtn');
+  const fastBtn = document.getElementById('fastBtn');
+  const reverseBtn = document.getElementById('reverseBtn');
+  const speedDisplay = document.getElementById('speedDisplay');
+
+  // Play/Pause toggle functionality
+  playBtn.addEventListener('click', () => {
+    if (appState.playback.active) {
+      stopPlayback();
+      playBtn.textContent = '▶ Play';
+    } else {
+      startPlayback();
+      playBtn.textContent = '⏸ Pause';
+    }
+  });
+
+  // Stop button
+  stopBtn.addEventListener('click', () => {
+    stopPlayback();
+    playBtn.textContent = '▶ Play';
+  });
+
+  // Speed controls
+  slowBtn.addEventListener('click', () => {
+    const newSpeed = Math.max(config.playbackRates.min, appState.playback.speed / 2);
+    setPlaybackSpeed(newSpeed);
+    updateSpeedDisplay();
+  });
+
+  fastBtn.addEventListener('click', () => {
+    const newSpeed = Math.min(config.playbackRates.max, appState.playback.speed * 2);
+    setPlaybackSpeed(newSpeed);
+    updateSpeedDisplay();
+  });
+
+  // Reverse toggle
+  reverseBtn.addEventListener('click', () => {
+    toggleDirection();
+    reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
+  });
+
+  // Update speed display
+  function updateSpeedDisplay() {
+    speedDisplay.textContent = `${appState.playback.speed.toFixed(1)}x`;
+  }
+
+  // Initialize display
+  updateSpeedDisplay();
 }
 
 // Start the application
