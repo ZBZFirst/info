@@ -113,8 +113,41 @@ const createTimeSeries = (metric, showPoints = false) => ({
 
 const createLoopChart = (xMetric, yMetric) => ({
   ...LOOP_CHART_BASE,
-  data: {datasets: [{label: `${yMetric} vs ${xMetric}`,borderColor: COLORS[yMetric],backgroundColor: 'transparent',borderWidth: 2,pointRadius: 0,fill: false,data: []}]},
-  options: {...LOOP_CHART_BASE.options,scales: {x: {...LOOP_CHART_BASE.options.scales.x,min: AXIS_RANGES[xMetric].min,max: AXIS_RANGES[xMetric].max,title: { text: `${xMetric} (${getUnits(xMetric)})` }}, y: {...LOOP_CHART_BASE.options.scales.y,min: AXIS_RANGES[yMetric].min,max: AXIS_RANGES[yMetric].max,title: {text: `${yMetric} (${getUnits(yMetric)})` }}}}});
+  data: {
+    datasets: [{
+      label: `${yMetric} vs ${xMetric}`,
+      borderColor: COLORS[yMetric],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: false,
+      data: []
+    }]
+  },
+  options: {
+    ...LOOP_CHART_BASE.options,
+    scales: {
+      x: {
+        ...LOOP_CHART_BASE.options.scales.x,
+        min: AXIS_RANGES[xMetric].min,
+        max: AXIS_RANGES[xMetric].max,
+        title: { 
+          display: true,
+          text: `${xMetric} (${getUnits(xMetric)})` 
+        }
+      },
+      y: {
+        ...LOOP_CHART_BASE.options.scales.y,
+        min: AXIS_RANGES[yMetric].min,
+        max: AXIS_RANGES[yMetric].max,
+        title: { 
+          display: true,
+          text: `${yMetric} (${getUnits(yMetric)})` 
+        }
+      }
+    }
+  }
+});
 
 const getUnits = (metric) => {
   const units = {flow: 'mL/s',pressure: 'cmH₂O',volume: 'mL',phase: 'rad'};
