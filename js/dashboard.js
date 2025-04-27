@@ -13,7 +13,7 @@ const config = {
   },
   dataFiles: ["js/data.xlsx"],
   maxVisiblePoints: 5000, // Max points to show on charts
-  wrapAround: false, // Don't loop playback
+  wrapAround: true, // Don't loop playback
   targetRowsPerSecond: 1000, // Base iteration rate
   maxDataPoints: 5000 // For performance optimization
 };
