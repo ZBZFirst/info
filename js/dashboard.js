@@ -232,9 +232,12 @@ function playbackLoop(currentTime) {
 function processRows(count) {
   let newIndex = appState.playback.currentIndex + count;
   
-  // Handle wrapping
-  if (newIndex >= appState.dataset.length) newIndex = 0;
-  else if (newIndex < 0) newIndex = appState.dataset.length - 1;
+  // Handle wrapping when moving forward or backward
+  if (appState.playback.direction > 0) {
+    if (newIndex >= appState.dataset.length) newIndex = 0;  // Wrap forward to the beginning
+  } else {
+    if (newIndex < 0) newIndex = appState.dataset.length - 1;  // Wrap backward to the end
+  }
   
   appState.playback.currentIndex = newIndex;
   const currentData = appState.dataset[newIndex];
@@ -242,6 +245,7 @@ function processRows(count) {
   updateDataTable(currentData);
   updateVisualizations(currentData); // Always update visualizations now
 }
+
 
 function updateDebugInfo() {
   const debugInfo = `
