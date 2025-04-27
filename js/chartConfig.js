@@ -13,9 +13,12 @@ const COLORS = {
   background: '#ffffff'
 };
 
-/**
- * BASE CONFIGURATIONS - Shared settings for different chart types
- */
+const AXIS_RANGES = {
+  flow: { min: 500, max: 850 },        // Example values - adjust to your data
+  pressure: { min: 300, max: 550 },        // Typical ventilator ranges
+  volume: { min: 200, max: 370 },        // Adjust based on your data
+  phase: { min: -1, max: 3 }      // -π to π for phase
+};
 
 // Common settings for all time-series charts
 const TIME_SERIES_BASE = {
@@ -109,6 +112,8 @@ const createTimeSeries = (metric, showPoints = false) => ({
       ...TIME_SERIES_BASE.options.scales,
       y: {
         ...TIME_SERIES_BASE.options.scales.y,
+        min: AXIS_RANGES[metric].min,
+        max: AXIS_RANGES[metric].max,
         title: { text: `${metric} (${getUnits(metric)})` }
       }
     }
@@ -134,10 +139,14 @@ const createLoopChart = (xMetric, yMetric) => ({
     scales: {
       x: {
         ...LOOP_CHART_BASE.options.scales.x,
+        min: AXIS_RANGES[xMetric].min,
+        max: AXIS_RANGES[xMetric].max,
         title: { text: `${xMetric} (${getUnits(xMetric)})` }
       },
       y: {
         ...LOOP_CHART_BASE.options.scales.y,
+        min: AXIS_RANGES[yMetric].min,
+        max: AXIS_RANGES[yMetric].max,
         title: { text: `${yMetric} (${getUnits(yMetric)})` }
       }
     }
@@ -162,20 +171,31 @@ const getUnits = (metric) => {
  */
 export const CHART_CONFIGS = {
   // Comprehensive multi-line chart
-  overview: {
-    ...TIME_SERIES_BASE,
-    data: {
-      datasets: ['flow', 'pressure', 'volume'].map(metric => ({
-        label: metric,
-        borderColor: COLORS[metric],
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: false,
-        data: []
-      }))
-    }
+overview: {
+  ...TIME_SERIES_BASE,
+  data: {
+    datasets: ['flow', 'pressure', 'volume'].map(metric => ({
+      label: metric,
+      borderColor: COLORS[metric],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: false,
+      data: []
+    }))
   },
+  options: {
+    ...TIME_SERIES_BASE.options,
+    scales: {
+      ...TIME_SERIES_BASE.options.scales,
+      y: {
+        ...TIME_SERIES_BASE.options.scales.y,
+        min: Math.min(...Object.values(AXIS_RANGES).map(r => r.min)),
+        max: Math.max(...Object.values(AXIS_RANGES).map(r => r.max))
+      }
+    }
+  }
+},
 
   // Individual metric charts
   flow: createTimeSeries('flow'),
