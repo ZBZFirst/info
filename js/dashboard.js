@@ -230,20 +230,25 @@ function playbackLoop(currentTime) {
 // UPDATED ROW PROCESSING
 // ======================
 function processRows(count) {
-  let newIndex = appState.playback.currentIndex + count;
+  let newIndex = appState.playback.currentIndex;
   
-  // Handle wrapping when moving forward or backward
-  if (appState.playback.direction > 0) {
-    if (newIndex >= appState.dataset.length) newIndex = 0;  // Wrap forward to the beginning
-  } else {
-    if (newIndex < 0) newIndex = appState.dataset.length - 1;  // Wrap backward to the end
+  // Process each row individually in the correct direction
+  for (let i = 0; i < Math.abs(count); i++) {
+    newIndex += appState.playback.direction;
+    
+    // Handle wrapping based on current direction
+    if (appState.playback.direction > 0) {
+      if (newIndex >= appState.dataset.length) newIndex = 0;
+    } else {
+      if (newIndex < 0) newIndex = appState.dataset.length - 1;
+    }
   }
   
   appState.playback.currentIndex = newIndex;
   const currentData = appState.dataset[newIndex];
   
   updateDataTable(currentData);
-  updateVisualizations(currentData); // Always update visualizations now
+  updateVisualizations(currentData);
 }
 
 
@@ -338,26 +343,30 @@ function startPlayback() {
   appState.playback.lastUpdateTime = performance.now();
   
   function playbackLoop(currentTime) {
-    if (!appState.playback.active) return;
+    if (!appState.playback.active) {
+      console.log("Playback stopped - exiting animation frame loop");
+      return;
+    }
     
-    // Calculate time delta and virtual time progression
     const delta = currentTime - appState.playback.lastUpdateTime;
-    const virtualDelta = delta * appState.playback.speed * appState.playback.direction;
     
-    // Calculate how many rows to process based on target rate
-    const targetRows = Math.floor((virtualDelta * config.targetRowsPerSecond) / 1000);
-    
-    if (targetRows > 0) {
-      // Process the calculated number of rows
-      processRows(targetRows);
+    if (delta > 0) {
+      // Calculate virtual time progression based on speed (ignore direction here)
+      const virtualDelta = delta * appState.playback.speed;
       
-      // Update metrics
-      appState.playback.rowsProcessed += targetRows;
-      const elapsed = (currentTime - appState.metrics.startTime) / 1000;
-      appState.playback.rowsPerSecond = Math.floor(appState.playback.rowsProcessed / elapsed);
+      // Calculate how many rows to process
+      const targetRows = Math.floor((virtualDelta * config.targetRowsPerSecond) / 1000);
       
-      // Update debug display
-      updateDebugInfo();
+      if (targetRows > 0) {
+        processRows(targetRows);
+        
+        // Update metrics
+        appState.playback.rowsProcessed += targetRows;
+        const elapsed = (currentTime - appState.metrics.startTime) / 1000;
+        appState.playback.rowsPerSecond = Math.floor(appState.playback.rowsProcessed / elapsed);
+        
+        updateDebugInfo();
+      }
     }
     
     appState.playback.lastUpdateTime = currentTime;
@@ -378,19 +387,15 @@ function setPlaybackSpeed(speed) {
 function toggleDirection() {
   // Reverse the direction
   appState.playback.direction *= -1;
-  appState.playback.lastUpdateTime = performance.now(); // Reset to sync the time with the new direction
   
-  // Optional: Update the button text to show the correct direction
+  // Reset the last update time to prevent jump when changing direction
+  appState.playback.lastUpdateTime = performance.now();
+  
+  // Update the button text
   const reverseBtn = document.getElementById('reverseBtn');
   reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
   
   console.log(`Direction changed to ${appState.playback.direction > 0 ? 'Forward' : 'Reverse'}`);
-  
-  // If playback is running, restart the loop to apply the new direction immediately
-  if (appState.playback.active) {
-    stopPlayback();
-    startPlayback();
-  }
 }
 
 
