@@ -84,25 +84,15 @@ function updateVisualizations(currentIndex) {
 }
 
 function updateTimeSeriesCharts() {
-  config.valueColumns.forEach(metric => {
-    const datasetIndex = CHART_CONFIGS.overview.data.datasets.findIndex(d => d.label === metric);
-    if (datasetIndex >= 0) {
-      appState.charts.overview.data.datasets[datasetIndex].data = 
-        appState.chartData.timeSeries.map(point => ({
-          x: point.x,
-          y: point[metric]
-        }));
-    }
-  });
+  config.valueColumns.forEach(metric => {const datasetIndex = CHART_CONFIGS.overview.data.datasets.findIndex(d => d.label === metric);
+    if (datasetIndex >= 0) {appState.charts.overview.data.datasets[datasetIndex].data = appState.chartData.timeSeries.map(point => ({x: point.x,y: point[metric]}));
+    }});
   appState.charts.overview.update();
-  appState.charts.flow.data.datasets[0].data = 
-    appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.flow }));
+  appState.charts.flow.data.datasets[0].data = appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.flow }));
   appState.charts.flow.update();
-  appState.charts.pressure.data.datasets[0].data = 
-    appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.pressure }));
+  appState.charts.pressure.data.datasets[0].data = appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.pressure }));
   appState.charts.pressure.update();
-  appState.charts.volume.data.datasets[0].data = 
-    appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.volume }));
+  appState.charts.volume.data.datasets[0].data = appState.chartData.timeSeries.map(point => ({ x: point.x, y: point.volume }));
   appState.charts.volume.update();
 }
 
@@ -111,150 +101,54 @@ function updateTimeSeriesCharts() {
 // ======================
 function updateLoops(currentIndex) {
   if (!appState.dataset || appState.dataset.length === 0) return;
-
   const currentData = appState.dataset[currentIndex];
   const currentPhase = currentData.phase;
-
-  // Initialize breath cycle tracking if needed
-  if (!appState.breathCycles) {
-    appState.breathCycles = {
-      currentPVCycle: [],
-      completedPVCycles: [],
-      currentFVCycle: [],
-      completedFVCycles: [],
-      zeroCount: 0,
-      isInBreath: false
-    };
-  }
-
-  const { 
-    currentPVCycle, 
-    completedPVCycles,
-    currentFVCycle,
-    completedFVCycles,
-    zeroCount, 
-    isInBreath 
-  } = appState.breathCycles;
-
-  // Detect breath state transitions
-  if (currentPhase >= 1 && !isInBreath) {
-    // New breath starting (phase transition to 1)
-    appState.breathCycles.isInBreath = true;
-    appState.breathCycles.zeroCount = 0;
-    currentPVCycle.length = 0; // Clear current cycles
-    currentFVCycle.length = 0;
-  } 
+  if (!appState.breathCycles) {appState.breathCycles = {currentPVCycle: [],completedPVCycles: [],currentFVCycle: [],completedFVCycles: [],zeroCount: 0,isInBreath: false};}
+  const {currentPVCycle,completedPVCycles,currentFVCycle,completedFVCycles,zeroCount,isInBreath} = appState.breathCycles;
+  if (currentPhase >= 1 && !isInBreath) {appState.breathCycles.isInBreath = true;appState.breathCycles.zeroCount = 0;currentPVCycle.length = 0;currentFVCycle.length = 0;} 
   else if (currentPhase <= 0 && isInBreath) {
-    // Potential end of breath (phase transition to 0)
     appState.breathCycles.zeroCount++;
-    
-    // Confirm end of breath after 50 consecutive zeros
     if (zeroCount >= 50) {
       appState.breathCycles.isInBreath = false;
-      
-      // Only store complete cycles with enough points
       if (currentPVCycle.length > 10) {
         completedPVCycles.push([...currentPVCycle]);
         completedFVCycles.push([...currentFVCycle]);
-        
-        // Maintain only the last 3 complete cycles
         if (completedPVCycles.length > 3) {
           completedPVCycles.shift();
           completedFVCycles.shift();
-        }
-      }
-      
-      currentPVCycle.length = 0;
-      currentFVCycle.length = 0;
-    }
+        }}
+      currentPVCycle.length = 0;currentFVCycle.length = 0;}}
+  if (isInBreath) {currentPVCycle.push({x: currentData.volume,y: currentData.pressure});
+    currentFVCycle.push({x: currentData.volume,y: currentData.flow});
   }
-
-  // Add current point to active cycles if in breath
-  if (isInBreath) {
-    currentPVCycle.push({
-      x: currentData.volume,
-      y: currentData.pressure
-    });
-    
-    currentFVCycle.push({
-      x: currentData.volume,
-      y: currentData.flow
-    });
-  }
-
-  // Color scheme: Red, Yellow, Blue for last 3 cycles
   const colors = ['#E15759', '#F28E2B', '#4E79A7']; 
-
-  // Prepare datasets for both loops
-  const prepareLoopData = (completedCycles, currentCycle) => {
-    const datasets = [];
-    
-    // Add completed cycles (newest first)
+  const prepareLoopData = (completedCycles, currentCycle) => {const datasets = [];    
     completedCycles.slice().reverse().forEach((cycle, index) => {
       if (index < 3) { // Only show last 3 cycles
-        datasets.push({
-          data: cycle,
-          borderColor: colors[index],
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: false,
-          tension: 0
-        });
-      }
-    });
-
-    // Add current incomplete cycle (if any)
+        datasets.push({data: cycle,borderColor: colors[index],backgroundColor: 'transparent',borderWidth: 2,pointRadius: 0,fill: false,tension: 0});
+      }});
     if (isInBreath && currentCycle.length > 0) {
-      datasets.push({
-        data: currentCycle,
-        borderColor: colors[0], // Red for current
-        backgroundColor: 'transparent',
-        borderWidth: 3, // Thicker line for current
-        pointRadius: 0,
-        fill: false,
-        tension: 0
-      });
-    }
-
+      datasets.push({data: currentCycle,borderColor: colors[0],backgroundColor: 'transparent',borderWidth: 3,pointRadius: 0,fill: false,tension: 0});}
     return datasets;
   };
-
-  // Update PV Loop
   appState.charts.pvLoop.data.datasets = prepareLoopData(completedPVCycles, currentPVCycle);
   appState.charts.pvLoop.update('none');
-
-  // Update FV Loop
   appState.charts.fvLoop.data.datasets = prepareLoopData(completedFVCycles, currentFVCycle);
   appState.charts.fvLoop.update('none');
+  if (config.debug && isInBreath) {console.log('Current Breath Cycle:', {PVPoints: currentPVCycle.length,FVPoints: currentFVCycle.length,Phase: currentPhase});}}
 
-  if (config.debug && isInBreath) {
-    console.log('Current Breath Cycle:', {
-      PVPoints: currentPVCycle.length,
-      FVPoints: currentFVCycle.length,
-      Phase: currentPhase
-    });
-  }
-}
-
-// Helper function to blend colors
 function blendColors(color1, color2, ratio) {
   const r1 = parseInt(color1.substring(1, 3), 16);
   const g1 = parseInt(color1.substring(3, 5), 16);
   const b1 = parseInt(color1.substring(5, 7), 16);
-  
   const r2 = parseInt(color2.substring(1, 3), 16);
   const g2 = parseInt(color2.substring(3, 5), 16);
   const b2 = parseInt(color2.substring(5, 7), 16);
-  
   const r = Math.round(r1 * (1 - ratio) + r2 * ratio);
   const g = Math.round(g1 * (1 - ratio) + g2 * ratio);
   const b = Math.round(b1 * (1 - ratio) + b2 * ratio);
-  
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
-
-
 
 // ======================
 // DATA LOADING & PROCESSING
