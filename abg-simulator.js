@@ -136,7 +136,7 @@ function initializeGraph() {
     
     const layout = {
         title: 'ABG Simulator (pH vs HCO₃⁻ with PaCO₂ isolines)',
-        xaxis: { title: 'pH', range: [6.2, 8.4] },
+        xaxis: { title: 'pH', range: [6.8, 7.8] },
         yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
         margin: { t: 50, b: 50, l: 50, r: 50 },
         hovermode: 'closest',
