@@ -2,7 +2,6 @@
 // INITIALIZATION
 // ======================
 
-// DOM Elements
 const paco2Slider = document.getElementById('paco2');
 const hco3Slider = document.getElementById('hco3');
 const paco2Value = document.getElementById('paco2-value');
@@ -10,7 +9,6 @@ const hco3Value = document.getElementById('hco3-value');
 const phValue = document.getElementById('ph-value');
 const classificationElement = document.getElementById('classification');
 
-// Graph Data Structure
 const graphData = {
     pCO2Lines: [],
     colorMap: [],
@@ -22,13 +20,11 @@ const graphData = {
 // CORE CALCULATION FUNCTIONS
 // ======================
 
-function calculatePH(paco2, hco3) {    const pK = 6.1;    const PCO2_conversion = 0.03;    return pK + Math.log10(hco3 / (PCO2_conversion * paco2));}
+function calculatePH(paco2, hco3) {const pK = 6.1;const PCO2_conversion = 0.03;return pK + Math.log10(hco3 / (PCO2_conversion * paco2));}
 
 function classifyABG(pH, PaCO2, HCO3) {
     const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
     const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
-    
-    // Acidosis conditions
     if (pH < 7.35) {
         if (PaCO2 > 45) {
             if (HCO3 < 22) return "Mixed Acidosis";
@@ -42,8 +38,6 @@ function classifyABG(pH, PaCO2, HCO3) {
         }
         return "Undefined Acidosis";
     }
-    
-    // Alkalosis conditions
     if (pH > 7.45) {
         if (PaCO2 < 35) {
             if (HCO3 < 22) return "Partially Compensated Respiratory Alkalosis";
@@ -57,8 +51,6 @@ function classifyABG(pH, PaCO2, HCO3) {
         }
         return "Undefined Alkalosis";
     }
-    
-    // Normal/Compensated conditions
     if (pH >= 7.35 && pH <= 7.399) {
         if (PaCO2 > 45 && HCO3 > 26) return "Fully Compensated Respiratory Acidosis";
         if (PaCO2 < 35 && HCO3 < 22) return "Fully Compensated Metabolic Acidosis";
@@ -68,7 +60,6 @@ function classifyABG(pH, PaCO2, HCO3) {
         if (PaCO2 < 35 && HCO3 < 22) return "Fully Compensated Respiratory Alkalosis";
     }
     if (normalPaCO2 && normalHCO3) return "Normal";
-    
     return "Undefined";
 }
 
@@ -102,7 +93,6 @@ function createPCO2Lines() {
     const pK = 6.1;
     const PCO2_conversion = 0.03;
     const lines = [];
-    
     for (let PaCO2 = 10; PaCO2 <= 100; PaCO2 += 10) {const hco3_values = Array.from({length: 100}, (_, i) => 5 + (45 * i / 99));const pH_values = hco3_values.map(hco3 => pK + Math.log10(hco3 / (PaCO2 * PCO2_conversion)));
         lines.push({
             x: pH_values,
@@ -131,7 +121,7 @@ function createPCO2Lines() {
 // ======================
 
 function createColorMap() {
-    const gridSize = 150; // Higher resolution for smoother color transitions
+    const gridSize = 150;
     const pHRange = { min: 6.8, max: 7.8 };
     const HCO3Range = { min: 5, max: 50 };
     const pHValues = [];
@@ -168,7 +158,7 @@ function createColorMap() {
 
 function initializeGraph() {
     graphData.pCO2Lines = createPCO2Lines();
-    graphData.colorMap = createColorMap(); // This now creates the colored background
+    graphData.colorMap = createColorMap();
     const circlePoints = calculatePossiblePaCO2HCO3(7.4, 40, 24);
     graphData.circlePoints = [{
         x: circlePoints.pH_values,
@@ -201,7 +191,7 @@ function initializeGraph() {
         yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
         margin: { t: 50, b: 50, l: 50, r: 50 },
         hovermode: 'closest',
-        plot_bgcolor: 'rgba(0,0,0,0)' // Transparent plot background
+        plot_bgcolor: 'rgba(0,0,0,0)'
     };
     Plotly.newPlot('graph', traces, layout);
 }
