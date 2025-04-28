@@ -326,6 +326,7 @@ async function initialize() {
     initializeDataTable();
     initializeCharts();
     setupControls();
+    setupFullscreenControls();
     updateDebugInfo();
     updateDataTable(appState.dataset[0]);
     updateVisualizations(appState.dataset[0]);
