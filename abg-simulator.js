@@ -136,7 +136,7 @@ function createColorMap() {
         for (let j = 0; j < gridSize; j++) {
             const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
             if (i === 0) HCO3Values.push(HCO3);
-            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03;
+            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
             const [classification, color] = classifyABG(pH, PaCO2, HCO3);
             colors.push(color);
         }
