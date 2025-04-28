@@ -158,7 +158,8 @@ function createColorMap() {
 
 function initializeGraph() {
     graphData.pCO2Lines = createPCO2Lines();
-    graphData.colorMap = createColorMap();
+    graphData.colorMap = createClassificationBackground(); // This creates the colored plot background
+    
     const circlePoints = calculatePossiblePaCO2HCO3(7.4, 40, 24);
     graphData.circlePoints = [{
         x: circlePoints.pH_values,
@@ -170,6 +171,7 @@ function initializeGraph() {
         showlegend: false,
         hoverinfo: 'none'
     }];
+    
     graphData.currentPoint = {
         x: [7.4],
         y: [24],
@@ -179,20 +181,24 @@ function initializeGraph() {
         hoverinfo: 'text',
         showlegend: false
     };
+    
+    // Ensure proper layering: background first, then lines, then points
     const traces = [
-        graphData.colorMap,
-        ...graphData.pCO2Lines,
-        ...graphData.circlePoints,
-        graphData.currentPoint
+        graphData.colorMap,    // Colored background first
+        ...graphData.pCO2Lines, // Then isolines
+        ...graphData.circlePoints, // Then confidence circle
+        graphData.currentPoint   // Finally the point marker
     ];
+    
     const layout = {
         title: 'ABG Simulator (pH vs HCO₃⁻ with PaCO₂ isolines)',
         xaxis: { title: 'pH', range: [6.2, 8.4] },
         yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
         margin: { t: 50, b: 50, l: 50, r: 50 },
         hovermode: 'closest',
-        plot_bgcolor: 'rgba(0,0,0,0)'
+        plot_bgcolor: 'rgba(0,0,0,0)' // Make plot background transparent
     };
+    
     Plotly.newPlot('graph', traces, layout);
 }
 
@@ -238,6 +244,68 @@ function update() {
         }
     });
 }
+
+// ======================
+// UPDATED COLOR MAPPING FOR PLOT BACKGROUND
+// ======================
+
+function createClassificationBackground() {
+    const gridSize = 150; // Higher resolution for smoother colors
+    const pHRange = { min: 6.8, max: 7.8 };
+    const HCO3Range = { min: 5, max: 50 };
+
+    const pHValues = [];
+    const HCO3Values = [];
+    const colors = [];
+
+    // Create a grid of points
+    for (let i = 0; i < gridSize; i++) {
+        const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
+        pHValues.push(pH);
+        
+        for (let j = 0; j < gridSize; j++) {
+            const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
+            if (i === 0) HCO3Values.push(HCO3);
+            
+            // Calculate corresponding PaCO2 for this pH and HCO3
+            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
+            
+            // Get classification and its color
+            const classification = classifyABG(pH, PaCO2, HCO3);
+            const color = getClassificationColor(classification);
+            colors.push(color);
+        }
+    }
+
+    return {
+        x: pHValues,
+        y: HCO3Values,
+        z: [colors], // Note: z must be a 2D array
+        type: 'heatmap',
+        colorscale: createCustomColorscale(),
+        showscale: false,
+        hoverinfo: 'none',
+        opacity: 0.6, // Semi-transparent to see lines underneath
+        zsmooth: 'best'
+    };
+}
+
+function createCustomColorscale() {
+    return [
+        [0, 'rgba(255, 0, 0, 0.6)'],       // Mixed Acidosis
+        [0.1, 'rgba(255, 165, 0, 0.6)'],    // Partially Compensated Respiratory Acidosis
+        [0.2, 'rgba(255, 140, 0, 0.6)'],    // Uncompensated Respiratory Acidosis
+        [0.3, 'rgba(255, 255, 0, 0.6)'],    // Partially Compensated Metabolic Acidosis
+        [0.4, 'rgba(255, 215, 0, 0.6)'],    // Uncompensated Metabolic Acidosis
+        [0.5, 'rgba(173, 216, 230, 0.6)'],  // Partially Compensated Respiratory Alkalosis
+        [0.6, 'rgba(128, 0, 128, 0.6)'],    // Mixed Alkalosis
+        [0.7, 'rgba(0, 0, 255, 0.6)'],      // Uncompensated Respiratory Alkalosis
+        [0.8, 'rgba(0, 255, 255, 0.6)'],    // Partially Compensated Metabolic Alkalosis
+        [0.9, 'rgba(0, 191, 255, 0.6)'],    // Uncompensated Metabolic Alkalosis
+        [1.0, 'rgba(0, 128, 0, 0.6)']       // Normal
+    ];
+}
+
 
 // ======================
 // UTILITY FUNCTIONS
