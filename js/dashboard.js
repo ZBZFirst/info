@@ -334,6 +334,62 @@ async function initialize() {
 }
 
 // ======================
+// FULLSCREEN FUNCTIONALITY
+// ======================
+function setupFullscreenControls() {
+  // Add click handlers to all chart containers
+  document.querySelectorAll('.chart-container').forEach(container => {
+    container.addEventListener('click', function(e) {
+      // Don't trigger if clicking on the exit button or a child element that shouldn't trigger fullscreen
+      if (e.target.closest('[data-no-fullscreen]')) return;
+      
+      toggleFullscreen(this);
+    });
+  });
+  
+  // Support ESC key to exit fullscreen
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const fullscreenChart = document.querySelector('.chart-container.fullscreen');
+      if (fullscreenChart) {
+        toggleFullscreen(fullscreenChart);
+      }
+    }
+  });
+}
+
+function toggleFullscreen(container) {
+  if (!container) return;
+  
+  if (container.classList.contains('fullscreen')) {
+    // Exit fullscreen
+    container.classList.remove('fullscreen');
+    document.body.style.overflow = 'auto';
+    
+    // Update charts after animation completes
+    setTimeout(() => {
+      Object.values(appState.charts).forEach(chart => {
+        if (chart) chart.resize();
+      });
+    }, 300);
+  } else {
+    // Enter fullscreen
+    document.querySelectorAll('.chart-container').forEach(c => {
+      c.classList.remove('fullscreen');
+    });
+    container.classList.add('fullscreen');
+    document.body.style.overflow = 'hidden';
+    
+    // Update charts after animation completes
+    setTimeout(() => {
+      Object.values(appState.charts).forEach(chart => {
+        if (chart) chart.resize();
+      });
+    }, 300);
+  }
+}
+
+// ======================
 // CONTROL FUNCTIONS
 // ======================
 function setupControls() {
