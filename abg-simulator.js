@@ -181,8 +181,8 @@ function initializeGraph() {
         legend: {
             orientation: 'h',
             y: -0.2
-    };
-    
+    }};
+
     Plotly.newPlot('graph', traces, layout);
 }
 
