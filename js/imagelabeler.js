@@ -7,12 +7,13 @@ const totalImages = 10;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize with some default shapes if needed
-    addShape('circle', {label: "Peak Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
+    addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
     addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
-    addShape('circle', {label: "HE", top: "100px", left: "350px", width: "40px", height: "40px"});
-    addShape('square', {label: "Minute Ventilation", top: "250px", left: "50px", width: "50px", height: "30px"});
-    addShape('square', {label: "Waveforms", top: "250px", left: "200px", width: "50px", height: "30px"});
-    addShape('square', {label: "HAXI", top: "250px", left: "350px", width: "50px", height: "30px"});
+    addShape('circle', {label: "Minute Ventilation ", top: "100px", left: "350px", width: "40px", height: "40px"});
+    addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
+    addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
+    addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+    addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
 
     // Add keyboard event listeners
     document.addEventListener('keydown', handleKeyPress);
@@ -283,7 +284,7 @@ function createShapeControls(id, type, label) {
         widthInput.type = 'range';
         widthInput.id = `${id}-width`;
         widthInput.min = '20';
-        widthInput.max = '600';
+        widthInput.max = '900';
         widthInput.value = '50';
         widthInput.oninput = () => updateSquareSize(id);
         
@@ -295,7 +296,7 @@ function createShapeControls(id, type, label) {
         heightInput.type = 'range';
         heightInput.id = `${id}-height`;
         heightInput.min = '20';
-        heightInput.max = '300';
+        heightInput.max = '600';
         heightInput.value = '30';
         heightInput.oninput = () => updateSquareSize(id);
         
