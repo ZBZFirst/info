@@ -14,46 +14,6 @@ const appState = {dataset: null,playback: {
 active: false,currentIndex: 0,speed: config.playbackRates.normal,direction: 1,lastUpdateTime: 0,rowsProcessed: 0,rowsPerSecond: 0},metrics: {startTime: 0,totalRows: 0},charts: {overview: null,flow: null,pressure: null,volume: null,pvLoop: null,fvLoop: null},chartData: {timeSeries: [],pvPoints: [],fvPoints: []}};
 
 // ======================
-// ENHANCED DEBUGGING SYSTEM
-// ======================
-const debug = {log: [],maxLogEntries: 100,add: function(message, data = null) {const entry = {timestamp: performance.now(),message,data: data ? JSON.parse(JSON.stringify(data)) : null};
-    this.log.unshift(entry);
-    if (this.log.length > this.maxLogEntries) this.log.pop();
-    console.groupCollapsed(`DEBUG: ${message}`);
-    console.log('Timestamp:', entry.timestamp);
-    if (data) console.log('Data:', data);
-    console.groupEnd();
-    this.updateDebugUI();
-  },
-  updateDebugUI: function() {const debugOutput = document.getElementById('debug-output') || 
-                       this.createDebugOutput();
-    debugOutput.innerHTML = this.log.map(entry => 
-      `<div class="debug-entry">
-        <span class="debug-time">${entry.timestamp.toFixed(2)}ms</span>
-        <span class="debug-msg">${entry.message}</span>
-        ${entry.data ? `<pre>${JSON.stringify(entry.data, null, 2)}</pre>` : ''}
-      </div>`
-    ).join('');
-  },
-  createDebugOutput: function() {
-    const div = document.createElement('div');
-    div.id = 'debug-output';
-    div.style.position = 'fixed';
-    div.style.bottom = '0';
-    div.style.right = '0';
-    div.style.width = '400px';
-    div.style.height = '300px';
-    div.style.overflow = 'auto';
-    div.style.background = 'rgba(0,0,0,0.8)';
-    div.style.color = '#0f0';
-    div.style.padding = '10px';
-    div.style.zIndex = '9999';
-    document.body.appendChild(div);
-    return div;
-  }
-};
-
-// ======================
 // CHART MANAGEMENT
 // ======================
 function initializeCharts() {
