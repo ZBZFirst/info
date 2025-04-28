@@ -1,6 +1,5 @@
 // abg-simulator.js file start
 let graphData = {pCO2Lines: [],colorMap: [],currentPoint: { x: 7.4, y: 24, text: "PaCO₂: 40" },circlePoints: []};
-
 const paco2Slider = document.getElementById('paco2');
 const hco3Slider = document.getElementById('hco3');
 const paco2Value = document.getElementById('paco2-value');
@@ -125,52 +124,51 @@ function createPCO2Lines() {
 }
 
 function createColorMap() {
-    const gridSize = 50;
-    const pHRange = { min: 6.2, max: 8.4 };
+    const gridSize = 100;
+    const pHRange = { min: 6.8, max: 7.8 };
     const HCO3Range = { min: 5, max: 50 };
-    const z = [];
     const pHValues = [];
     const HCO3Values = [];
-    const colorMap = {
-        'Normal': 'green',
-        'Uncompensated Respiratory Acidosis': 'orange',
-        'Partially Compensated Respiratory Acidosis': 'yellow',
-        'Mixed Acidosis': 'red',
-        'Uncompensated Metabolic Acidosis': 'orange',
-        'Partially Compensated Metabolic Acidosis': 'yellow',
-        'Uncompensated Respiratory Alkalosis': 'blue',
-        'Partially Compensated Respiratory Alkalosis': 'cyan',
-        'Mixed Alkalosis': 'purple',
-        'Uncompensated Metabolic Alkalosis': 'blue',
-        'Partially Compensated Metabolic Alkalosis': 'cyan',
-        'Undefined': 'gray'
-    };
+    const colors = [];
     for (let i = 0; i < gridSize; i++) {
         const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
         pHValues.push(pH);
-        const row = [];
         for (let j = 0; j < gridSize; j++) {
             const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
             if (i === 0) HCO3Values.push(HCO3);
-            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
-            const [classification] = classifyABG(pH, PaCO2, HCO3);
-            row.push(colorMap[classification]);
+            
+            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03;
+            const [classification, color] = classifyABG(pH, PaCO2, HCO3);
+            colors.push(color);
         }
-        z.push(row);
     }
     return [{
         x: pHValues,
         y: HCO3Values,
-        z: z,
+        z: [colors], // Flatten the colors array
         type: 'heatmap',
         colorscale: [
-            [0, 'green'], [0.1, 'orange'], [0.2, 'yellow'], 
-            [0.3, 'red'], [0.4, 'blue'], [0.5, 'cyan'],
-            [0.6, 'purple'], [0.7, 'gray']
+            [0, 'green'],        // Normal
+            [0.1, 'darkorange'], // Uncompensated Respiratory Acidosis
+            [0.2, 'orange'],     // Partially Compensated Respiratory Acidosis
+            [0.3, 'red'],        // Mixed Acidosis
+            [0.4, 'gold'],       // Uncompensated Metabolic Acidosis
+            [0.5, 'yellow'],     // Partially Compensated Metabolic Acidosis
+            [0.6, 'blue'],       // Uncompensated Respiratory Alkalosis
+            [0.7, 'lightblue'],  // Partially Compensated Respiratory Alkalosis
+            [0.8, 'purple'],     // Mixed Alkalosis
+            [0.9, 'deepskyblue'],// Uncompensated Metabolic Alkalosis
+            [1.0, 'cyan'],       // Partially Compensated Metabolic Alkalosis
+            [1.1, 'darkgreen'],  // Fully Compensated Respiratory Acidosis
+            [1.2, 'limegreen'],  // Fully Compensated Metabolic Acidosis
+            [1.3, 'mediumseagreen'], // Fully Compensated Metabolic Alkalosis
+            [1.4, 'springgreen'],   // Fully Compensated Respiratory Alkalosis
+            [1.5, 'gray']        // Undefined
         ],
         showscale: false,
         hoverinfo: 'none',
-        opacity: 0.6
+        opacity: 0.5,
+        zsmooth: 'best'
     }];
 }
 
