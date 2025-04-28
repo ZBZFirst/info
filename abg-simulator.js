@@ -97,42 +97,6 @@ function createPCO2Lines() {
 }
 
 // ======================
-// UPDATED COLOR MAP FUNCTION
-// ======================
-
-function createColorMap() {
-    const gridSize = 150;
-    const pHRange = { min: 6.8, max: 7.8 };
-    const HCO3Range = { min: 5, max: 50 };
-    const pHValues = [];
-    const HCO3Values = [];
-    const colors = [];
-    for (let i = 0; i < gridSize; i++) {
-        const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
-        pHValues.push(pH);
-        for (let j = 0; j < gridSize; j++) {
-            const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
-            if (i === 0) HCO3Values.push(HCO3);
-            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
-            const classification = classifyABG(pH, PaCO2, HCO3);
-            const color = getClassificationColor(classification);
-            colors.push(color);
-        }
-    }
-    return {
-        x: pHValues,
-        y: HCO3Values,
-        z: [colors],
-        type: 'heatmap',
-        autocolorscale: false,
-        showscale: false,
-        hoverinfo: 'none',
-        opacity: 0.6,
-        zsmooth: 'best'
-    };
-}
-
-// ======================
 // MODIFIED INITIALIZATION
 // ======================
 
@@ -259,11 +223,20 @@ function createClassificationBackground() {
         y: HCO3Values,
         z: zColors,
         type: 'heatmap',
+        colorscale: generateColorScale(), // Add this colorscale
         showscale: false,
         hoverinfo: 'none',
         opacity: 0.6,
         zsmooth: 'best'
     };
+}
+
+function generateColorScale() {
+    const scale = [];
+    for (const [id, info] of Object.entries(classificationMap)) {
+        scale.push([id/15, info.color]); // Normalize IDs to 0-1 range
+    }
+    return scale;
 }
 
 function generateClassificationGrid(gridSize = 150) {
@@ -285,7 +258,7 @@ function generateClassificationGrid(gridSize = 150) {
             const HCO3 = HCO3Values[j];
             const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
             const classId = classifyABG(pH, PaCO2, HCO3);
-            row.push(getClassificationColor(classId));
+            row.push(classId); // Push the ID instead of color
         }
         zColors.push(row);
     }
