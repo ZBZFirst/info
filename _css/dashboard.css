@@ -135,6 +135,7 @@
 
 .chart-container {
   position: relative;
+  cursor: pointer;
   background: white;
   border-radius: var(--border-radius);
   border: 1px solid var(--primary-border);
@@ -149,6 +150,71 @@
 .chart-container:hover {
   box-shadow: 0 6px 16px rgba(0,0,0,0.1);
   transform: translateY(-2px);
+}
+
+.chart-container:active {
+  transform: scale(0.98);
+}
+
+/* Fullscreen indicator (hidden by default) */
+.chart-container::after {
+  content: "⛶ Click to view fullscreen";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--border-radius);
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+/* Show indicator on hover */
+.chart-container:hover::after {
+  opacity: 1;
+}
+
+/* Fullscreen state styles */
+.chart-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999;
+  background: white;
+  padding: 2rem;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* Exit fullscreen button (only visible in fullscreen mode) */
+.chart-container.fullscreen::before {
+  content: "✕ Exit fullscreen";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.chart-container.fullscreen::before:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Hide the hover indicator in fullscreen */
+.chart-container.fullscreen::after {
+  display: none;
 }
 
 .chart-title {
