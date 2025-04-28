@@ -62,11 +62,17 @@ const LOOP_CHART_BASE = {
     scales: {
       x: {
         title: { display: true },
-        grid: { color: COLORS.grid }
+        grid: { color: COLORS.grid },
+        beginAtZero: false,
+        ticks: {
+          min: AXIS_RANGES.volume.min,
+          max: AXIS_RANGES.volume.max
+        }
       },
       y: {
         title: { display: true },
-        grid: { color: COLORS.grid }
+        grid: { color: COLORS.grid },
+        beginAtZero: false     
       }
     },
     plugins: {
@@ -134,7 +140,10 @@ const createLoopChart = (yMetric) => ({
         title: { 
           display: true,
           text: `Volume (${getUnits('volume')})` 
-        }
+        },
+        type: 'linear',
+        position: 'bottom',
+        grace: '5%'
       },
       y: {
         ...LOOP_CHART_BASE.options.scales.y,
@@ -143,7 +152,9 @@ const createLoopChart = (yMetric) => ({
         title: { 
           display: true,
           text: `${yMetric} (${getUnits(yMetric)})` 
-        }
+        },
+        type: 'linear',
+        grace: '5%'
       }
     }
   }
