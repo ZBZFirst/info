@@ -6,7 +6,7 @@ title: Interactive Draggable Graphics
 # Geometry Movement Test Page
 
 Color Demonstration Test
-[View the Interactive Drag-A-Graphics Page](/info/interactive/colors.html)
+[View the Interactive Color Page](/info/interactive/colors.html)
 
 Simple Interactive Graphics Test
 [View the Interactive Drag-A-Graphics Page](/info/graphics/graphics.html)
