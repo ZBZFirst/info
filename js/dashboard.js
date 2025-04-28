@@ -173,16 +173,18 @@ function removePointFromCharts(dataPoint) {
 function processRows(count) {
   let newIndex = appState.playback.currentIndex + (count * appState.playback.direction);
   
-  if (appState.playback.direction > 0 && newIndex >= appState.dataset.length)
-  else if (newIndex < 0) {newIndex = 0;}
+  if (appState.playback.direction > 0 && newIndex >= appState.dataset.length) {
+    newIndex = 0;
+  }
+  else if (newIndex < 0) {
+    newIndex = 0;
+  }
 
   appState.playback.currentIndex = newIndex;
   updateDataTable(appState.dataset[appState.playback.currentIndex]);
   updateVisualizations(appState.playback.currentIndex);
   updateLoops(appState.playback.currentIndex);
-
 }
-
 
 function resetAllCharts() {
   appState.chartData = {timeSeries: [],pvPoints: [],fvPoints: []};
