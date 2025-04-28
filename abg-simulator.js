@@ -182,110 +182,107 @@ function initializeGraph() {
     Plotly.newPlot('graph', traces, layout);
 }
 
+function renderGraph(pH, PaCO2, HCO3) {
+    const classificationId = classifyABG(pH, PaCO2, HCO3);
+    const circlePoints = calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3);
+    
+    const traces = [
+        graphData.colorMap,
+        ...graphData.pCO2Lines,
+        {
+            x: circlePoints.pH_values,
+            y: circlePoints.hco3_values,
+            mode: 'lines',
+            line: { color: 'red', width: 2 },
+            fill: 'toself',
+            fillcolor: 'rgba(255, 0, 0, 0.2)',
+            showlegend: false,
+            hoverinfo: 'none'
+        },
+        {
+            x: [pH],
+            y: [HCO3],
+            mode: 'markers',
+            marker: { size: 10, color: 'red' },
+            text: [`PaCO₂: ${PaCO2}`],
+            hoverinfo: 'text',
+            showlegend: false
+        }
+    ];
+
+    const layout = {
+        xaxis: { title: 'pH', range: [6.2, 8.4] },
+        yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
+        margin: { t: 50, b: 50, l: 50, r: 50 },
+        hovermode: 'closest'
+    };
+
+    Plotly.react('graph', traces, layout);
+}
+
+
+
 function update() {
     const PaCO2 = parseFloat(paco2Slider.value);
     const HCO3 = parseFloat(hco3Slider.value);
+    const pH = calculatePH(PaCO2, HCO3);
+
     paco2Value.textContent = PaCO2;
     hco3Value.textContent = HCO3;
-    const pH = calculatePH(PaCO2, HCO3);
     phValue.textContent = pH.toFixed(2);
-    const classification = classifyABG(pH, PaCO2, HCO3);
-    classificationElement.textContent = classification;
-    classificationElement.style.color = 'black'
-    classificationElement.style.backgroundColor = getClassificationColor(classification).replace('0.5', '0.3');
-    const circlePoints = calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3);
-    Plotly.react('graph', {
-        data: [
-            graphData.colorMap,
-            ...graphData.pCO2Lines,
-            {
-                x: circlePoints.pH_values,
-                y: circlePoints.hco3_values,
-                mode: 'lines',
-                line: { color: 'red', width: 2 },
-                fill: 'toself',
-                fillcolor: 'rgba(255, 0, 0, 0.2)',
-                showlegend: false,
-                hoverinfo: 'none'
-            },
-            {
-                x: [pH],
-                y: [HCO3],
-                mode: 'markers',
-                marker: { size: 10, color: 'red' },
-                text: [`PaCO₂: ${PaCO2}`],
-                hoverinfo: 'text',
-                showlegend: false
-            }
-        ],
-        layout: {
-            xaxis: { range: [6.2, 8.4] },
-            yaxis: { range: [5, 50] }
-        }
-    });
+
+    const classificationId = classifyABG(pH, PaCO2, HCO3);
+    classificationElement.textContent = classificationId;
+    classificationElement.style.backgroundColor = getClassificationColor(classificationId).replace('0.5', '0.3');
+
+    renderGraph(pH, PaCO2, HCO3);
 }
+
 
 // ======================
 // UPDATED COLOR MAPPING FOR PLOT BACKGROUND
 // ======================
 
 function createClassificationBackground() {
-    const gridSize = 150; // Higher resolution for smoother colors
-    const pHRange = { min: 6.8, max: 7.8 };
-    const HCO3Range = { min: 5, max: 50 };
-
-    const pHValues = [];
-    const HCO3Values = [];
-    const colors = [];
-
-    // Create a grid of points
-    for (let i = 0; i < gridSize; i++) {
-        const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
-        pHValues.push(pH);
-        
-        for (let j = 0; j < gridSize; j++) {
-            const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
-            if (i === 0) HCO3Values.push(HCO3);
-            
-            // Calculate corresponding PaCO2 for this pH and HCO3
-            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
-            
-            // Get classification and its color
-            const classification = classifyABG(pH, PaCO2, HCO3);
-            const color = getClassificationColor(classification);
-            colors.push(color);
-        }
-    }
-
+    const { pHValues, HCO3Values, zColors } = generateClassificationGrid();
     return {
         x: pHValues,
         y: HCO3Values,
-        z: [colors], // Note: z must be a 2D array
+        z: zColors,
         type: 'heatmap',
-        colorscale: createCustomColorscale(),
         showscale: false,
         hoverinfo: 'none',
-        opacity: 0.6, // Semi-transparent to see lines underneath
+        opacity: 0.6,
         zsmooth: 'best'
     };
 }
 
-function createCustomColorscale() {
-    return [
-        [0.3, 'rgba(255, 0, 0, 0.6)'],       // Mixed Acidosis
-        [0.3, 'rgba(255, 165, 0, 0.6)'],    // Partially Compensated Respiratory Acidosis
-        [0.3, 'rgba(255, 140, 0, 0.6)'],    // Uncompensated Respiratory Acidosis
-        [0.3, 'rgba(255, 255, 0, 0.6)'],    // Partially Compensated Metabolic Acidosis
-        [0.3, 'rgba(255, 215, 0, 0.6)'],    // Uncompensated Metabolic Acidosis
-        [0.3, 'rgba(173, 216, 230, 0.6)'],  // Partially Compensated Respiratory Alkalosis
-        [0.3, 'rgba(128, 0, 128, 0.6)'],    // Mixed Alkalosis
-        [0.3, 'rgba(0, 0, 255, 0.6)'],      // Uncompensated Respiratory Alkalosis
-        [0.3, 'rgba(0, 255, 255, 0.6)'],    // Partially Compensated Metabolic Alkalosis
-        [0.3, 'rgba(0, 191, 255, 0.6)'],    // Uncompensated Metabolic Alkalosis
-        [0.3, 'rgba(0, 128, 0, 0.6)']       // Normal
-    ];
-}
+function generateClassificationGrid(gridSize = 150) {
+    const pHRange = { min: 6.8, max: 7.8 };
+    const HCO3Range = { min: 5, max: 50 };
 
+    const pHValues = Array.from({ length: gridSize }, (_, i) =>
+        pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1)
+    );
+    const HCO3Values = Array.from({ length: gridSize }, (_, j) =>
+        HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1)
+    );
+
+    const zColors = [];
+    for (let j = 0; j < gridSize; j++) {
+        const row = [];
+        for (let i = 0; i < gridSize; i++) {
+            const pH = pHValues[i];
+            const HCO3 = HCO3Values[j];
+            const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
+            const classId = classifyABG(pH, PaCO2, HCO3);
+            row.push(getClassificationColor(classId));
+        }
+        zColors.push(row);
+    }
+
+    return { pHValues, HCO3Values, zColors };
+}
 
 // ======================
 // UTILITY FUNCTIONS
