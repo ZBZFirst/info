@@ -173,7 +173,7 @@ function removePointFromCharts(dataPoint) {
 function processRows(count) {
   let newIndex = appState.playback.currentIndex + (count * appState.playback.direction);
   
-  if (appState.playback.direction > 0 && newIndex >= appState.dataset.length) {newIndex = 0;debug.add('Playback wrapped to beginning');}
+  if (appState.playback.direction > 0 && newIndex >= appState.dataset.length)
   else if (newIndex < 0) {newIndex = 0;}
 
   appState.playback.currentIndex = newIndex;
