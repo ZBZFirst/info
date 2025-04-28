@@ -124,76 +124,37 @@ function createPCO2Lines() {
 }
 
 function createColorMap() {
-    const gridSize = 100;
+    const gridSize = 150;
     const pHRange = { min: 6.8, max: 7.8 };
     const HCO3Range = { min: 5, max: 50 };
-    
-    // Create classification mapping to numeric values
-    const classificationMap = {
-        'Normal': 0,
-        'Uncompensated Respiratory Acidosis': 1,
-        'Partially Compensated Respiratory Acidosis': 2,
-        'Mixed Acidosis': 3,
-        'Uncompensated Metabolic Acidosis': 4,
-        'Partially Compensated Metabolic Acidosis': 5,
-        'Uncompensated Respiratory Alkalosis': 6,
-        'Partially Compensated Respiratory Alkalosis': 7,
-        'Mixed Alkalosis': 8,
-        'Uncompensated Metabolic Alkalosis': 9,
-        'Partially Compensated Metabolic Alkalosis': 10,
-        'Fully Compensated Respiratory Acidosis': 11,
-        'Fully Compensated Metabolic Acidosis': 12,
-        'Fully Compensated Metabolic Alkalosis': 13,
-        'Fully Compensated Respiratory Alkalosis': 14,
-        'Undefined': 15
-    };
 
     const pHValues = [];
     const HCO3Values = [];
-    const z = [];
-    
+    const colors = []; // Will store the actual color strings
+
     for (let i = 0; i < gridSize; i++) {
         const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
         pHValues.push(pH);
         
-        const row = [];
         for (let j = 0; j < gridSize; j++) {
             const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
             if (i === 0) HCO3Values.push(HCO3);
             
             const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
-            const [classification] = classifyABG(pH, PaCO2, HCO3);
-            row.push(classificationMap[classification] || 15); // Default to Undefined
+            const [_, color] = classifyABG(pH, PaCO2, HCO3); // Get color directly
+            colors.push(color);
         }
-        z.push(row);
     }
 
     return [{
         x: pHValues,
         y: HCO3Values,
-        z: z, // Proper 2D array
+        z: [colors], // 2D array of color strings
         type: 'heatmap',
-        colorscale: [
-            [0, 'green'],          // 0: Normal
-            [0.066, 'darkorange'], // 1: Uncompensated Respiratory Acidosis
-            [0.133, 'orange'],    // 2: Partially Compensated Respiratory Acidosis
-            [0.2, 'red'],          // 3: Mixed Acidosis
-            [0.266, 'gold'],       // 4: Uncompensated Metabolic Acidosis
-            [0.333, 'yellow'],     // 5: Partially Compensated Metabolic Acidosis
-            [0.4, 'blue'],        // 6: Uncompensated Respiratory Alkalosis
-            [0.466, 'lightblue'],  // 7: Partially Compensated Respiratory Alkalosis
-            [0.533, 'purple'],    // 8: Mixed Alkalosis
-            [0.6, 'deepskyblue'], // 9: Uncompensated Metabolic Alkalosis
-            [0.666, 'cyan'],      // 10: Partially Compensated Metabolic Alkalosis
-            [0.733, 'darkgreen'], // 11: Fully Compensated Respiratory Acidosis
-            [0.8, 'limegreen'],   // 12: Fully Compensated Metabolic Acidosis
-            [0.866, 'mediumseagreen'], // 13: Fully Compensated Metabolic Alkalosis
-            [0.933, 'springgreen'],    // 14: Fully Compensated Respiratory Alkalosis
-            [1, 'gray']           // 15: Undefined
-        ],
+        autocolorscale: false, // Important! Disable auto-scaling
         showscale: false,
         hoverinfo: 'none',
-        opacity: 0.6,
+        opacity: 0.7,
         zsmooth: 'best'
     }];
 }
