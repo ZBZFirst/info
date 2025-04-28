@@ -2,21 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Color Demo with Sliders</title>
+  <title>Resizable Color Demo</title>
   <style>
+    .container-wrapper {
+      display: inline-block;
+      position: relative;
+      margin: 20px;
+      vertical-align: top;
+    }
+
     .container {
       width: 200px;
       height: 200px;
-      margin: 20px;
-      display: inline-block;
-      vertical-align: top;
       border: 2px solid #ccc;
+      position: relative;
+      touch-action: none; /* prevent touch drag interference */
     }
+
+    .resize-handle {
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      cursor: se-resize;
+      background: rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      touch-action: none;
+    }
+
     .controls {
       margin: 10px 20px;
       width: 200px;
       display: inline-block;
     }
+
     label {
       display: block;
       font-size: 0.9em;
@@ -24,56 +44,105 @@
   </style>
 </head>
 <body>
-  <h2>Color Format Demo</h2>
-  <h3>Creating colors in HTML requires a user to input color values for the "Green, Red, Blue and Alpha" Values.</h3>
-  <h3>In addition, it is possible to obtain colors using "Hue" and then adjusting the "Saturation" and "Light" properties.</h3>
+  <h2>Color Format Demo (Resizable, Touch-Friendly)</h2>
 
   <!-- RGBA Section -->
-  <div id="rgbaBox" class="container"></div>
-  <div class="controls">
-    <label>Red: <input type="range" id="r" min="0" max="255" value="255"></label>
-    <label>Green: <input type="range" id="g" min="0" max="255" value="0"></label>
-    <label>Blue: <input type="range" id="b" min="0" max="255" value="0"></label>
-    <label>Alpha: <input type="range" id="a" min="0" max="1" step="0.01" value="0.5"></label>
+  <div class="container-wrapper">
+    <div id="rgbaBox" class="container">
+      <div class="resize-handle"></div>
+    </div>
+    <div class="controls">
+      <label>Red: <input type="range" id="r" min="0" max="255" value="255"></label>
+      <label>Green: <input type="range" id="g" min="0" max="255" value="0"></label>
+      <label>Blue: <input type="range" id="b" min="0" max="255" value="0"></label>
+      <label>Alpha: <input type="range" id="a" min="0" max="1" step="0.01" value="0.5"></label>
+    </div>
   </div>
 
   <!-- HSL Section -->
-  <div id="hslBox" class="container"></div>
-  <div class="controls">
-    <label>Hue: <input type="range" id="h" min="0" max="360" value="240"></label>
-    <label>Saturation: <input type="range" id="s" min="0" max="100" value="100"></label>
-    <label>Lightness: <input type="range" id="l" min="0" max="100" value="50"></label>
+  <div class="container-wrapper">
+    <div id="hslBox" class="container">
+      <div class="resize-handle"></div>
+    </div>
+    <div class="controls">
+      <label>Hue: <input type="range" id="h" min="0" max="360" value="240"></label>
+      <label>Saturation: <input type="range" id="s" min="0" max="100" value="100"></label>
+      <label>Lightness: <input type="range" id="l" min="0" max="100" value="50"></label>
+    </div>
   </div>
 
   <script>
-    // RGBA update
-    const rgbaSliders = ['r', 'g', 'b', 'a'];
+    // RGBA color update
     function updateRGBA() {
       const r = document.getElementById('r').value;
       const g = document.getElementById('g').value;
       const b = document.getElementById('b').value;
       const a = document.getElementById('a').value;
-      const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
-      document.getElementById('rgbaBox').style.backgroundColor = rgba;
+      document.getElementById('rgbaBox').style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
     }
-    rgbaSliders.forEach(id => {
+    ['r', 'g', 'b', 'a'].forEach(id => {
       document.getElementById(id).addEventListener('input', updateRGBA);
     });
-    updateRGBA(); // initialize
+    updateRGBA();
 
-    // HSL update
-    const hslSliders = ['h', 's', 'l'];
+    // HSL color update
     function updateHSL() {
       const h = document.getElementById('h').value;
       const s = document.getElementById('s').value;
       const l = document.getElementById('l').value;
-      const hsl = `hsl(${h}, ${s}%, ${l}%)`;
-      document.getElementById('hslBox').style.backgroundColor = hsl;
+      document.getElementById('hslBox').style.backgroundColor = `hsl(${h}, ${s}%, ${l}%)`;
     }
-    hslSliders.forEach(id => {
+    ['h', 's', 'l'].forEach(id => {
       document.getElementById(id).addEventListener('input', updateHSL);
     });
-    updateHSL(); // initialize
+    updateHSL();
+
+    // Resize logic
+    function makeResizable(container) {
+      const handle = container.querySelector('.resize-handle');
+
+      let isResizing = false;
+      let startX, startY, startWidth, startHeight;
+
+      function startResize(e) {
+        e.preventDefault();
+        isResizing = true;
+        const touch = e.touches ? e.touches[0] : e;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startWidth = parseInt(document.defaultView.getComputedStyle(container).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(container).height, 10);
+
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('touchmove', resize, { passive: false });
+        document.addEventListener('touchend', stopResize);
+      }
+
+      function resize(e) {
+        if (!isResizing) return;
+        const touch = e.touches ? e.touches[0] : e;
+        const width = startWidth + (touch.clientX - startX);
+        const height = startHeight + (touch.clientY - startY);
+        container.style.width = Math.max(100, width) + 'px';
+        container.style.height = Math.max(100, height) + 'px';
+        e.preventDefault();
+      }
+
+      function stopResize() {
+        isResizing = false;
+        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mouseup', stopResize);
+        document.removeEventListener('touchmove', resize);
+        document.removeEventListener('touchend', stopResize);
+      }
+
+      handle.addEventListener('mousedown', startResize);
+      handle.addEventListener('touchstart', startResize, { passive: false });
+    }
+
+    makeResizable(document.getElementById('rgbaBox'));
+    makeResizable(document.getElementById('hslBox'));
   </script>
 </body>
 </html>
