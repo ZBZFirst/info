@@ -96,14 +96,31 @@ function createPCO2Lines() {
     return lines;
 }
 
+
+
 // ======================
-// MODIFIED INITIALIZATION
+// LAYOUT CONFIGURATION (defined once, used everywhere)
 // ======================
+const initialLayout = {
+    title: 'ABG Simulator (pH vs HCO₃⁻ with PaCO₂ isolines)',
+    xaxis: { title: 'pH', range: [6.8, 7.8] },
+    yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
+    margin: { t: 50, b: 50, l: 50, r: 50 },
+    hovermode: 'closest',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    showlegend: true,
+    legend: {
+        orientation: 'h',
+        y: -0.2
+    }
+};
 
 function initializeGraph() {
+    // Initialize graph data structures
     graphData.pCO2Lines = createPCO2Lines();
-    graphData.colorMap = createClassificationBackground(); // This creates the colored plot background
+    graphData.colorMap = createClassificationBackground();
     
+    // Create initial circle points
     const circlePoints = calculatePossiblePaCO2HCO3(7.4, 40, 24);
     graphData.circlePoints = [{
         x: circlePoints.pH_values,
@@ -116,6 +133,7 @@ function initializeGraph() {
         hoverinfo: 'none'
     }];
     
+    // Create initial point marker
     graphData.currentPoint = {
         x: [7.4],
         y: [24],
@@ -126,29 +144,20 @@ function initializeGraph() {
         showlegend: false
     };
     
-    // Ensure proper layering: background first, then lines, then points
+    // Create traces array (order matters for layering)
     const traces = [
-        graphData.colorMap,    // Colored background first
-        ...graphData.pCO2Lines, // Then isolines
+        graphData.colorMap,        // Background first
+        ...graphData.pCO2Lines,    // Then isolines
         ...graphData.circlePoints, // Then confidence circle
-        graphData.currentPoint   // Finally the point marker
+        graphData.currentPoint     // Finally the point marker
     ];
     
-    const layout = {
-        title: 'ABG Simulator (pH vs HCO₃⁻ with PaCO₂ isolines)',
-        xaxis: { title: 'pH', range: [6.8, 7.8] },
-        yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
-        margin: { t: 50, b: 50, l: 50, r: 50 },
-        hovermode: 'closest',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        showlegend: true,
-        legend: {
-            orientation: 'h',
-            y: -0.2
-    }};
-
-    Plotly.newPlot('graph', traces, layout);
+    // Use the predefined layout
+    Plotly.newPlot('graph', traces, initialLayout);
 }
+
+
+
 
 function renderGraph(pH, PaCO2, HCO3) {
     const classificationId = classifyABG(pH, PaCO2, HCO3);
@@ -178,14 +187,22 @@ function renderGraph(pH, PaCO2, HCO3) {
         }
     ];
 
-    const layout = {
-        xaxis: { title: 'pH', range: [6.2, 8.4] },
-        yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
-        margin: { t: 50, b: 50, l: 50, r: 50 },
-        hovermode: 'closest'
-    };
-
-    Plotly.react('graph', traces, layout);
+    // Get current zoom state before updating
+    const graphDiv = document.getElementById('graph');
+    const currentLayout = graphDiv._fullLayout || {};
+    
+    // Update while preserving zoom
+    Plotly.react('graph', traces, {
+        ...initialLayout,  // Start with base layout
+        xaxis: {
+            ...initialLayout.xaxis,
+            range: currentLayout.xaxis?.range || initialLayout.xaxis.range
+        },
+        yaxis: {
+            ...initialLayout.yaxis,
+            range: currentLayout.yaxis?.range || initialLayout.yaxis.range
+        }
+    });
 }
 
 function getClassificationColor(classificationId) {
