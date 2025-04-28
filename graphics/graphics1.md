@@ -9,7 +9,7 @@ title: Interactive Draggable Graphics
         overflow: hidden;
         height: 60vh; /* Reduced to make room for controls */
         position: relative;
-        background: url('image.png') no-repeat center center;
+        background: url('/ventscreen/image.png') no-repeat center center;
         background-size: contain;
         background-color: #f0f0f0;
         cursor: grab;
