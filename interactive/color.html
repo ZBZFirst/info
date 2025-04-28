@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Color Demo</title>
+  <title>Color Demo with Sliders</title>
   <style>
     .container {
       width: 200px;
@@ -12,33 +12,66 @@
       vertical-align: top;
       border: 2px solid #ccc;
     }
-    #rgbaBox { background-color: rgba(255, 0, 0, 0.5); }
-    #hslBox { background-color: hsl(240, 100%, 50%); }
+    .controls {
+      margin: 10px 20px;
+      width: 200px;
+      display: inline-block;
+    }
+    label {
+      display: block;
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
   <h2>Color Format Demo</h2>
+
+  <!-- RGBA Section -->
   <div id="rgbaBox" class="container"></div>
+  <div class="controls">
+    <label>Red: <input type="range" id="r" min="0" max="255" value="255"></label>
+    <label>Green: <input type="range" id="g" min="0" max="255" value="0"></label>
+    <label>Blue: <input type="range" id="b" min="0" max="255" value="0"></label>
+    <label>Alpha: <input type="range" id="a" min="0" max="1" step="0.01" value="0.5"></label>
+  </div>
+
+  <!-- HSL Section -->
   <div id="hslBox" class="container"></div>
+  <div class="controls">
+    <label>Hue: <input type="range" id="h" min="0" max="360" value="240"></label>
+    <label>Saturation: <input type="range" id="s" min="0" max="100" value="100"></label>
+    <label>Lightness: <input type="range" id="l" min="0" max="100" value="50"></label>
+  </div>
 
   <script>
-    // Example of dynamically changing the color
-    document.getElementById("rgbaBox").addEventListener("click", () => {
-      // cycle between a few RGBA values
-      const colors = [
-        "rgba(255, 0, 0, 0.5)",
-        "rgba(0, 255, 0, 0.5)",
-        "rgba(0, 0, 255, 0.5)"
-      ];
-      let current = colors.indexOf(document.getElementById("rgbaBox").style.backgroundColor);
-      document.getElementById("rgbaBox").style.backgroundColor = colors[(current + 1) % colors.length];
+    // RGBA update
+    const rgbaSliders = ['r', 'g', 'b', 'a'];
+    function updateRGBA() {
+      const r = document.getElementById('r').value;
+      const g = document.getElementById('g').value;
+      const b = document.getElementById('b').value;
+      const a = document.getElementById('a').value;
+      const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
+      document.getElementById('rgbaBox').style.backgroundColor = rgba;
+    }
+    rgbaSliders.forEach(id => {
+      document.getElementById(id).addEventListener('input', updateRGBA);
     });
+    updateRGBA(); // initialize
 
-    document.getElementById("hslBox").addEventListener("click", () => {
-      const hslBox = document.getElementById("hslBox");
-      const hue = Math.floor(Math.random() * 360);
-      hslBox.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+    // HSL update
+    const hslSliders = ['h', 's', 'l'];
+    function updateHSL() {
+      const h = document.getElementById('h').value;
+      const s = document.getElementById('s').value;
+      const l = document.getElementById('l').value;
+      const hsl = `hsl(${h}, ${s}%, ${l}%)`;
+      document.getElementById('hslBox').style.backgroundColor = hsl;
+    }
+    hslSliders.forEach(id => {
+      document.getElementById(id).addEventListener('input', updateHSL);
     });
+    updateHSL(); // initialize
   </script>
 </body>
 </html>
