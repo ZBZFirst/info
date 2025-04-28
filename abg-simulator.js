@@ -176,7 +176,11 @@ function initializeGraph() {
         yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
         margin: { t: 50, b: 50, l: 50, r: 50 },
         hovermode: 'closest',
-        plot_bgcolor: 'rgba(0,0,0,0)' // Make plot background transparent
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            y: -0.2
     };
     
     Plotly.newPlot('graph', traces, layout);
@@ -220,7 +224,9 @@ function renderGraph(pH, PaCO2, HCO3) {
     Plotly.react('graph', traces, layout);
 }
 
-
+function getClassificationColor(classificationId) {
+    return getClassificationInfo(classificationId).color;
+}
 
 function update() {
     const PaCO2 = parseFloat(paco2Slider.value);
@@ -232,8 +238,11 @@ function update() {
     phValue.textContent = pH.toFixed(2);
 
     const classificationId = classifyABG(pH, PaCO2, HCO3);
-    classificationElement.textContent = classificationId;
-    classificationElement.style.backgroundColor = getClassificationColor(classificationId).replace('0.5', '0.3');
+    const classificationInfo = getClassificationInfo(classificationId); // Get the full info object
+    
+    // Update to show the label instead of the ID
+    classificationElement.textContent = classificationInfo.label;
+    classificationElement.style.backgroundColor = classificationInfo.color.replace('0.5', '0.3');
 
     renderGraph(pH, PaCO2, HCO3);
 }
