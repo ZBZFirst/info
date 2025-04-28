@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Demo</title>
+  <style>
+    .container {
+      width: 200px;
+      height: 200px;
+      margin: 20px;
+      display: inline-block;
+      vertical-align: top;
+      border: 2px solid #ccc;
+    }
+    #rgbaBox { background-color: rgba(255, 0, 0, 0.5); }
+    #hslBox { background-color: hsl(240, 100%, 50%); }
+  </style>
+</head>
+<body>
+  <h2>Color Format Demo</h2>
+  <div id="rgbaBox" class="container"></div>
+  <div id="hslBox" class="container"></div>
+
+  <script>
+    // Example of dynamically changing the color
+    document.getElementById("rgbaBox").addEventListener("click", () => {
+      // cycle between a few RGBA values
+      const colors = [
+        "rgba(255, 0, 0, 0.5)",
+        "rgba(0, 255, 0, 0.5)",
+        "rgba(0, 0, 255, 0.5)"
+      ];
+      let current = colors.indexOf(document.getElementById("rgbaBox").style.backgroundColor);
+      document.getElementById("rgbaBox").style.backgroundColor = colors[(current + 1) % colors.length];
+    });
+
+    document.getElementById("hslBox").addEventListener("click", () => {
+      const hslBox = document.getElementById("hslBox");
+      const hue = Math.floor(Math.random() * 360);
+      hslBox.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+    });
+  </script>
+</body>
+</html>
