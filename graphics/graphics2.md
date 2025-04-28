@@ -9,7 +9,7 @@ title: Interactive Draggable Graphics
         overflow: hidden;
         height: 60vh;
         position: relative;
-        background: url('ventscreen/image.png') no-repeat center center;
+        background: url('ventscreen1.jpg') no-repeat center center;
         background-size: contain;
         background-color: #f0f0f0;
         cursor: grab;
@@ -123,6 +123,14 @@ title: Interactive Draggable Graphics
         color: white;
         margin-left: 10px;
     }
+    
+    .image-controls {
+        grid-column: span 2;
+        padding: 15px;
+        background: #e0e0e0;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
 </style>
 
 <div class="shape-container" id="shapeContainer">
@@ -130,6 +138,14 @@ title: Interactive Draggable Graphics
 </div>
 
 <div class="controls-panel">
+    <!-- Image Controls -->
+    <div class="image-controls">
+        <h3>Image Controls</h3>
+        <button onclick="changeImage(-1)">Previous Image</button>
+        <button onclick="changeImage(1)">Next Image</button>
+        <span id="currentImageDisplay">Current: ventscreen1.jpg</span>
+    </div>
+
     <!-- Shape Actions -->
     <div class="shape-actions">
         <h3>Add New Shapes</h3>
@@ -168,6 +184,8 @@ title: Interactive Draggable Graphics
     let shapes = [];
     let selectedShape = null;
     let nextId = 1;
+    let currentImageIndex = 1;
+    const totalImages = 10;
 
     document.addEventListener('DOMContentLoaded', () => {
         // Initialize with some default shapes if needed
@@ -178,6 +196,20 @@ title: Interactive Draggable Graphics
         addShape('square', {label: "Waveforms", top: "250px", left: "200px", width: "50px", height: "30px"});
         addShape('square', {label: "HAXI", top: "250px", left: "350px", width: "50px", height: "30px"});
     });
+
+    // Change the background image
+    function changeImage(direction) {
+        currentImageIndex += direction;
+        
+        // Wrap around if we go past the limits
+        if (currentImageIndex < 1) currentImageIndex = totalImages;
+        if (currentImageIndex > totalImages) currentImageIndex = 1;
+        
+        const container = document.getElementById('shapeContainer');
+        container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
+        
+        document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
+    }
 
     // Add a new shape (circle or square)
     function addShape(type, config = {}) {
@@ -430,7 +462,8 @@ title: Interactive Draggable Graphics
                 width: shape.element.style.width,
                 height: shape.element.style.height
             })),
-            nextId: nextId
+            nextId: nextId,
+            currentImageIndex: currentImageIndex
         };
         
         localStorage.setItem('ventilatorLabelerConfig', JSON.stringify(config));
@@ -472,6 +505,14 @@ title: Interactive Draggable Graphics
         
         // Restore nextId to prevent ID collisions
         nextId = config.nextId || shapes.length + 1;
+        
+        // Restore the image index if it exists
+        if (config.currentImageIndex) {
+            currentImageIndex = config.currentImageIndex;
+            const container = document.getElementById('shapeContainer');
+            container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
+            document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
+        }
     }
 
     // Export configuration as JSON
@@ -482,7 +523,7 @@ title: Interactive Draggable Graphics
         const imageHeight = containerRect.height;
         
         const config = {
-            image: 'image.png',
+            image: `ventscreen${currentImageIndex}.jpg`,
             imageDimensions: {
                 width: imageWidth,
                 height: imageHeight
