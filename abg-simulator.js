@@ -22,68 +22,48 @@ const graphData = {
 
 function calculatePH(paco2, hco3) {const pK = 6.1;const PCO2_conversion = 0.03;return pK + Math.log10(hco3 / (PCO2_conversion * paco2));}
 
+const classificationMap = {
+    0: { label: "Mixed Acidosis", color: 'rgba(255, 0, 0, 0.5)' },
+    1: { label: "Partially Compensated Respiratory Acidosis", color: 'rgba(255, 165, 0, 0.5)' },
+    2: { label: "Uncompensated Respiratory Acidosis", color: 'rgba(255, 140, 0, 0.5)' },
+    3: { label: "Partially Compensated Metabolic Acidosis", color: 'rgba(255, 255, 0, 0.5)' },
+    4: { label: "Uncompensated Metabolic Acidosis", color: 'rgba(255, 215, 0, 0.5)' },
+    5: { label: "Partially Compensated Respiratory Alkalosis", color: 'rgba(173, 216, 230, 0.5)' },
+    6: { label: "Mixed Alkalosis", color: 'rgba(128, 0, 128, 0.5)' },
+    7: { label: "Uncompensated Respiratory Alkalosis", color: 'rgba(0, 0, 255, 0.5)' },
+    8: { label: "Partially Compensated Metabolic Alkalosis", color: 'rgba(0, 255, 255, 0.5)' },
+    9: { label: "Uncompensated Metabolic Alkalosis", color: 'rgba(0, 191, 255, 0.5)' },
+    10: { label: "Fully Compensated Respiratory Acidosis", color: 'rgba(0, 100, 0, 0.5)' },
+    11: { label: "Fully Compensated Metabolic Acidosis", color: 'rgba(50, 205, 50, 0.5)' },
+    12: { label: "Fully Compensated Metabolic Alkalosis", color: 'rgba(60, 179, 113, 0.5)' },
+    13: { label: "Fully Compensated Respiratory Alkalosis", color: 'rgba(0, 250, 154, 0.5)' },
+    14: { label: "Normal", color: 'rgba(0, 128, 0, 0.5)' },
+    15: { label: "Undefined", color: 'rgba(128, 128, 128, 0.5)' }
+};
+
 function classifyABG(pH, PaCO2, HCO3) {
     const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
     const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
     if (pH < 7.35) {
-        if (PaCO2 > 45) {
-            if (HCO3 < 22) return "Mixed Acidosis";
-            if (HCO3 > 26) return "Partially Compensated Respiratory Acidosis";
-            return "Uncompensated Respiratory Acidosis";
-        }
-        if (HCO3 < 22) {
-            if (PaCO2 < 35) return "Partially Compensated Metabolic Acidosis";
-            if (normalPaCO2) return "Uncompensated Metabolic Acidosis";
-            return "Undefined Acidosis";
-        }
-        return "Undefined Acidosis";
+        if (PaCO2 > 45) {if (HCO3 < 22) return 0;if (HCO3 > 26) return 1;return 2;}
+        if (HCO3 < 22) {if (PaCO2 < 35) return 3;if (normalPaCO2) return 4;return 15;}
+        return 15;
     }
     if (pH > 7.45) {
-        if (PaCO2 < 35) {
-            if (HCO3 < 22) return "Partially Compensated Respiratory Alkalosis";
-            if (HCO3 > 26) return "Mixed Alkalosis";
-            return "Uncompensated Respiratory Alkalosis";
-        }
-        if (HCO3 > 26) {
-            if (PaCO2 > 45) return "Partially Compensated Metabolic Alkalosis";
-            if (normalPaCO2) return "Uncompensated Metabolic Alkalosis";
-            return "Undefined Alkalosis";
-        }
-        return "Undefined Alkalosis";
+        if (PaCO2 < 35) {if (HCO3 < 22) return 5;if (HCO3 > 26) return 6;return 7;}
+        if (HCO3 > 26) {if (PaCO2 > 45) return 8;if (normalPaCO2) return 9;return 15;}
+        return 15;
     }
-    if (pH >= 7.35 && pH <= 7.399) {
-        if (PaCO2 > 45 && HCO3 > 26) return "Fully Compensated Respiratory Acidosis";
-        if (PaCO2 < 35 && HCO3 < 22) return "Fully Compensated Metabolic Acidosis";
-    }
-    if (pH >= 7.401 && pH <= 7.45) {
-        if (PaCO2 > 45 && HCO3 > 26) return "Fully Compensated Metabolic Alkalosis";
-        if (PaCO2 < 35 && HCO3 < 22) return "Fully Compensated Respiratory Alkalosis";
-    }
-    if (normalPaCO2 && normalHCO3) return "Normal";
-    return "Undefined";
+    if (pH >= 7.35 && pH <= 7.399) {if (PaCO2 > 45 && HCO3 > 26) return 10;if (PaCO2 < 35 && HCO3 < 22) return 11;}
+    if (pH >= 7.401 && pH <= 7.45) {if (PaCO2 > 45 && HCO3 > 26) return 12;if (PaCO2 < 35 && HCO3 < 22) return 13;}
+    if (normalPaCO2 && normalHCO3) return 14;
+    return 15; // Undefined
 }
 
-function getClassificationColor(classification) {
-    const colorMap = {
-        "Mixed Acidosis": 'rgba(255, 0, 0, 0.5)',
-        "Partially Compensated Respiratory Acidosis": 'rgba(255, 165, 0, 0.5)',
-        "Uncompensated Respiratory Acidosis": 'rgba(255, 140, 0, 0.5)',
-        "Partially Compensated Metabolic Acidosis": 'rgba(255, 255, 0, 0.5)',
-        "Uncompensated Metabolic Acidosis": 'rgba(255, 215, 0, 0.5)',
-        "Partially Compensated Respiratory Alkalosis": 'rgba(173, 216, 230, 0.5)',
-        "Mixed Alkalosis": 'rgba(128, 0, 128, 0.5)',
-        "Uncompensated Respiratory Alkalosis": 'rgba(0, 0, 255, 0.5)',
-        "Partially Compensated Metabolic Alkalosis": 'rgba(0, 255, 255, 0.5)',
-        "Uncompensated Metabolic Alkalosis": 'rgba(0, 191, 255, 0.5)',
-        "Fully Compensated Respiratory Acidosis": 'rgba(0, 100, 0, 0.5)',
-        "Fully Compensated Metabolic Acidosis": 'rgba(50, 205, 50, 0.5)',
-        "Fully Compensated Metabolic Alkalosis": 'rgba(60, 179, 113, 0.5)',
-        "Fully Compensated Respiratory Alkalosis": 'rgba(0, 250, 154, 0.5)',
-        "Normal": 'rgba(0, 128, 0, 0.5)',
-        "Undefined": 'rgba(128, 128, 128, 0.5)'
-    };
-    return colorMap[classification] || 'rgba(128, 128, 128, 0.5)';
+function getClassificationInfo(id) {
+    return classificationMap[id] || classificationMap[15]; // fallback to "Undefined"
 }
+
 
 // ======================
 // GRAPHING FUNCTIONS
@@ -292,17 +272,17 @@ function createClassificationBackground() {
 
 function createCustomColorscale() {
     return [
-        [0, 'rgba(255, 0, 0, 0.6)'],       // Mixed Acidosis
-        [0.1, 'rgba(255, 165, 0, 0.6)'],    // Partially Compensated Respiratory Acidosis
-        [0.2, 'rgba(255, 140, 0, 0.6)'],    // Uncompensated Respiratory Acidosis
+        [0.3, 'rgba(255, 0, 0, 0.6)'],       // Mixed Acidosis
+        [0.3, 'rgba(255, 165, 0, 0.6)'],    // Partially Compensated Respiratory Acidosis
+        [0.3, 'rgba(255, 140, 0, 0.6)'],    // Uncompensated Respiratory Acidosis
         [0.3, 'rgba(255, 255, 0, 0.6)'],    // Partially Compensated Metabolic Acidosis
-        [0.4, 'rgba(255, 215, 0, 0.6)'],    // Uncompensated Metabolic Acidosis
-        [0.5, 'rgba(173, 216, 230, 0.6)'],  // Partially Compensated Respiratory Alkalosis
-        [0.6, 'rgba(128, 0, 128, 0.6)'],    // Mixed Alkalosis
-        [0.7, 'rgba(0, 0, 255, 0.6)'],      // Uncompensated Respiratory Alkalosis
-        [0.8, 'rgba(0, 255, 255, 0.6)'],    // Partially Compensated Metabolic Alkalosis
-        [0.9, 'rgba(0, 191, 255, 0.6)'],    // Uncompensated Metabolic Alkalosis
-        [1.0, 'rgba(0, 128, 0, 0.6)']       // Normal
+        [0.3, 'rgba(255, 215, 0, 0.6)'],    // Uncompensated Metabolic Acidosis
+        [0.3, 'rgba(173, 216, 230, 0.6)'],  // Partially Compensated Respiratory Alkalosis
+        [0.3, 'rgba(128, 0, 128, 0.6)'],    // Mixed Alkalosis
+        [0.3, 'rgba(0, 0, 255, 0.6)'],      // Uncompensated Respiratory Alkalosis
+        [0.3, 'rgba(0, 255, 255, 0.6)'],    // Partially Compensated Metabolic Alkalosis
+        [0.3, 'rgba(0, 191, 255, 0.6)'],    // Uncompensated Metabolic Alkalosis
+        [0.3, 'rgba(0, 128, 0, 0.6)']       // Normal
     ];
 }
 
