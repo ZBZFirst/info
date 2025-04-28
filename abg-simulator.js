@@ -134,66 +134,58 @@ function createPCO2Lines() {
     return lines;
 }
 
+// ======================
+// UPDATED COLOR MAP FUNCTION
+// ======================
+
 function createColorMap() {
-    const gridSize = 100;
+    const gridSize = 150; // Higher resolution for smoother color transitions
     const pHRange = { min: 6.8, max: 7.8 };
     const HCO3Range = { min: 5, max: 50 };
-    
+
     const pHValues = [];
     const HCO3Values = [];
-    const classifications = [];
-    
+    const colors = [];
+
+    // Create a grid of points
     for (let i = 0; i < gridSize; i++) {
         const pH = pHRange.min + (pHRange.max - pHRange.min) * i / (gridSize - 1);
         pHValues.push(pH);
         
-        const row = [];
         for (let j = 0; j < gridSize; j++) {
             const HCO3 = HCO3Range.min + (HCO3Range.max - HCO3Range.min) * j / (gridSize - 1);
             if (i === 0) HCO3Values.push(HCO3);
             
+            // Calculate corresponding PaCO2 for this pH and HCO3
             const PaCO2 = HCO3 / (Math.pow(10, pH - 6.1) * 0.03);
-            row.push(classifyABG(pH, PaCO2, HCO3));
+            
+            // Get classification and its color
+            const classification = classifyABG(pH, PaCO2, HCO3);
+            const color = getClassificationColor(classification);
+            colors.push(color);
         }
-        classifications.push(row);
     }
-    
+
     return {
         x: pHValues,
         y: HCO3Values,
-        z: classifications,
+        z: [colors], // Note: z must be a 2D array
         type: 'heatmap',
-        colorscale: [
-            [0, 'rgba(255, 0, 0, 0.5)'], // Mixed Acidosis
-            [0.0625, 'rgba(255, 165, 0, 0.5)'], // Partially Compensated Respiratory Acidosis
-            [0.125, 'rgba(255, 140, 0, 0.5)'], // Uncompensated Respiratory Acidosis
-            [0.1875, 'rgba(255, 255, 0, 0.5)'], // Partially Compensated Metabolic Acidosis
-            [0.25, 'rgba(255, 215, 0, 0.5)'], // Uncompensated Metabolic Acidosis
-            [0.3125, 'rgba(173, 216, 230, 0.5)'], // Partially Compensated Respiratory Alkalosis
-            [0.375, 'rgba(128, 0, 128, 0.5)'], // Mixed Alkalosis
-            [0.4375, 'rgba(0, 0, 255, 0.5)'], // Uncompensated Respiratory Alkalosis
-            [0.5, 'rgba(0, 255, 255, 0.5)'], // Partially Compensated Metabolic Alkalosis
-            [0.5625, 'rgba(0, 191, 255, 0.5)'], // Uncompensated Metabolic Alkalosis
-            [0.625, 'rgba(0, 100, 0, 0.5)'], // Fully Compensated Respiratory Acidosis
-            [0.6875, 'rgba(50, 205, 50, 0.5)'], // Fully Compensated Metabolic Acidosis
-            [0.75, 'rgba(60, 179, 113, 0.5)'], // Fully Compensated Metabolic Alkalosis
-            [0.8125, 'rgba(0, 250, 154, 0.5)'], // Fully Compensated Respiratory Alkalosis
-            [0.875, 'rgba(0, 128, 0, 0.5)'], // Normal
-            [1, 'rgba(128, 128, 128, 0.5)'] // Undefined
-        ],
+        autocolorscale: false,
         showscale: false,
         hoverinfo: 'none',
-        opacity: 0.7
+        opacity: 0.6, // Semi-transparent to see lines underneath
+        zsmooth: 'best'
     };
 }
 
 // ======================
-// GRAPH MANAGEMENT
+// MODIFIED INITIALIZATION
 // ======================
 
 function initializeGraph() {
     graphData.pCO2Lines = createPCO2Lines();
-    graphData.colorMap = createColorMap();
+    graphData.colorMap = createColorMap(); // This now creates the colored background
     
     const circlePoints = calculatePossiblePaCO2HCO3(7.4, 40, 24);
     graphData.circlePoints = [{
@@ -217,11 +209,12 @@ function initializeGraph() {
         showlegend: false
     };
     
+    // Ensure proper layering: background first, then lines, then points
     const traces = [
-        graphData.colorMap,
-        ...graphData.pCO2Lines,
-        ...graphData.circlePoints,
-        graphData.currentPoint
+        graphData.colorMap,    // Colored background
+        ...graphData.pCO2Lines, // Isolines
+        ...graphData.circlePoints, // Confidence circle
+        graphData.currentPoint   // Current point marker
     ];
     
     const layout = {
@@ -229,7 +222,8 @@ function initializeGraph() {
         xaxis: { title: 'pH', range: [6.2, 8.4] },
         yaxis: { title: 'HCO₃⁻ (mEq/L)', range: [5, 50] },
         margin: { t: 50, b: 50, l: 50, r: 50 },
-        hovermode: 'closest'
+        hovermode: 'closest',
+        plot_bgcolor: 'rgba(0,0,0,0)' // Transparent plot background
     };
     
     Plotly.newPlot('graph', traces, layout);
@@ -250,14 +244,14 @@ function update() {
     const classification = classifyABG(pH, PaCO2, HCO3);
     classificationElement.textContent = classification;
     classificationElement.style.color = 'black'; // Keep text black
-    classificationElement.style.backgroundColor = getClassificationColor(classification).replace('0.5', '0.3');
+    classificationElement.style.backgroundColor = ''; // Remove any background color
     
-    // Update graph
+    // Update graph (reuse existing background)
     const circlePoints = calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3);
     
     Plotly.react('graph', {
         data: [
-            graphData.colorMap,
+            graphData.colorMap, // Keep original background
             ...graphData.pCO2Lines,
             {
                 x: circlePoints.pH_values,
