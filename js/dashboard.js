@@ -292,24 +292,20 @@ function setPlaybackSpeed(speed) {
 }
 
 function toggleDirection() {
-  debug.add('Direction toggle initiated', {
-    currentState: {index: appState.playback.currentIndex,direction: appState.playback.direction,active: appState.playback.active,speed: appState.playback.speed},
-    datasetInfo: {length: appState.dataset.length,currentData: appState.dataset[appState.playback.currentIndex]}});
   const prevDirection = appState.playback.direction;
   appState.playback.direction *= -1;
-  debug.add(`Direction changed from ${prevDirection} to ${appState.playback.direction}`);
   const now = performance.now();
   appState.playback.lastUpdateTime = now;
-  debug.add('Timing reset', { lastUpdateTime: now });
+  
   const reverseBtn = document.getElementById('reverseBtn');
   reverseBtn.textContent = appState.playback.direction > 0 ? '⏪ Reverse' : '⏩ Forward';
-  debug.add('UI button updated', { buttonText: reverseBtn.textContent });
-  if (prevDirection > 0 && appState.playback.currentIndex === 0) {appState.playback.direction = 1;debug.add('Boundary protection: Prevented reverse at start', {action: 'Reset direction to forward',index: appState.playback.currentIndex});
+  
+  if (prevDirection > 0 && appState.playback.currentIndex === 0) {
+    appState.playback.direction = 1;
     return;
   }
-  debug.add('Starting immediate reverse processing', {targetRows: 1,currentIndexBefore: appState.playback.currentIndex});
+  
   processRows(1, true);
-  debug.add('Immediate processing completed', {currentIndexAfter: appState.playback.currentIndex,chartDataSizes: {timeSeries: appState.chartData.timeSeries.length,pvPoints: appState.chartData.pvPoints.length,fvPoints: appState.chartData.fvPoints.length}});
 }
 
 function stopPlayback() {
