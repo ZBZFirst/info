@@ -123,7 +123,23 @@ title: Label a Vent
         color: white;
         margin-left: 10px;
     }
+
+    .resize-handle {
+        width: 10px;
+        height: 10px;
+        background-color: #FFD700;
+        border-radius: 50%;
+        position: absolute;
+        right: -5px;
+        bottom: -5px;
+        cursor: nwse-resize;
+        z-index: 20;
+    }
     
+    .resize-handle:hover {
+        background-color: #FFA500;
+    }
+        
     .image-controls {
         grid-column: span 2;
         padding: 15px;
