@@ -390,23 +390,32 @@ title: Interactive Draggable Graphics
         }
     }
 
-    // Drag and drop functionality
+    // Drag and drop functionality - Fixed version
     function startDrag(e) {
         if (e.target.classList.contains('shape-label')) return;
         
         const shape = e.target.closest('.shape');
         if (!shape) return;
         
-        const rect = shape.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left;
-        const offsetY = e.clientY - rect.top;
+        // Get current computed position
+        const style = window.getComputedStyle(shape);
+        const left = parseInt(style.left) || 0;
+        const top = parseInt(style.top) || 0;
+        
+        const offsetX = e.clientX - left;
+        const offsetY = e.clientY - top;
         
         shape.style.cursor = 'grabbing';
         selectShape(shape.id);
         
         function dragShape(e) {
-            shape.style.left = `${e.clientX - offsetX}px`;
-            shape.style.top = `${e.clientY - offsetY}px`;
+            // Calculate new position
+            const newLeft = e.clientX - offsetX;
+            const newTop = e.clientY - offsetY;
+            
+            // Apply new position with 'px' units
+            shape.style.left = `${newLeft}px`;
+            shape.style.top = `${newTop}px`;
         }
         
         function stopDrag() {
