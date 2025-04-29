@@ -404,59 +404,88 @@ function loadConfiguration() {
 
 function parseCSVConfigurations(csvData) {
     const lines = csvData.split('\n').filter(line => line.trim() !== '');
-    if (lines.length < 2) return;
-    
+    if (lines.length < 2) {
+        console.log('CSV file has less than 2 lines (header + data)');
+        return;
+    }
+
+    // Log the raw lines for debugging
+    console.log('Raw CSV lines:');
+    lines.forEach((line, i) => console.log(`${i}: ${line}`));
+
     // Extract headers (image names)
     const headers = lines[0].split(',').map(h => h.trim());
-    
-    // Process each configuration line (should be one line with all JSON strings)
-    const configLine = lines[1];
-    
-    // Split the line while preserving quoted JSON strings
-    const configs = [];
-    let currentPos = 0;
-    let inQuotes = false;
-    let currentField = '';
-    
-    for (let i = 0; i < configLine.length; i++) {
-        const char = configLine[i];
-        
-        if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            configs.push(currentField.trim());
-            currentField = '';
-        } else {
-            currentField += char;
+    console.log('Headers:', headers);
+
+    // Process each data line (skip header)
+    for (let lineNum = 1; lineNum < lines.length; lineNum++) {
+        const line = lines[lineNum];
+        console.log(`\nProcessing line ${lineNum}: ${line}`);
+
+        // Initialize variables for parsing
+        const columns = [];
+        let currentColumn = '';
+        let inQuotes = false;
+        let quoteStart = -1;
+
+        // Parse the line character by character
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+
+            if (char === '"') {
+                if (inQuotes) {
+                    // Check if this is an escaped quote
+                    if (i + 1 < line.length && line[i + 1] === '"') {
+                        currentColumn += '"';
+                        i++; // Skip next quote
+                    } else {
+                        inQuotes = false;
+                    }
+                } else {
+                    inQuotes = true;
+                    quoteStart = i;
+                }
+            } else if (char === ',' && !inQuotes) {
+                columns.push(currentColumn.trim());
+                currentColumn = '';
+            } else {
+                currentColumn += char;
+            }
+        }
+        // Add the last column
+        columns.push(currentColumn.trim());
+
+        console.log('Parsed columns:', columns);
+
+        // Match columns with headers
+        for (let i = 0; i < Math.min(headers.length, columns.length); i++) {
+            const header = headers[i];
+            const columnValue = columns[i];
+            console.log(`Column ${i} (${header}):`, columnValue);
+
+            // Try to parse JSON if the column looks like JSON
+            if (columnValue.startsWith('{') || columnValue.startsWith('[')) {
+                try {
+                    let jsonString = columnValue;
+                    // Remove surrounding quotes if present
+                    if ((jsonString.startsWith('"') && jsonString.endsWith('"')) {
+                        jsonString = jsonString.slice(1, -1);
+                    }
+                    // Replace escaped quotes
+                    jsonString = jsonString.replace(/""/g, '"');
+                    
+                    console.log('Attempting to parse JSON:', jsonString);
+                    const parsedConfig = JSON.parse(jsonString);
+                    imageConfigurations[header] = parsedConfig;
+                    console.log(`Successfully parsed configuration for ${header}`);
+                } catch (e) {
+                    console.error(`Error parsing JSON for ${header}:`, e);
+                }
+            }
         }
     }
-    configs.push(currentField.trim()); // Add the last field
-    
-    // Process each configuration
-    headers.forEach((header, i) => {
-        if (!header || i >= configs.length) return;
-        
-        try {
-            let jsonString = configs[i].trim();
-            
-            // Remove surrounding quotes if present
-            if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
-                jsonString = jsonString.slice(1, -1);
-            }
-            
-            // Replace escaped quotes
-            jsonString = jsonString.replace(/""/g, '"');
-            
-            if (jsonString && jsonString.startsWith('{') && jsonString.endsWith('}')) {
-                const parsedConfig = JSON.parse(jsonString);
-                imageConfigurations[header] = parsedConfig;
-            }
-        } catch (e) {
-            console.error(`Error parsing configuration for ${header}:`, e);
-        }
-    });
-    
-    console.log('Loaded configurations:', imageConfigurations);
+
+    console.log('Final image configurations:', imageConfigurations);
 }
 
 function loadCurrentImageConfiguration() {
