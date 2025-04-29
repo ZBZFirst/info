@@ -11,10 +11,7 @@ Color Demonstration Test
 Simple Interactive Graphics Test
 [View the Interactive Drag-A-Graphics Page](/info/graphics/graphics.html)
 
-Label the Ventilator Screen
-[View the Interactive Label-A-Vent Page](/info/graphics/graphics1.html)
-
-EXPERIMENTAL - NOT CREATE A USABLE OUTPUT
+Label a Ventilator Screen
 [View the JSON Exporter for the Label-A-Vent Page](/info/graphics/graphics2.html)
 
 Mobius Strip - Experimental - May not work
