@@ -8,6 +8,8 @@ title: "VentScreenOCR"
 
 Parsing a Ventilator screen can be tricky and is dependent on the maker and model number of the Mechanical Ventilator being used. Below is the PB840 Mechanical Ventilator.
 
+Other Ventilators have different screens and have been quickly labeled for reserach purposes <a href="/info/graphics/graphics2.html" class="nav-link ">here</a>.
+
 <div style="text-align: center; margin: 20px 0;">
   <img src="/info/ventscreen/image.png" alt="Ventilator screen display" style="max-width: 100%; height: auto;">
   <p style="font-style: italic; margin-top: 8px;">Caption: This image shows a typical ventilator screen with various parameters displayed.</p>
