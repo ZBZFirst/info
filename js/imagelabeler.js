@@ -6,37 +6,20 @@ let currentImageIndex = 1;
 const totalImages = 10;
 let imageConfigurations = {};
 
+// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    // Load the CSV file with configurations
+    // First load the CSV configurations
     fetch('ventLabels.csv')
         .then(response => response.text())
         .then(csvData => {
             parseCSVConfigurations(csvData);
-            
-            // Initialize with default shapes or loaded configuration
-            if (Object.keys(imageConfigurations).length > 0) {
-                changeImage(0); // Load first image's configuration
-            } else {
-                // Fallback to default shapes if no CSV data
-                addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
-                addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
-                addShape('circle', {label: "Minute Ventilation", top: "100px", left: "350px", width: "40px", height: "40px"});
-                addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
-                addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
-                addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
-                addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
-            }
+            // Now load the first image with its configuration
+            loadImage(currentImageIndex);
         })
         .catch(error => {
             console.error('Error loading CSV file:', error);
             // Fallback to default shapes if CSV fails to load
-            addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
-            addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
-            addShape('circle', {label: "Minute Ventilation", top: "100px", left: "350px", width: "40px", height: "40px"});
-            addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
-            addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
-            addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
-            addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+            loadImage(currentImageIndex, true);
         });
 
     // Add keyboard event listeners
@@ -83,6 +66,38 @@ function copySelectedShape() {
     };
 }
 
+// Main function to load an image and its configuration
+function loadImage(index, useDefaults = false) {
+    currentImageIndex = index;
+    const imageName = `ventscreen${currentImageIndex}.jpg`;
+    const container = document.getElementById('shapeContainer');
+    
+    // Set the background image
+    container.style.backgroundImage = `url('${imageName}')`;
+    document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
+    
+    // Clear existing shapes
+    clearAllShapes();
+    
+    // Load the configuration for this image if available
+    if (!useDefaults && imageConfigurations[imageName]) {
+        const config = imageConfigurations[imageName];
+        config.labels.forEach(label => {
+            addShape(label.type, {
+                label: label.label,
+                top: `${label.position.y}px`,
+                left: `${label.position.x}px`,
+                width: `${label.size.width}px`,
+                height: `${label.size.height}px`
+            });
+        });
+    } else {
+        // Create default shapes if no configuration exists
+        createDefaultShapes();
+    }
+}
+
+
 // Paste the copied shape
 function pasteCopiedShape() {
     if (!copiedShape) return;
@@ -101,23 +116,18 @@ function pasteCopiedShape() {
     });
 }
 
-// Change the background image
+// Change image function
 function changeImage(direction) {
-    currentImageIndex += direction;
+    let newIndex = currentImageIndex + direction;
     
     // Wrap around if we go past the limits
-    if (currentImageIndex < 1) currentImageIndex = totalImages;
-    if (currentImageIndex > totalImages) currentImageIndex = 1;
+    if (newIndex < 1) newIndex = totalImages;
+    if (newIndex > totalImages) newIndex = 1;
     
-    const imageName = `ventscreen${currentImageIndex}.jpg`;
-    const container = document.getElementById('shapeContainer');
-    container.style.backgroundImage = `url('${imageName}')`;
-    
-    document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
-    
-    // Load the configuration for this image if available
-    loadCurrentImageConfiguration();
+    // Load the new image with its configuration
+    loadImage(newIndex);
 }
+
 // Add a new shape (circle or square)
 function addShape(type, config = {}) {
     const id = `shape-${nextId++}`;
@@ -514,20 +524,15 @@ function parseCSVConfigurations(csvData) {
     const lines = csvData.split('\n').filter(line => line.trim() !== '');
     if (lines.length < 2) return;
     
-    // Get headers (image names)
     const headers = lines[0].split(',');
-    
-    // Get JSON data (only one row after header)
     const jsonData = lines[1].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
     
-    // Create mapping of image names to their JSON configurations
     headers.forEach((header, i) => {
         try {
             const cleanHeader = header.trim();
             if (!cleanHeader) return;
             
             let jsonString = jsonData[i]?.trim() || '';
-            // Remove surrounding quotes if present
             jsonString = jsonString.replace(/^"(.*)"$/, '$1');
             
             if (jsonString) {
@@ -564,6 +569,17 @@ function loadCurrentImageConfiguration() {
 
     // Set nextId to avoid ID collisions
     updateNextId();
+}
+
+// Create default shapes
+function createDefaultShapes() {
+    addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
+    addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
+    addShape('circle', {label: "Minute Ventilation", top: "100px", left: "350px", width: "40px", height: "40px"});
+    addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
+    addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
+    addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+    addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
 }
 
 function clearAllShapes() {
