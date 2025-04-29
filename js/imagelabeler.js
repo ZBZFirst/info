@@ -519,13 +519,19 @@ function loadConfiguration() {
     }
 }
 
-// Parse CSV data and store configurations
 function parseCSVConfigurations(csvData) {
     const lines = csvData.split('\n').filter(line => line.trim() !== '');
-    if (lines.length < 2) return;
+    if (lines.length < 2) {
+        console.log('CSV file has less than 2 lines (header + data)');
+        return;
+    }
     
     const headers = lines[0].split(',');
-    const jsonData = lines[1].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+    // Improved CSV parsing that handles quoted values better
+    const jsonData = lines[1].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+    
+    console.log('Headers:', headers);
+    console.log('Data:', jsonData);
     
     headers.forEach((header, i) => {
         try {
@@ -533,13 +539,21 @@ function parseCSVConfigurations(csvData) {
             if (!cleanHeader) return;
             
             let jsonString = jsonData[i]?.trim() || '';
-            jsonString = jsonString.replace(/^"(.*)"$/, '$1');
+            // Remove surrounding quotes if they exist
+            if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+                jsonString = jsonString.slice(1, -1);
+            }
+            
+            console.log(`Processing ${cleanHeader}:`, jsonString);
             
             if (jsonString) {
-                imageConfigurations[cleanHeader] = JSON.parse(jsonString);
+                const parsedConfig = JSON.parse(jsonString);
+                imageConfigurations[cleanHeader] = parsedConfig;
+                console.log(`Successfully parsed config for ${cleanHeader}:`, parsedConfig);
             }
         } catch (e) {
             console.error(`Error parsing configuration for ${header}:`, e);
+            console.error('Problematic JSON string:', jsonData[i]);
         }
     });
 }
