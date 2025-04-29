@@ -150,6 +150,8 @@ title: Label a Vent
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <h1>Label a Ventilator</h1>
+<p>Warning, not optimized for Mobile</p>
+
 <p>The problem with mechanical ventilators is that they all show the same thing in different ways. The following is for educators to utilize in the classroom to create transparent shapes to label values on the different ventilator screens.</p>
 <p>A good example of how to use this is to use the Squares the highlight areas in the image and then use the Circles to contain and label certain items in an area.</p>
 
