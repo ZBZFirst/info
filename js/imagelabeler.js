@@ -53,31 +53,36 @@ function loadImage(index, useDefaults = false) {
     const imageName = `ventscreen${currentImageIndex}.jpg`;
     const container = document.getElementById('shapeContainer');
     container.style.backgroundImage = `url('${imageName}')`;
-    document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
-    
     clearAllShapes();
-    
-    // Check if we have a configuration for this image
+
     if (!useDefaults && imageConfigurations[imageName]) {
         const config = imageConfigurations[imageName];
-        
-        // Check if config is in the expected format
-        if (config.labels && Array.isArray(config.labels)) {
-            config.labels.forEach(label => {
-                addShape(label.type, {
-                    label: label.label,
-                    top: `${label.position.y}px`,
-                    left: `${label.position.x}px`,
-                    width: `${label.size.width}px`,
-                    height: `${label.size.height}px`
-                });
+        const containerRect = container.getBoundingClientRect();
+
+        config.labels.forEach(label => {
+            // Use normalized coordinates if available, otherwise use pixels
+            const left = label.normalized ? 
+                label.normalized.x * containerRect.width : 
+                label.position.x;
+            const top = label.normalized ? 
+                label.normalized.y * containerRect.height : 
+                label.position.y;
+            const width = label.normalized ? 
+                label.normalized.width * containerRect.width : 
+                label.size.width;
+            const height = label.normalized ? 
+                label.normalized.height * containerRect.height : 
+                label.size.height;
+
+            addShape(label.type, {
+                label: label.label,
+                left: `${left}px`,
+                top: `${top}px`,
+                width: `${width}px`,
+                height: `${height}px`
             });
-        } else {
-            console.warn(`Invalid configuration format for ${imageName}, using defaults`);
-            createDefaultShapes();
-        }
+        });
     } else {
-        console.log(`No configuration found for ${imageName}, using defaults`);
         createDefaultShapes();
     }
 }
@@ -538,54 +543,37 @@ function updateNextId() {
         1;
 }
 
+
 function exportConfiguration() {
     const container = document.getElementById('shapeContainer');
     const containerRect = container.getBoundingClientRect();
-    const imageWidth = containerRect.width;
-    const imageHeight = containerRect.height;
     const config = {
         image: `ventscreen${currentImageIndex}.jpg`,
-        imageDimensions: {
-            width: imageWidth,
-            height: imageHeight
-        },
+        // Keep original pixel-based data for backward compatibility
         labels: shapes.map(shape => {
             const rect = shape.element.getBoundingClientRect();
-            const normalizedX = (rect.left - containerRect.left) / imageWidth;
-            const normalizedY = (rect.top - containerRect.top) / imageHeight;
-            const normalizedWidth = rect.width / imageWidth;
-            const normalizedHeight = rect.height / imageHeight;
-            
             return {
                 id: shape.id,
                 type: shape.type,
                 label: shape.labelElement.textContent,
-                position: {
-                    x: parseInt(shape.element.style.left),
-                    y: parseInt(shape.element.style.top)
+                // Original pixel values (preserve existing data)
+                position: { 
+                    x: parseInt(shape.element.style.left), 
+                    y: parseInt(shape.element.style.top) 
                 },
-                normalizedPosition: {
-                    x: normalizedX,
-                    y: normalizedY
+                size: { 
+                    width: parseInt(shape.element.style.width), 
+                    height: parseInt(shape.element.style.height) 
                 },
-                size: {
-                    width: parseInt(shape.element.style.width),
-                    height: parseInt(shape.element.style.height)
-                },
-                normalizedSize: {
-                    width: normalizedWidth,
-                    height: normalizedHeight
-                },
-                screenPosition: {
-                    left: rect.left,
-                    top: rect.top,
-                    right: rect.right,
-                    bottom: rect.bottom
+                // NEW: Normalized coordinates (0-1 scale)
+                normalized: {
+                    x: (rect.left - containerRect.left) / containerRect.width,
+                    y: (rect.top - containerRect.top) / containerRect.height,
+                    width: rect.width / containerRect.width,
+                    height: rect.height / containerRect.height
                 }
             };
         })
     };
-    
-    const jsonString = JSON.stringify(config, null, 2);
-    document.getElementById('configuration-data').value = jsonString;
+    document.getElementById('configuration-data').value = JSON.stringify(config, null, 2);
 }
