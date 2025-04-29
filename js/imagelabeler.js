@@ -9,7 +9,7 @@ let imageConfigurations = {};
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     // First load the CSV configurations
-    fetch('ventLabels.csv')
+    fetch('/info/js/ventLabels.csv')
         .then(response => response.text())
         .then(csvData => {
             parseCSVConfigurations(csvData);
