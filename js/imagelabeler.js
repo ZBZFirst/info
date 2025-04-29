@@ -4,16 +4,40 @@ let selectedShape = null;
 let nextId = 1;
 let currentImageIndex = 1;
 const totalImages = 10;
+let imageConfigurations = {};
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize with some default shapes if needed
-    addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
-    addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
-    addShape('circle', {label: "Minute Ventilation ", top: "100px", left: "350px", width: "40px", height: "40px"});
-    addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
-    addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
-    addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
-    addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+    // Load the CSV file with configurations
+    fetch('ventLabels.csv')
+        .then(response => response.text())
+        .then(csvData => {
+            parseCSVConfigurations(csvData);
+            
+            // Initialize with default shapes or loaded configuration
+            if (Object.keys(imageConfigurations).length > 0) {
+                changeImage(0); // Load first image's configuration
+            } else {
+                // Fallback to default shapes if no CSV data
+                addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
+                addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
+                addShape('circle', {label: "Minute Ventilation", top: "100px", left: "350px", width: "40px", height: "40px"});
+                addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
+                addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
+                addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+                addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+            }
+        })
+        .catch(error => {
+            console.error('Error loading CSV file:', error);
+            // Fallback to default shapes if CSV fails to load
+            addShape('circle', {label: "Peak Inspiratory Pressure", top: "100px", left: "50px", width: "40px", height: "40px"});
+            addShape('circle', {label: "PEEP", top: "100px", left: "200px", width: "40px", height: "40px"});
+            addShape('circle', {label: "Minute Ventilation", top: "100px", left: "350px", width: "40px", height: "40px"});
+            addShape('square', {label: "Waveform1", top: "250px", left: "50px", width: "50px", height: "30px"});
+            addShape('square', {label: "Waveform2", top: "250px", left: "200px", width: "50px", height: "30px"});
+            addShape('square', {label: "Input Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+            addShape('square', {label: "Output Data", top: "250px", left: "350px", width: "50px", height: "30px"});
+        });
 
     // Add keyboard event listeners
     document.addEventListener('keydown', handleKeyPress);
@@ -85,12 +109,15 @@ function changeImage(direction) {
     if (currentImageIndex < 1) currentImageIndex = totalImages;
     if (currentImageIndex > totalImages) currentImageIndex = 1;
     
+    const imageName = `ventscreen${currentImageIndex}.jpg`;
     const container = document.getElementById('shapeContainer');
-    container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
+    container.style.backgroundImage = `url('${imageName}')`;
     
-    document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
+    document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
+    
+    // Load the configuration for this image if available
+    loadCurrentImageConfiguration();
 }
-
 // Add a new shape (circle or square)
 function addShape(type, config = {}) {
     const id = `shape-${nextId++}`;
@@ -480,6 +507,81 @@ function loadConfiguration() {
         container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
         document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
     }
+}
+
+// Parse CSV data and store configurations
+function parseCSVConfigurations(csvData) {
+    const lines = csvData.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 2) return;
+    
+    // Get headers (image names)
+    const headers = lines[0].split(',');
+    
+    // Get JSON data (only one row after header)
+    const jsonData = lines[1].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+    
+    // Create mapping of image names to their JSON configurations
+    headers.forEach((header, i) => {
+        try {
+            const cleanHeader = header.trim();
+            if (!cleanHeader) return;
+            
+            let jsonString = jsonData[i]?.trim() || '';
+            // Remove surrounding quotes if present
+            jsonString = jsonString.replace(/^"(.*)"$/, '$1');
+            
+            if (jsonString) {
+                imageConfigurations[cleanHeader] = JSON.parse(jsonString);
+            }
+        } catch (e) {
+            console.error(`Error parsing configuration for ${header}:`, e);
+        }
+    });
+}
+
+// Load configuration for current image
+function loadCurrentImageConfiguration() {
+    const imageName = `ventscreen${currentImageIndex}.jpg`;
+    const config = imageConfigurations[imageName];
+    if (!config) {
+        console.log(`No configuration found for ${imageName}`);
+        return;
+    }
+
+    // Clear existing shapes
+    clearAllShapes();
+
+    // Create shapes from the configuration
+    config.labels.forEach(label => {
+        addShape(label.type, {
+            label: label.label,
+            top: `${label.position.y}px`,
+            left: `${label.position.x}px`,
+            width: `${label.size.width}px`,
+            height: `${label.size.height}px`
+        });
+    });
+
+    // Set nextId to avoid ID collisions
+    updateNextId();
+}
+
+function clearAllShapes() {
+    shapes.forEach(shape => {
+        shape.element.remove();
+        const controls = document.getElementById(`${shape.id}-controls`);
+        if (controls) controls.remove();
+    });
+    shapes = [];
+    
+    document.getElementById('circleControlsContainer').innerHTML = '';
+    document.getElementById('squareControlsContainer').innerHTML = '';
+}
+
+function updateNextId() {
+    nextId = shapes.length > 0 ? 
+        Math.max(...shapes.map(s => parseInt(s.id.split('-')[1]))) + 1 : 
+        1;
 }
 
 // Export configuration as JSON
