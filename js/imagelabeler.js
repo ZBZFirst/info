@@ -524,32 +524,26 @@ function parseCSVConfigurations(csvData) {
     if (lines.length < 2) return;
     
     const headers = lines[0].split(',');
-    const dataLine = lines[1];
+    // Join all data lines and split by the pattern that separates JSON objects
+    const allData = lines.slice(1).join('\n');
+    const jsonObjects = allData.split(/"\s*,\s*"/);
     
-    // Find all JSON strings in the data line (they start with { and end with })
-    const jsonStrings = dataLine.match(/\{[^}]+\}/g) || [];
-    
-    // Match each JSON string to its header
     headers.forEach((header, i) => {
         try {
             const cleanHeader = header.trim();
-            if (!cleanHeader) return;
+            if (!cleanHeader || i >= jsonObjects.length) return;
             
-            // Find the JSON string for this image
-            const jsonString = jsonStrings[i]?.trim() || '';
+            let jsonString = jsonObjects[i].trim();
+            // Clean up the string
+            jsonString = jsonString.replace(/^"+|"+$/g, '');
+            jsonString = jsonString.replace(/""/g, '"');
             
-            console.log(`Processing ${cleanHeader}:`, jsonString);
-            
-            if (jsonString) {
-                // Replace escaped quotes with regular quotes
-                const fixedJson = jsonString.replace(/""/g, '"');
-                const parsedConfig = JSON.parse(fixedJson);
+            if (jsonString.startsWith('{') && jsonString.endsWith('}')) {
+                const parsedConfig = JSON.parse(jsonString);
                 imageConfigurations[cleanHeader] = parsedConfig;
-                console.log(`Successfully parsed config for ${cleanHeader}:`, parsedConfig);
             }
         } catch (e) {
             console.error(`Error parsing configuration for ${header}:`, e);
-            console.error('Problematic JSON string:', jsonStrings[i]);
         }
     });
 }
