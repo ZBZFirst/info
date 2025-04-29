@@ -468,7 +468,7 @@ function parseCSVConfigurations(csvData) {
                 try {
                     let jsonString = columnValue;
                     // Remove surrounding quotes if present
-                    if ((jsonString.startsWith('"') && jsonString.endsWith('"')) {
+                    if ((jsonString.startsWith('"') && jsonString.endsWith('"'))) {
                         jsonString = jsonString.slice(1, -1);
                     }
                     // Replace escaped quotes
