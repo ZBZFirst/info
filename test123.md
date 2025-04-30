@@ -531,21 +531,43 @@ function visualizeInteractive(G) {
         edgeTrace.y.push(source.y, target.y, null);
     });
     
-    // Create node traces
-    const nodeTraces = Object.entries(nodeGroups).map(([type, data]) => ({
-        x: data.x,
-        y: data.y,
-        text: data.text,
-        mode: 'markers+text',
-        marker: {
-            size: data.size,
-            color: data.color,
-            line: {width: 2, color: 'DarkSlateGrey'}
-        },
-        hoverinfo: 'text',
-        name: type,
-        type: 'scatter'
-    }));
+    // Modified node trace creation with text controls
+    const nodeTraces = Object.entries(nodeGroups).map(([type, data]) => {
+        const trace = {
+            x: data.x,
+            y: data.y,
+            text: data.text,
+            mode: 'markers+text', // Show both markers and text
+            marker: {
+                size: data.size,
+                color: data.color,
+                line: {width: 2, color: 'DarkSlateGrey'},
+                opacity: 0.8
+            },
+            textposition: type === 'year' ? 'top center' : 
+                         type === 'article' ? 'bottom center' : 'right center',
+            textfont: {
+                size: type === 'year' ? 14 : 10,
+                family: 'Arial, sans-serif',
+                color: type === 'year' ? '#000' : '#444'
+            },
+            hoverinfo: 'text',
+            name: type,
+            type: 'scatter'
+        };
+        
+        // Special handling for keywords to prevent clutter
+        if (type === 'keyword') {
+            trace.mode = 'markers'; // Only show text on hover
+            trace.hoverlabel = {
+                bgcolor: '#fff',
+                bordercolor: '#ddd',
+                font: { size: 10 }
+            };
+        }
+        
+        return trace;
+    });
     
     // Combine all traces
     const data = [edgeTrace, ...nodeTraces];
