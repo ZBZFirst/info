@@ -656,22 +656,40 @@ function visualizeInteractive3d(G) {
     });
     
     // Create node traces
-    const nodeTraces = Object.entries(nodeGroups).map(([type, data]) => ({
-        x: data.x,
-        y: data.y,
-        z: data.z,
-        text: data.text,
-        mode: 'markers',
-        marker: {
-            size: data.size,
-            color: data.color,
-            line: {width: 2, color: 'DarkSlateGrey'},
-            opacity: 0.8
-        },
-        hoverinfo: 'text',
-        name: type,
-        type: 'scatter3d'
-    }));
+    const nodeTraces = Object.entries(nodeGroups).map(([type, data]) => {
+        const trace = {
+            x: data.x,
+            y: data.y,
+            z: data.z,
+            text: data.text,
+            mode: 'markers', // In 3D, text is generally better on hover
+            marker: {
+                size: data.size,
+                color: data.color,
+                line: {width: 2, color: 'DarkSlateGrey'},
+                opacity: 0.8
+            },
+            hoverinfo: 'text',
+            hoverlabel: {
+                bgcolor: 'rgba(255,255,255,0.9)',
+                bordercolor: '#333',
+                font: {
+                    size: type === 'year' ? 14 : 10,
+                    family: 'Arial'
+                }
+            },
+            name: type,
+            type: 'scatter3d'
+        };
+        
+        // Optionally show text always for years
+        if (type === 'year') {
+            trace.mode = 'markers+text';
+            trace.textposition = 'top center';
+        }
+        
+        return trace;
+    });
     
     // Combine all traces
     const data = [edgeTrace, ...nodeTraces];
