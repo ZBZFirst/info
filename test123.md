@@ -34,6 +34,14 @@ title: PubMed Network Visualizer
     </div>
 </div>
 
+<div id="download-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p>Your PubMed data is ready. Would you like to download it as a CSV file?</p>
+    <button id="download-csv-btn">Download CSV</button>
+  </div>
+</div>
+
 <style>
 .container {
     font-family: Arial, sans-serif;
@@ -99,6 +107,64 @@ button:hover {
     border: 1px solid #ddd;
     border-radius: 4px;
 }
+
+    
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  right: 15px;
+  top: 5px;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#download-csv-btn {
+  background-color: #2196F3;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+}
+
+#download-csv-btn:hover {
+  background-color: #0b7dda;
+}
+    
 </style>
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -110,7 +176,10 @@ const DEFAULT_API_KEY = '3834945c08440921ade60d29a8bdd9553808';
 const DEFAULT_SEARCH_TERM = 'Liquid Mechanical Ventilation Life Support Humans';
 const BATCH_SIZE = 50;
 const BASE_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
-
+const downloadModal = document.getElementById('download-modal');
+const closeModal = document.querySelector('.close');
+const downloadCsvBtn = document.getElementById('download-csv-btn');
+    
 // DOM Elements
 const searchForm = document.getElementById('search-form');
 const apiKeyInput = document.getElementById('api-key');
@@ -122,6 +191,30 @@ const dataTable = document.getElementById('data-table');
 const graph2d = document.getElementById('2d-graph');
 const graph3d = document.getElementById('3d-graph');
 
+closeModal.onclick = () => downloadModal.style.display = 'none';
+window.onclick = (event) => {
+  if (event.target === downloadModal) downloadModal.style.display = 'none';
+};
+
+// Add download functionality
+downloadCsvBtn.addEventListener('click', () => {
+  if (!window.currentDF || window.currentDF.length === 0) {
+    alert('No data available to download');
+    return;
+  }
+  
+  const csvContent = convertDfToCsv(window.currentDF);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'pubmed_data.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  downloadModal.style.display = 'none';
+});
+
+    
 // Form submission handler
 searchForm.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -157,6 +250,8 @@ searchForm.addEventListener('submit', async function(e) {
         statusMessage.textContent = `Successfully processed ${pmids.length} articles.`;
         statusMessage.style.backgroundColor = '#d4edda';
         dataContainer.style.display = 'block';
+        window.currentDF = df;
+        downloadModal.style.display = 'block';
     } catch (error) {
         console.error('Error:', error);
         statusMessage.textContent = `Error: ${error.message}`;
@@ -201,6 +296,21 @@ async function fetchMetadata(apiKey, pmids) {
     return allData;
 }
 
+function convertDfToCsv(df) {
+  const escapeCsv = (str) => {
+    if (typeof str !== 'string') str = String(str);
+    return `"${str.replace(/"/g, '""')}"`;
+  };
+
+  const columns = Object.keys(df[0] || {});
+  const header = columns.join(',') + '\n';
+  const rows = df.map(row => 
+    columns.map(col => escapeCsv(row[col] || '')).join(',')
+  ).join('\n');
+  
+  return header + rows;
+}
+    
 async function fetchMeshKeywords(apiKey, pmids) {
     const tagData = {};
     
