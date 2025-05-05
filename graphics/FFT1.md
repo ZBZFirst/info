@@ -4,7 +4,7 @@ title: Fast Fourier Transform
 ---
 
 <div class="audio-visualizer">
-    <h1>{{ page.title }}</h1>
+    <h1>The FFT</h1>
     
     <div class="control-group">
         <button id="startBtn">Start Visualizer</button>
@@ -38,4 +38,4 @@ title: Fast Fourier Transform
 </div>
 
 <link rel="stylesheet" href="/info/_css/fft.css">
-<script src="/info/js/fft.js" defer></script>
+<script type="module" src="/info/js/fft.js"></script>
