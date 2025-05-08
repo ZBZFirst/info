@@ -12,7 +12,17 @@ Read the following guide and watch the videos below. Upon completing the videos,
 <a href="MVInteractive.html" class="quiz-link disabled" title="Interactive Worksheet">Minute Ventilation Interactive Page - Fun</a>
 
 <div class="resource-card">
-    <h2>Fundamentals of Respiratory Measurement</h2> <p>Respiratory function is quantified through three primary variables that form a complete breath cycle:</p> <ul> <li><strong>Pressure</strong>: The force generated during inhalation/exhalation (measured in cmH<sub>2</sub>O)</li> <li><strong>Flow</strong>: The rate of air movement (measured in L/sec)</li> <li><strong>Volume</strong>: The total air displaced per breath (measured in mL or L), calculated as flow integrated over time</li> </ul> <p>These parameters create characteristic pressure-flow loops when graphed together. Clinical assessment requires separate evaluation of inhalation and exhalation phases, as certain pathologies may manifest differently in each phase. For example, the FEV1/FVC ratio distinguishes between obstructive and restrictive lung diseases.</p> </div><div class="resource-card"> <h2>The Base Equation</h2> <p>This animation demonstrates the fundamental equation of minute ventilation and its component measurements.</p>
+<h3>Basic Equation</h3>
+<p>\[ \text{Minute Ventilation} = \text{Respiratory Rate} \times \text{Tidal Volume} \]</p>
+    
+<h3>Abbreviated Form</h3>
+<p>\[ VE = RR \times VT \]</p>
+    
+<h3>Expanded Formula</h3>
+<p>\[ VE = \left( \frac{60}{(I\text{-time} + I\text{-Pause}) + (E\text{-time} + E\text{-Pause})} \right) \times 60 \]</p>
+</div>
+    
+<div class="resource-card"> <h2>The Base Equation</h2> <p>This animation demonstrates the fundamental equation of minute ventilation and its component measurements.</p>
     <div class="video-wrapper">
         <div class="embed-container">
             <iframe src="https://www.youtube.com/embed/g38HMU4Pjlk?enablejsapi=1&origin=https://zbzfirst.github.io&controls=0&modestbranding=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -87,3 +97,6 @@ Read the following guide and watch the videos below. Upon completing the videos,
         <label for="video-check-4">Video 4 completed</label>
     </div>
 </div>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
