@@ -5,7 +5,7 @@ title: "What Is Minute Ventilation?"
 
 # What is Minute Ventilation?
 
-Read the following guide and watch the videos below. Upon completing the videos, the Quiz and Interactive Page will become unlocked. In order to generate a certificate, an access code must be purchased.</p>
+Read the following guide and watch the videos below. Upon completing the videos, the Quiz and Interactive Page will become unlocked. That Access Code Button is for future functionality while I finish this page with citations and the rest of that jazz.
 
 <a href="https://buy.stripe.com/8wM17H2yObCt8Mw008" class="quiz-link" title="Go Here to Obtain an Access Codez">Access Code Checkout Page</a>
 <a href="testquiz.html" class="quiz-link disabled" title="Test Minute Ventilation Quiz">Minute Ventilation Quiz</a>
