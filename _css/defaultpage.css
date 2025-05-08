@@ -3,13 +3,14 @@
 /* ======================== */
 
 body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    color: #333;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.65;
+    color: #2c3e50;
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
-    background-color: #f8f9fa;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(135deg, #f8f9fd 0%, #f0f3ff 100%);
+    min-height: 100vh;
 }
 
 /* ===================== */
@@ -17,21 +18,41 @@ body {
 /* ===================== */
 
 h1, h2, h3, h4 {
-    color: #24292e;
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
+    color: #1a237e;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: 650;
+    letter-spacing: -0.025em;
 }
 
 h1 {
-    font-size: 2rem;
-    border-bottom: 1px solid #eaecef;
-    padding-bottom: 0.3em;
+    font-size: 2.4rem;
+    border-bottom: 2px solid rgba(67, 97, 238, 0.15);
+    padding-bottom: 0.5em;
+    background: linear-gradient(45deg, #4361ee, #3a0ca3);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 h2 {
-    font-size: 1.5rem;
-    color: #0366d6;
-    margin-top: 0;
+    font-size: 1.8rem;
+    color: #4361ee;
+    position: relative;
+    padding-left: 1.2rem;
+}
+
+h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.35em;
+    height: 1em;
+    width: 4px;
+    background: linear-gradient(to bottom, #4361ee, #3f37c9);
+    border-radius: 2px;
 }
 
 /* ===================== */
@@ -40,16 +61,36 @@ h2 {
 
 .resource-card {
     margin-bottom: 2rem;
-    border: 1px solid #e1e4e8;
-    border-radius: 6px;
-    padding: 1.5rem;
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: box-shadow 0.3s ease;
+    border: 1px solid rgba(67, 97, 238, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 20px rgba(67, 97, 238, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(4px);
+    position: relative;
+    overflow: hidden;
+}
+
+.resource-card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    transition: border-color 0.3s ease;
 }
 
 .resource-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 24px rgba(67, 97, 238, 0.12);
+    transform: translateY(-3px);
+}
+
+.resource-card:hover::before {
+    border-color: rgba(67, 97, 238, 0.15);
 }
 
 /* ===================== */
@@ -58,13 +99,14 @@ h2 {
 
 .embed-container {
     position: relative;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    padding-bottom: 56.25%;
     height: 0;
     overflow: hidden;
     max-width: 100%;
-    margin: 1rem 0;
-    border-radius: 4px;
+    margin: 2rem 0;
+    border-radius: 12px;
     background: #000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .embed-container iframe {
@@ -74,6 +116,7 @@ h2 {
     width: 100%;
     height: 100%;
     border: none;
+    border-radius: 12px;
 }
 
 /* ===================== */
@@ -81,29 +124,60 @@ h2 {
 /* ===================== */
 
 a {
-    color: #0366d6;
+    color: #4361ee;
     text-decoration: none;
-    transition: color 0.2s ease;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.3s ease;
 }
 
 a:hover {
-    color: #0056b3;
-    text-decoration: underline;
+    color: #3a0ca3;
+}
+
+a:hover::after {
+    width: 100%;
 }
 
 .quiz-link {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background-color: #0366d6;
-    color: white;
-    border-radius: 4px;
-    margin: 1rem 0;
-    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(45deg, #4361ee, #3f37c9);
+    color: white !important;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.quiz-link::after {
+    content: '→';
+    margin-left: 0.75rem;
+    transition: transform 0.3s ease;
 }
 
 .quiz-link:hover {
-    background-color: #0056b3;
-    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(67, 97, 238, 0.3);
+}
+
+.quiz-link:hover::after {
+    transform: translateX(3px);
 }
 
 /* ===================== */
@@ -112,18 +186,27 @@ a:hover {
 
 @media (max-width: 768px) {
     body {
-        padding: 15px;
-    }
-    
-    .resource-card {
-        padding: 1rem;
+        padding: 1.5rem 1rem;
     }
     
     h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
     }
     
     h2 {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
+    }
+    
+    .resource-card {
+        padding: 1.5rem;
+        border-radius: 10px;
+    }
+    
+    .quiz-link {
+        width: 100%;
+        justify-content: center;
     }
 }
+
+/* Add this if using Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
