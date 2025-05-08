@@ -20,6 +20,13 @@ Read the following guide and watch the videos below. Upon completing the videos,
     
 <h3>Expanded Formula</h3>
 <p>\[ VE = \left( \frac{60}{(I\text{-time} + I\text{-Pause}) + (E\text{-time} + E\text{-Pause})} \right) \times Vt \]</p>
+
+\text{Inspired Volume:} & \quad Vt_{insp} = \sum_{t=0}^{T} \dot{V}(t) \cdot \Delta t \cdot \delta_{\phi(t),0} \\[2ex]
+
+\text{Expired Volume:} & \quad Vt_{exp} = \sum_{t=0}^{T} \dot{V}(t) \cdot \Delta t \cdot \delta_{\phi(t),1} \\[2ex]
+
+\text{Average Tidal Volume:} & \quad Vt_{avg} = \frac{Vt_{insp} + Vt_{exp}}{2} \\[2ex]
+
 </div>
     
 <div class="resource-card"> <h2>The Base Equation</h2> <p>This animation demonstrates the fundamental equation of minute ventilation and its component measurements.</p>
