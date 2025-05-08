@@ -2,6 +2,24 @@
 /* === Footer Styles === */
 /* ===================== */
 
+@property --pulse-r {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
+@property --pulse-g {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
+@property --pulse-b {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
 .site-footer {
   padding: 4rem 1rem 2rem;
   font-size: 0.9rem;
@@ -11,6 +29,25 @@
   position: relative;
   overflow: hidden;
   text-align: center;
+  animation: pulse-cycle 180s linear infinite;
+}
+
+/* Pulse animation layer */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    rgba(var(--pulse-r), var(--pulse-g), var(--pulse-b), 0.08),
+    rgba(var(--pulse-r), var(--pulse-g), var(--pulse-b), 0)
+  );
+  opacity: 0;
+  animation: pulse-fade 60s linear infinite;
+  z-index: 0;
 }
 
 /* Biblical Watermark */
@@ -26,15 +63,48 @@
   white-space: nowrap;
   pointer-events: none;
   user-select: none;
-  z-index: 0;
+  z-index: 1;
   letter-spacing: 2px;
+}
+
+@keyframes pulse-cycle {
+  0%, 33.3% {
+    --pulse-r: 240;
+    --pulse-g: 20;
+    --pulse-b: 20;
+  }
+  33.4%, 66.6% {
+    --pulse-r: 20;
+    --pulse-g: 240;
+    --pulse-b: 20;
+  }
+  66.7%, 100% {
+    --pulse-r: 20;
+    --pulse-g: 20;
+    --pulse-b: 240;
+  }
+}
+
+@keyframes pulse-fade {
+  0%, 100% {
+    opacity: 0;
+    filter: blur(40px);
+  }
+  15%, 85% {
+    opacity: 0.1;
+    filter: blur(30px);
+  }
+  50% {
+    opacity: 0.15;
+    filter: blur(20px);
+  }
 }
 
 .footer-content {
   max-width: 800px;
   margin: 0 auto;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .footer-divider {
@@ -127,5 +197,12 @@
   .site-footer::after {
     font-size: 1.5rem;
     letter-spacing: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-footer,
+  .site-footer::before {
+    animation: none !important;
   }
 }
