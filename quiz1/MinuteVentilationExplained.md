@@ -19,7 +19,7 @@ Read the following guide and watch the videos below. Upon completing the videos,
 <p>\[ VE = RR \times VT \]</p>
     
 <h3>Expanded Formula</h3>
-<p>\[ VE = \left( \frac{60}{(I\text{-time} + I\text{-Pause}) + (E\text{-time} + E\text{-Pause})} \right) \times 60 \]</p>
+<p>\[ VE = \left( \frac{60}{(I\text{-time} + I\text{-Pause}) + (E\text{-time} + E\text{-Pause})} \right) \times Vt \]</p>
 </div>
     
 <div class="resource-card"> <h2>The Base Equation</h2> <p>This animation demonstrates the fundamental equation of minute ventilation and its component measurements.</p>
