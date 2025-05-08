@@ -16,6 +16,93 @@ body {
     background: white;
 }
 
+
+:root {
+    --cell-size: 50px;
+    --state-0: #FFF;
+    --state-1: #000;
+    --iterations: 0;
+}
+
+.turing-machine {
+    display: grid;
+    grid-template-columns: repeat(3, var(--cell-size));
+    gap: 5px;
+    position: relative;
+    margin: 100px auto;
+    width: calc(3 * var(--cell-size) + 10px);
+}
+
+/* Tape cells as checkboxes */
+.cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 2px solid #333;
+    appearance: none;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* State representation */
+.cell:checked {
+    background: var(--state-1);
+    transform: rotate(calc(var(--iterations) * 1deg));
+}
+
+.cell:not(:checked) {
+    background: var(--state-0);
+    transform: rotate(calc(var(--iterations) * -1deg));
+}
+
+/* Universal transition rule using adjacent sibling combinator */
+#cell-1:checked ~ #cell-2,
+#cell-2:checked ~ #cell-3,
+#cell-4:checked ~ #cell-5,
+#cell-5:checked ~ #cell-6,
+#cell-7:checked ~ #cell-8,
+#cell-8:checked ~ #cell-9 {
+    filter: invert(1);
+}
+
+/* Infinite loop animation */
+@keyframes computation {
+    0% { --iterations: 0; }
+    100% { --iterations: 360; }
+}
+
+body {
+    animation: computation 10s infinite linear;
+}
+
+/* Hover effects with complex calc() */
+.cell:hover {
+    transform: 
+        scale(1.2)
+        translateX(calc(sin(var(--iterations)) * 10px))
+        translateY(calc(cos(var(--iterations)) * 10px));
+    z-index: 1;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+/* Hidden counter */
+#counter {
+    counter-reset: computation-step;
+}
+
+.cell:checked {
+    counter-increment: computation-step;
+}
+
+#counter::after {
+    content: counter(computation-step);
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2em;
+}
+
+
 .text-container:hover {
     transform: translateY(-5px);
 }
