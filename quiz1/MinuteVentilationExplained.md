@@ -21,6 +21,8 @@ Read the following guide and watch the videos below. Upon completing the videos,
 <h3>Expanded Formula</h3>
 <p>\[ VE = \left( \frac{60}{(I\text{-time} + I\text{-Pause}) + (E\text{-time} + E\text{-Pause})} \right) \times Vt \]</p>
 
+<h3>Comprehensive Formula</h3>
+<p>\[VE = \left( \frac{60}{(I\text{-time} + I\text{-Pause}) + (E\text{-time} + E\text{-Pause})} \right) \times \int_{0}^{I\text{-time} + I\text{-Pause}} \dot{V}(t) \, dt \]</p>
 
 </div>
     
