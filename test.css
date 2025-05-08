@@ -1,0 +1,117 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+    background: #f0f4f8;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.text-container {
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    background: white;
+}
+
+.text-container:hover {
+    transform: translateY(-5px);
+}
+
+.text-container1 {
+    background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+    border-left: 5px solid #2196f3;
+}
+
+.text-container2 {
+    background: linear-gradient(145deg, #fbe9e7, #ffccbc);
+    border-left: 5px solid #ff5722;
+}
+
+.text-container3 {
+    background: linear-gradient(145deg, #f1f8e9, #dcedc8);
+    border-left: 5px solid #8bc34a;
+}
+
+.text-container4 {
+    background: linear-gradient(145deg, #fff3e0, #ffe0b2);
+    border-left: 5px solid #ff9800;
+}
+
+.text-container5 {
+    background: linear-gradient(145deg, #ede7f6, #d1c4e9);
+    border-left: 5px solid #673ab7;
+}
+
+.sub-container {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+}
+
+h1, h2, h3 {
+    color: #2d3436;
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 2.5em;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.8em;
+    color: #34495e;
+}
+
+h3 {
+    font-size: 1.4em;
+    color: #2c3e50;
+}
+
+code {
+    display: block;
+    padding: 10px;
+    margin: 10px 0;
+    background: #1e1e1e;
+    color: #dcdcdc;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+ul, ol {
+    margin-left: 25px;
+}
+
+.future-list li {
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.equation-box {
+    padding: 20px;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 10px;
+    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .text-container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+}
