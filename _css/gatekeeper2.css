@@ -255,3 +255,37 @@ mark {
 .gk2-accent-border {
   border: 1px solid var(--gk2-gold-border);
 }
+
+/* ================================== */
+/* EQUATION OVERFLOW FIXES (ADDITIVE) */
+/* ================================== */
+
+/* 1. Constrain equation containers */
+.resource-card {
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 2. Target MathJax specifically */
+.MathJax_Display, 
+.mjx-chtml {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block !important;
+}
+
+/* 3. Mobile responsiveness */
+@media (max-width: 768px) {
+  .MathJax_Display {
+    font-size: 90% !important;
+  }
+}
+
+/* 4. Optional scrollbar styling */
+.resource-card::-webkit-scrollbar {
+  height: 5px;
+}
+.resource-card::-webkit-scrollbar-thumb {
+  background: var(--gk2-gold-primary);
+}
