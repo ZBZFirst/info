@@ -1,8 +1,3 @@
----
-title: "Minute Ventilation Grid"
-layout: default
----
-
 <div class="container" data-index="0" data-row="1"><h2>Coordinates #1</h2><div class="coord-container"><p class="x-coord" data-coord="x">X: 0</p><p class="y-coord" data-coord="y">Y: 0.0</p><p class="z-coord" data-coord="z">Z: 0.0</p></div></div>
 <div class="container" data-index="1" data-row="2"><h2>Coordinates #2</h2><div class="coord-container"><p class="x-coord" data-coord="x">X: 0</p><p class="y-coord" data-coord="y">Y: 0.005</p><p class="z-coord" data-coord="z">Z: 0.0</p></div></div>
 <div class="container" data-index="2" data-row="3"><h2>Coordinates #3</h2><div class="coord-container"><p class="x-coord" data-coord="x">X: 0</p><p class="y-coord" data-coord="y">Y: 0.01</p><p class="z-coord" data-coord="z">Z: 0.0</p></div></div>
@@ -8244,3 +8239,106 @@ layout: default
 <div class="container" data-index="8238" data-row="8239"><h2>Coordinates #8239</h2><div class="coord-container"><p class="x-coord" data-coord="x">X: 40</p><p class="y-coord" data-coord="y">Y: 0.99</p><p class="z-coord" data-coord="z">Z: 39.6</p></div></div>
 <div class="container" data-index="8239" data-row="8240"><h2>Coordinates #8240</h2><div class="coord-container"><p class="x-coord" data-coord="x">X: 40</p><p class="y-coord" data-coord="y">Y: 0.995</p><p class="z-coord" data-coord="z">Z: 39.8</p></div></div>
 <div class="container" data-index="8240" data-row="8241"><h2>Coordinates #8241</h2><div class="coord-container"><p class="x-coord" data-coord="x">X: 40</p><p class="y-coord" data-coord="y">Y: 1.0</p><p class="z-coord" data-coord="z">Z: 40.0</p></div></div>
+
+<style>
+  /* ===== Base Reset ===== */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    background-color: #f9f9f9;
+    color: #333;
+    padding: 20px;
+  }
+
+  /* ===== Container Styles ===== */
+  .container {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 4px solid transparent;
+    transition: 
+      transform 0.2s ease,
+      box-shadow 0.3s ease,
+      border-color 0.4s ease;
+  }
+
+  /* Alternate row colors */
+  .container:nth-child(odd) {
+    background: #f8fafc;
+  }
+
+  /* Hover effects */
+  .container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left-color: #4a90e2;
+  }
+
+  /* ===== Coordinate Styles ===== */
+  .container h2 {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Add an icon before the index */
+  .container h2::before {
+    content: "📍";
+    margin-right: 8px;
+    font-size: 0.9em;
+  }
+
+  .coord-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  /* Coordinate value styling */
+  .x-coord { color: #e74c3c; font-weight: 600; }
+  .y-coord { color: #27ae60; font-weight: 600; }
+  .z-coord { color: #3498db; font-weight: 600; }
+
+  /* ===== Performance Optimizations ===== */
+  /* Reduce repaints during scrolling */
+  .container {
+    will-change: transform, box-shadow;
+  }
+
+  /* ===== Animation Keyframes ===== */
+  /* Fade-in animation for page load */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Staggered animation - no JS needed! */
+  .container {
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  /* Apply increasing delay to each container */
+  .container {
+    animation-delay: calc(var(--row-index) * 20ms);
+  }
+
+  /* ===== Print Styles ===== */
+  @media print {
+    .container {
+      break-inside: avoid;
+      box-shadow: none;
+      border-left: 2px solid #ddd;
+    }
+  }
+</style>
