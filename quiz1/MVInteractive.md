@@ -52,5 +52,8 @@ layout: default
 }</style>
 
 <div class="grid">
-<p>Table goes here</p>
+  <!-- Generated cells using Jekyll -->
+  {% for i in (1..10) %}
+    <div>{{ i }}</div>
+  {% endfor %}
 </div>
