@@ -1,0 +1,257 @@
+/* ============================================ */
+/* GATEKEEPER 2 - Supplemental Semantic Styles  */
+/* Gold-themed enhancement layer                */
+/* ============================================ */
+
+:root {
+  /* Gold Color Palette */
+  --gk2-gold-primary: #D4AF37;       /* Classic metallic gold */
+  --gk2-gold-light: #FFD700;         /* Bright gold */
+  --gk2-gold-dark: #996515;          /* Deep bronze-gold */
+  --gk2-gold-bg: #FFF9E6;            /* Parchment-like background */
+  --gk2-gold-border: #E6C200;        /* Gold border accents */
+  
+  /* Complementary Colors */
+  --gk2-royal-blue: #00539C;         /* For contrast elements */
+  --gk2-off-white: #F8F8F8;          /* Clean backgrounds */
+  --gk2-dark-text: #333333;          /* Readable dark text */
+}
+
+/* ======================== */
+/* === Structural Styles === */
+/* ======================== */
+
+.main-content {
+  background-color: var(--gk2-off-white);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  border: 1px solid var(--gk2-gold-border);
+}
+
+.main-content header {
+  background: linear-gradient(135deg, var(--gk2-gold-primary), var(--gk2-gold-light));
+  color: white;
+  padding: 1.5rem;
+  margin: -2rem -2rem 2rem -2rem;
+  border-bottom: 3px solid var(--gk2-gold-dark);
+  position: relative;
+}
+
+.main-content header::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  height: 10px;
+  background: linear-gradient(to bottom, rgba(212,175,55,0.3), transparent);
+}
+
+/* ======================== */
+/* === Navigation Styles === */
+/* ======================== */
+
+.quiz-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin: 2rem 0;
+  padding: 1rem;
+  background-color: rgba(255, 248, 220, 0.5);
+  border-radius: 6px;
+}
+
+.quiz-nav a.quiz-link {
+  background: var(--gk2-gold-primary);
+  color: white;
+  border: 1px solid var(--gk2-gold-dark);
+  transition: all 0.3s ease;
+}
+
+.quiz-nav a.quiz-link:hover {
+  background: var(--gk2-gold-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(153, 101, 21, 0.2);
+}
+
+/* ======================== */
+/* === Content Components === */
+/* ======================== */
+
+/* Video Resource Cards */
+.video-resource {
+  border-top: 4px solid var(--gk2-gold-primary);
+  background-color: var(--gk2-gold-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.video-resource::before {
+  content: "Video Resource";
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--gk2-gold-dark);
+  color: white;
+  padding: 0.3rem 1rem;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom-left-radius: 6px;
+}
+
+.video-wrapper {
+  margin: 1.5rem 0;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.video-caption {
+  font-size: 0.9rem;
+  color: var(--gk2-gold-dark);
+  text-align: center;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Formula Figures */
+.formula-figure {
+  background-color: white;
+  padding: 1.2rem;
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--gk2-gold-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.formula-figure figcaption {
+  font-size: 0.85rem;
+  color: var(--gk2-gold-dark);
+  margin-top: 0.8rem;
+  font-family: "Georgia", serif;
+  text-align: center;
+}
+
+/* ======================== */
+/* === Citation Styles === */
+/* ======================== */
+
+.citation-section {
+  background: var(--gk2-off-white);
+  padding: 1.5rem;
+  border-radius: 6px;
+  margin: 2.5rem 0;
+  border-left: 4px solid var(--gk2-royal-blue);
+  position: relative;
+}
+
+.citation-section::before {
+  content: "References";
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: var(--gk2-royal-blue);
+  color: white;
+  padding: 0.2rem 1rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+.citation-heading {
+  color: var(--gk2-royal-blue);
+  font-family: "Georgia", serif;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px dashed var(--gk2-gold-border);
+  padding-bottom: 0.5rem;
+}
+
+.citation-item {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding-left: 1rem;
+  border-left: 2px solid var(--gk2-gold-border);
+}
+
+/* ======================== */
+/* === Typography === */
+/* ======================== */
+
+mark {
+  background-color: rgba(212, 175, 55, 0.3);
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+}
+
+.video-feature-list {
+  padding-left: 1.8rem;
+}
+
+.video-feature-list li {
+  margin-bottom: 0.8rem;
+  position: relative;
+}
+
+.video-feature-list li::before {
+  content: "•";
+  color: var(--gk2-gold-primary);
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+  position: absolute;
+}
+
+/* ======================== */
+/* === Responsive Design === */
+/* ======================== */
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+  
+  .main-content header {
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  }
+  
+  .quiz-nav {
+    flex-direction: column;
+  }
+  
+  .video-resource::before {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.8rem;
+  }
+  
+  .citation-section::before {
+    left: 10px;
+    font-size: 0.7rem;
+  }
+}
+
+/* ======================== */
+/* === Utility Classes === */
+/* ======================== */
+
+.gk2-gold-text {
+  color: var(--gk2-gold-primary);
+}
+
+.gk2-blue-text {
+  color: var(--gk2-royal-blue);
+}
+
+.gk2-parchment-bg {
+  background-color: var(--gk2-gold-bg);
+}
+
+.gk2-accent-border {
+  border: 1px solid var(--gk2-gold-border);
+}
