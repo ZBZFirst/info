@@ -1,3 +1,8 @@
+---
+layout: default
+title: "Minute Ventilation Calculator"
+---
+
 <div class="container" style="--x:0; --y:0.0; --z:0.0; --row-index:0"><h2>Point #1</h2><div class="coord">X: <span>0</span></div><div class="coord">Y: <span>0.0</span></div><div class="coord">Z: <span>0.0</span></div></div>
 <div class="container" style="--x:0; --y:0.005; --z:0.0; --row-index:1"><h2>Point #2</h2><div class="coord">X: <span>0</span></div><div class="coord">Y: <span>0.005</span></div><div class="coord">Z: <span>0.0</span></div></div>
 <div class="container" style="--x:0; --y:0.01; --z:0.0; --row-index:2"><h2>Point #3</h2><div class="coord">X: <span>0</span></div><div class="coord">Y: <span>0.01</span></div><div class="coord">Z: <span>0.0</span></div></div>
