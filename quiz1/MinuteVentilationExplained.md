@@ -12,9 +12,10 @@ Read the following guide and watch the videos below. Upon completing the videos,
 <a href="MVInteractive.html" class="quiz-link disabled" title="Interactive Worksheet">Minute Ventilation Interactive Page - Fun</a>
 
 <div class="resource-card">
+    
 <h3>Basic Equation</h3>
 <p>\[ \text{Minute Ventilation} = \text{Respiratory Rate} \times \text{Tidal Volume} \]</p>
-    
+
 <h3>Abbreviated Form</h3>
 <p>\[ VE = RR \times VT \]</p>
     
