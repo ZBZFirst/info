@@ -8245,68 +8245,59 @@ title: "Minute Ventilation Calculator"
 <div class="container" style="--x:40; --y:0.995; --z:39.8; --row-index:8239"><h2>Point #8240</h2><div class="coord">X: <span>40</span></div><div class="coord">Y: <span>0.995</span></div><div class="coord">Z: <span>39.8</span></div></div>
 <div class="container" style="--x:40; --y:1.0; --z:40.0; --row-index:8240"><h2>Point #8241</h2><div class="coord">X: <span>40</span></div><div class="coord">Y: <span>1.0</span></div><div class="coord">Z: <span>40.0</span></div></div>
 
-
 <style>
-  /* ===== 3D Scene Setup ===== */
-  body {
-    perspective: 2000px; /* Depth of the 3D space */
-    transform-style: preserve-3d;
-    min-height: 100vh;
-    overflow: hidden;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  }
-
-  /* ===== Container as Data Point ===== */
+  /* ===== Miniature Data Points ===== */
   .container {
     position: absolute;
-    width: 120px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-    transition: all 0.8s ease-out;
-    
-    /* Use CSS vars to position in 3D space */
-    transform: 
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: hsl(200, 100%, 50%);
+    transform:
       translate3d(
-        calc(50vw + (var(--x) * 1px)), 
-        calc(50vh - (var(--y) * 1px)), 
-        calc(var(--z) * 1px)
-      );
-    
-    /* Scale based on Z-depth */
-    scale: calc(1 + (var(--z) * 0.0005));
+        calc(50vw + (var(--x) * 0.5px)),
+        calc(50vh - (var(--y) * 0.5px)),
+        calc(var(--z) * 0.5px)
+      )
+      scale(calc(0.5 + (var(--z) * 0.001)));
+    transition: all 0.6s ease-out;
+    box-shadow: 
+      0 0 2px white,
+      0 0 10px hsl(calc(200 + var(--z) * 0.2), 100%, 50%);
   }
 
-  /* Color by Z-depth */
-  .container {
-    background: hsl(
-      calc(200 + (var(--z) * 0.1))),
-      80%,
-      calc(60% - (var(--z) * 0.02))
-    );
+  /* ===== 3D Grid Visualization ===== */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background:
+      linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px) -50vw -50vh / 20px 20px,
+      linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px) -50vw -50vh / 20px 20px;
+    transform: rotateX(70deg) rotateZ(45deg);
+    pointer-events: none;
   }
 
-  /* ===== Coordinate Labels ===== */
-  .coord {
-    font-family: monospace;
-    font-size: 0.8rem;
-  }
-  .coord span {
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 0 2px black;
-  }
-
-  /* ===== Interactive Controls ===== */
-  /* Rotate scene on body hover (no JS!) */
-  body:hover {
-    perspective-origin: 50% 100%;
-    animation: rotateScene 20s infinite linear;
+  /* ===== Coordinate Labels (Hidden Until Hover) ===== */
+  .container::after {
+    content: attr(data-coords);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: black;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
   }
 
-  @keyframes rotateScene {
-    from { transform: rotateY(0); }
-    to { transform: rotateY(360deg); }
+  .container:hover::after {
+    opacity: 1;
   }
 </style>
