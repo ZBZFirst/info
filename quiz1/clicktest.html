@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPS Click Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .click-btn {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .click-btn:hover {
+            background-color: #45a049;
+        }
+        .click-btn:active {
+            background-color: #3e8e41;
+            transform: scale(0.98);
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            min-width: 120px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .graph {
+            height: 150px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 2px;
+        }
+        .bar {
+            width: 10px;
+            background-color: #4CAF50;
+            transition: height 0.3s;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Click Speed Test</h1>
+        <p>Click the button as fast as you can for 5 seconds!</p>
+        
+        <div class="click-btn" id="clickButton">Click Me!</div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="cps">0.00</div>
+                <div class="stat-label">Clicks Per Second</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalClicks">0</div>
+                <div class="stat-label">Total Clicks</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="timeLeft">5.0</div>
+                <div class="stat-label">Seconds Left</div>
+            </div>
+        </div>
+        
+        <div class="graph" id="graph"></div>
+        
+        <div class="controls">
+            <button id="startBtn">Start Test</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const clickButton = document.getElementById('clickButton');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const cpsDisplay = document.getElementById('cps');
+        const totalClicksDisplay = document.getElementById('totalClicks');
+        const timeLeftDisplay = document.getElementById('timeLeft');
+        const graph = document.getElementById('graph');
+        
+        let clicks = 0;
+        let testActive = false;
+        let startTime;
+        let endTime;
+        let timer;
+        let clickHistory = [];
+        const testDuration = 5; // seconds
+        
+        function startTest() {
+            clicks = 0;
+            clickHistory = [];
+            testActive = true;
+            startTime = Date.now();
+            endTime = startTime + (testDuration * 1000);
+            
+            updateTimer();
+            timer = setInterval(updateTimer, 100);
+            
+            clickButton.textContent = "CLICK NOW!";
+            clickButton.style.backgroundColor = "#2196F3";
+            
+            // Clear previous graph
+            graph.innerHTML = '';
+        }
+        
+        function updateTimer() {
+            const currentTime = Date.now();
+            const timeRemaining = Math.max(0, (endTime - currentTime) / 1000);
+            timeLeftDisplay.textContent = timeRemaining.toFixed(1);
+            
+            if (currentTime >= endTime) {
+                endTest();
+            }
+        }
+        
+        function endTest() {
+            testActive = false;
+            clearInterval(timer);
+            
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            const cps = clicks / elapsedTime;
+            
+            cpsDisplay.textContent = cps.toFixed(2);
+            clickButton.textContent = "Test Complete!";
+            clickButton.style.backgroundColor = "#FF5722";
+            
+            updateGraph();
+        }
+        
+        function resetTest() {
+            clearInterval(timer);
+            testActive = false;
+            
+            clicks = 0;
+            clickHistory = [];
+            
+            cpsDisplay.textContent = "0.00";
+            totalClicksDisplay.textContent = "0";
+            timeLeftDisplay.textContent = testDuration.toFixed(1);
+            
+            clickButton.textContent = "Click Me!";
+            clickButton.style.backgroundColor = "#4CAF50";
+            
+            graph.innerHTML = '';
+        }
+        
+        function handleClick() {
+            if (!testActive) return;
+            
+            clicks++;
+            totalClicksDisplay.textContent = clicks;
+            
+            // Record the time of this click
+            const now = Date.now();
+            const elapsed = (now - startTime) / 1000;
+            clickHistory.push(elapsed);
+            
+            // Calculate current CPS based on last second
+            const oneSecondAgo = now - 1000;
+            const recentClicks = clickHistory.filter(time => (now/1000 - time) <= 1);
+            const currentCps = recentClicks.length;
+            
+            cpsDisplay.textContent = currentCps.toFixed(2);
+            
+            updateGraph();
+        }
+        
+        function updateGraph() {
+            // Group clicks by 0.5 second intervals
+            const interval = 0.5;
+            const maxIntervals = testDuration / interval;
+            const intervals = Array(Math.floor(maxIntervals)).fill(0);
+            
+            clickHistory.forEach(time => {
+                const intervalIndex = Math.floor(time / interval);
+                if (intervalIndex < intervals.length) {
+                    intervals[intervalIndex]++;
+                }
+            });
+            
+            // Normalize to CPS
+            const cpsData = intervals.map(clicks => clicks / interval);
+            
+            // Update graph
+            graph.innerHTML = '';
+            const maxCps = Math.max(1, ...cpsData); // Ensure at least 1 for scaling
+            
+            cpsData.forEach(cps => {
+                const barHeight = (cps / maxCps) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${barHeight}%`;
+                bar.title = `${cps.toFixed(1)} CPS`;
+                graph.appendChild(bar);
+            });
+        }
+        
+        clickButton.addEventListener('click', handleClick);
+        startBtn.addEventListener('click', startTest);
+        resetBtn.addEventListener('click', resetTest);
+    </script>
+</body>
+</html>
