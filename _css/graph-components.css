@@ -33,6 +33,30 @@
     opacity: 0.7 !important;
 }
 
+.logic-steps {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+    border-left: 4px solid #6c757d;
+}
+
+.logic-step {
+    margin-bottom: 8px;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.logic-step.active {
+    background-color: #e2f3f8;
+    border-left: 3px solid #17a2b8;
+    font-weight: bold;
+}
+
+.logic-step.inactive {
+    color: #6c757d;
+}
+
 /* Rest of your existing CSS remains the same */
 .graph-container::before {
     content: '';
