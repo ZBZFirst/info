@@ -8,6 +8,7 @@ const paco2Value = document.getElementById('paco2-value');
 const hco3Value = document.getElementById('hco3-value');
 const phValue = document.getElementById('ph-value');
 const classificationElement = document.getElementById('classification');
+const dynamicEquationElement = document.getElementById('dynamic-equation');
 
 const graphData = {
     pCO2Lines: [],
@@ -217,14 +218,10 @@ function update() {
     // Update slider value displays
     paco2Value.textContent = PaCO2;
     hco3Value.textContent = HCO3;
-    
-    // Update pH result displays
     phValue.textContent = pH.toFixed(2);
-    document.getElementById('equation-result').textContent = pH.toFixed(2); // NEW: Update equation result
-    
-    // Update equation variables
-    document.getElementById('equation-paco2').textContent = PaCO2; // NEW: Update PaCO₂ in equation
-    document.getElementById('equation-hco3').textContent = HCO3;   // NEW: Update HCO₃⁻ in equation
+
+    // Update dynamic equation
+    updateDynamicEquation(HCO3, PaCO2, pH);
 
     // Update classification
     const classificationId = classifyABG(pH, PaCO2, HCO3);
@@ -236,6 +233,18 @@ function update() {
     renderGraph(pH, PaCO2, HCO3);
 }
 
+function updateDynamicEquation(HCO3, PaCO2, pH) {
+    dynamicEquationElement.innerHTML = `
+        \\[ \\text{pH} = 6.1 + \\log\\left(\\frac{${HCO3}}{0.03 \\times ${PaCO2}}\\right) = ${pH.toFixed(2)} \\]
+    `;
+    
+    // Reprocess MathJax
+    if (window.MathJax) {
+        MathJax.typesetPromise([dynamicEquationElement]).catch(err => {
+            console.error('MathJax typesetting error:', err);
+        });
+    }
+}
 
 // ======================
 // UPDATED COLOR MAPPING FOR PLOT BACKGROUND
@@ -318,8 +327,8 @@ function calculatePossiblePaCO2HCO3(pH, PaCO2, HCO3, radius = 2, num_points = 20
 // INITIALIZATION
 // ======================
 
-paco2Slider.addEventListener('input', debounce(update, 50));
-hco3Slider.addEventListener('input', debounce(update, 50));
+paco2Slider.addEventListener('input', debounce(() => {update();}, 50));
+hco3Slider.addEventListener('input', debounce(() => {update();}, 50));
 
 initializeGraph();
 update();
