@@ -3,32 +3,74 @@ layout: default
 title: "ABG pH Calculator"
 ---
 
-# ABG Simulator
+<article class="intro">
+    <h1>Arterial Blood Gas (ABG) Calculator and Classifier</h1>
+    <p>This interactive tool helps you understand and interpret arterial blood gas (ABG) results. Adjust the sliders for PaCO₂ and HCO₃⁻ values to see how they affect blood pH and the resulting classification.</p>
+    <p>The calculator uses the Henderson-Hasselbalch equation to determine pH and classifies the acid-base status based on your inputs.</p>
+</article>
 
-[ABG Table to All Possible Value Pairs](abg_table.html)
+<section class="calculator-section">
+    <h2>ABG Calculator</h2>
+    <p><a href="abg_table.html">ABG Table to All Possible Value Pairs</a></p>
 
-<div class="controls">
-    <div class="slider-container">
-        <label for="paco2">PaCO₂ (mmHg):</label>
-        <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
-        <div class="value-display">Current: <span id="paco2-value">40</span></div>
+    <div class="controls">
+        <div class="slider-container">
+            <label for="paco2">PaCO₂ (mmHg):</label>
+            <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
+            <div class="value-display">Current: <span id="paco2-value">40</span></div>
+        </div>
+        
+        <div class="slider-container">
+            <label for="hco3">HCO₃⁻ (mEq/L):</label>
+            <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
+            <div class="value-display">Current: <span id="hco3-value">24</span></div>
+        </div>
     </div>
-    
-    <div class="slider-container">
-        <label for="hco3">HCO₃⁻ (mEq/L):</label>
-        <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
-        <div class="value-display">Current: <span id="hco3-value">24</span></div>
-    </div>
-</div>
 
-<div class="results">
-    <div><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></div>
-    <div><strong>Classification:</strong> <span id="classification" style="font-weight: bold;">Normal</span></div>
-</div>
+    <section class="results">
+        <h3>Results</h3>
+        <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
+        <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
+    </section>
 
-<div id="graph"></div>
+    <section class="equation-section">
+        <h3>Henderson-Hasselbalch Equation</h3>
+        <div class="equation-container">
+            <p>The pH is calculated using:</p>
+            \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
+            
+            <p>With your current values:</p>
+            \[ \text{pH} = 6.1 + \log\left(\frac{<span id="equation-hco3">24</span>}{0.03 \times <span id="equation-paco2">40</span>}\right) = <span id="equation-result">7.40</span> \]
+        </div>
+    </section>
+</section>
 
+<section class="graph-section">
+    <h2>pH Visualization</h2>
+    <div id="graph"></div>
+</section>
+
+<!-- Load libraries -->
 <link rel="stylesheet" href="_css/graph-components.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script src="abg-simulator.js"></script>
 <script src="js/abg-background.js"></script>
+
+<script>
+// This script would update the equation values when sliders change
+document.addEventListener('DOMContentLoaded', function() {
+    const paco2Slider = document.getElementById('paco2');
+    const hco3Slider = document.getElementById('hco3');
+    
+    function updateEquation() {
+        document.getElementById('equation-paco2').textContent = paco2Slider.value;
+        document.getElementById('equation-hco3').textContent = hco3Slider.value;
+        // The pH result will be updated by your existing calculator logic
+    }
+    
+    paco2Slider.addEventListener('input', updateEquation);
+    hco3Slider.addEventListener('input', updateEquation);
+});
+</script>
