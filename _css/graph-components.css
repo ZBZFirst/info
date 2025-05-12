@@ -57,6 +57,61 @@
     color: #6c757d;
 }
 
+.logic-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.logic-table thead tr {
+    background-color: #17a2b8;
+    color: #ffffff;
+    text-align: left;
+}
+
+.logic-table th,
+.logic-table td {
+    padding: 12px 15px;
+    border: 1px solid #dddddd;
+}
+
+.logic-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.logic-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.logic-table tbody tr:last-of-type {
+    border-bottom: 2px solid #17a2b8;
+}
+
+.logic-table tbody tr.active-row {
+    font-weight: bold;
+    background-color: #e2f3f8;
+}
+
+.parameter-value {
+    font-weight: bold;
+}
+
+.normal {
+    color: #28a745;
+}
+
+.abnormal {
+    color: #dc3545;
+}
+
+.conclusion-cell {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+
 /* Rest of your existing CSS remains the same */
 .graph-container::before {
     content: '';
