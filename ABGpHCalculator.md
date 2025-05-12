@@ -34,14 +34,15 @@ title: "ABG pH Calculator"
 </section>
 
 <section class="equation-section">
-        <h3>Henderson-Hasselbalch Equation</h3>
-        <div class="equation-container">
+    <h3>Henderson-Hasselbalch Equation</h3>
+    <div class="equation-container">
         <p>The pH is calculated using:</p>
         \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
         <p>With your current values:</p>
-        \[ \text{pH} = 6.1 + \log\left(\frac{<span id="equation-hco3">24</span>}{0.03 \times <span id="equation-paco2">40</span>}\right) = <span id="equation-result">7.40</span> \]
+        <div id="dynamic-equation">
+            \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
         </div>
-    </section>
+    </div>
 </section>
 
 <section class="graph-section">
