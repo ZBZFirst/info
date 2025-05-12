@@ -231,6 +231,9 @@ function update() {
 
     // Update graph
     renderGraph(pH, PaCO2, HCO3);
+    
+    // Explain the classification logic
+    explainClassification(pH, PaCO2, HCO3);
 }
 
 function updateDynamicEquation(HCO3, PaCO2, pH) {
