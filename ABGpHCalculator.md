@@ -57,20 +57,21 @@ title: "ABG pH Calculator"
     <div id="graph"></div>
 </section>
 
+
 <section class="classification-logic">
-    <h3>Classification Logic</h3>
+    <h3>Classification Logic Reference</h3>
     <div class="table-responsive">
         <table id="classification-table" class="logic-table">
             <thead>
                 <tr>
-                    <th>Step</th>
-                    <th>Parameter</th>
-                    <th>Value</th>
-                    <th>Interpretation</th>
-                    <th>Conclusion</th>
+                    <th>pH</th>
+                    <th>PaCO₂</th>
+                    <th>HCO₃⁻</th>
+                    <th>Classification</th>
+                    <th>Color Code</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="classification-table-body">
                 <!-- Will be populated dynamically -->
             </tbody>
         </table>
