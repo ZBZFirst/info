@@ -304,61 +304,90 @@ function generateClassificationGrid(gridSize = 150) {
 }
 
 // ======================
-// CLASSIFICATION EXPLANATION
+// TABLE-BASED CLASSIFICATION LOGIC
 // ======================
 
 function explainClassification(pH, PaCO2, HCO3) {
-    const stepsElement = document.getElementById('classification-steps');
-    stepsElement.innerHTML = ''; // Clear previous steps
+    const tableBody = document.querySelector('#classification-table tbody');
+    tableBody.innerHTML = ''; // Clear previous rows
     
     const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
     const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
     const normalpH = pH >= 7.35 && pH <= 7.45;
-    
-    // Create step elements
-    const step1 = document.createElement('div');
-    step1.className = 'logic-step';
-    step1.innerHTML = `<strong>Step 1: Check pH</strong><br>Current pH: ${pH.toFixed(2)} (${pH < 7.35 ? 'Acidemia' : pH > 7.45 ? 'Alkalemia' : 'Normal pH'})`;
-    
-    const step2 = document.createElement('div');
-    step2.className = 'logic-step';
-    step2.innerHTML = `<strong>Step 2: Check primary disorder</strong><br>PaCO₂: ${PaCO2} (${normalPaCO2 ? 'Normal' : PaCO2 > 45 ? 'High → Respiratory Acidosis' : 'Low → Respiratory Alkalosis'})<br>
-                       HCO₃⁻: ${HCO3} (${normalHCO3 ? 'Normal' : HCO3 < 22 ? 'Low → Metabolic Acidosis' : 'High → Metabolic Alkalosis'})`;
-    
-    const step3 = document.createElement('div');
-    step3.className = 'logic-step';
-    
     const classificationId = classifyABG(pH, PaCO2, HCO3);
     const classificationInfo = getClassificationInfo(classificationId);
-    
-    step3.innerHTML = `<strong>Step 3: Determine compensation</strong><br>${getCompensationExplanation(pH, PaCO2, HCO3, classificationId)}`;
-    
-    const conclusion = document.createElement('div');
-    conclusion.className = 'logic-step active';
-    conclusion.innerHTML = `<strong>Conclusion:</strong> ${classificationInfo.label}`;
-    
-    // Append all steps
-    stepsElement.appendChild(step1);
-    stepsElement.appendChild(step2);
-    stepsElement.appendChild(step3);
-    stepsElement.appendChild(conclusion);
-    
-    // Highlight active steps based on pH
-    if (pH < 7.35) {
-        step1.classList.add('active');
-        step2.classList.add('active');
-        if (PaCO2 > 45 || HCO3 < 22) step3.classList.add('active');
-    } else if (pH > 7.45) {
-        step1.classList.add('active');
-        step2.classList.add('active');
-        if (PaCO2 < 35 || HCO3 > 26) step3.classList.add('active');
-    } else {
-        step1.classList.add('active');
-        if (!normalPaCO2 || !normalHCO3) {
-            step2.classList.add('active');
-            step3.classList.add('active');
-        }
-    }
+
+    // Add pH row
+    addTableRow(tableBody, {
+        step: "1",
+        parameter: "pH",
+        value: pH.toFixed(2),
+        interpretation: pH < 7.35 ? "Acidemia" : pH > 7.45 ? "Alkalemia" : "Normal",
+        conclusion: pH < 7.35 ? "Acidosis present" : pH > 7.45 ? "Alkalosis present" : "Normal acid-base status",
+        isActive: true,
+        isNormal: normalpH
+    });
+
+    // Add PaCO2 row
+    addTableRow(tableBody, {
+        step: "2a",
+        parameter: "PaCO₂",
+        value: PaCO2,
+        interpretation: normalPaCO2 ? "Normal" : PaCO2 > 45 ? "High (Respiratory Acidosis)" : "Low (Respiratory Alkalosis)",
+        conclusion: normalPaCO2 ? "" : PaCO2 > 45 ? "Respiratory component" : "Respiratory component",
+        isActive: !normalpH || !normalPaCO2,
+        isNormal: normalPaCO2
+    });
+
+    // Add HCO3 row
+    addTableRow(tableBody, {
+        step: "2b",
+        parameter: "HCO₃⁻",
+        value: HCO3,
+        interpretation: normalHCO3 ? "Normal" : HCO3 < 22 ? "Low (Metabolic Acidosis)" : "High (Metabolic Alkalosis)",
+        conclusion: normalHCO3 ? "" : HCO3 < 22 ? "Metabolic component" : "Metabolic component",
+        isActive: !normalpH || !normalHCO3,
+        isNormal: normalHCO3
+    });
+
+    // Add compensation row
+    addTableRow(tableBody, {
+        step: "3",
+        parameter: "Compensation",
+        value: "",
+        interpretation: getCompensationExplanation(pH, PaCO2, HCO3, classificationId),
+        conclusion: "",
+        isActive: (!normalPaCO2 || !normalHCO3) && !normalpH,
+        isNormal: false
+    });
+
+    // Add conclusion row
+    addTableRow(tableBody, {
+        step: "",
+        parameter: "Final Classification",
+        value: "",
+        interpretation: "",
+        conclusion: classificationInfo.label,
+        isActive: true,
+        isNormal: false,
+        isConclusion: true
+    });
+}
+
+function addTableRow(tableBody, {step, parameter, value, interpretation, conclusion, isActive, isNormal, isConclusion = false}) {
+    const row = document.createElement('tr');
+    if (isActive) row.classList.add('active-row');
+    if (isConclusion) row.classList.add('conclusion-row');
+
+    row.innerHTML = `
+        <td>${step}</td>
+        <td>${parameter}</td>
+        <td class="parameter-value ${isNormal ? 'normal' : 'abnormal'}">${value}</td>
+        <td>${interpretation}</td>
+        <td class="${isConclusion ? 'conclusion-cell' : ''}">${conclusion}</td>
+    `;
+
+    tableBody.appendChild(row);
 }
 
 function getCompensationExplanation(pH, PaCO2, HCO3, classificationId) {
