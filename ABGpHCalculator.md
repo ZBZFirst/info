@@ -45,6 +45,13 @@ title: "ABG pH Calculator"
     </div>
 </section>
 
+<section class="classification-logic">
+    <h3>Classification Logic</h3>
+    <div id="classification-steps" class="logic-steps">
+        <!-- This will be populated dynamically -->
+    </div>
+</section>
+
 <section class="graph-section">
     <h2>pH Visualization</h2>
     <div id="graph"></div>
