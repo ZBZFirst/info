@@ -64,14 +64,16 @@ title: "ABG pH Calculator"
         <table id="classification-table" class="logic-table">
             <thead>
                 <tr>
-                    <th>pH</th>
-                    <th>PaCO₂</th>
-                    <th>HCO₃⁻</th>
-                    <th>Classification</th>
-                    <th>Color Code</th>
+                    <th>ID</th>
+                    <th>Condition</th>
+                    <th>pH Range</th>
+                    <th>PaCO₂ Range</th>
+                    <th>HCO₃⁻ Range</th>
+                    <th>Compensation</th>
+                    <th>Color</th>
                 </tr>
             </thead>
-            <tbody id="classification-table-body">
+            <tbody>
                 <!-- Will be populated dynamically -->
             </tbody>
         </table>
