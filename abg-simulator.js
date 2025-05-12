@@ -214,17 +214,25 @@ function update() {
     const HCO3 = parseFloat(hco3Slider.value);
     const pH = calculatePH(PaCO2, HCO3);
 
+    // Update slider value displays
     paco2Value.textContent = PaCO2;
     hco3Value.textContent = HCO3;
-    phValue.textContent = pH.toFixed(2);
-
-    const classificationId = classifyABG(pH, PaCO2, HCO3);
-    const classificationInfo = getClassificationInfo(classificationId); // Get the full info object
     
-    // Update to show the label instead of the ID
+    // Update pH result displays
+    phValue.textContent = pH.toFixed(2);
+    document.getElementById('equation-result').textContent = pH.toFixed(2); // NEW: Update equation result
+    
+    // Update equation variables
+    document.getElementById('equation-paco2').textContent = PaCO2; // NEW: Update PaCO₂ in equation
+    document.getElementById('equation-hco3').textContent = HCO3;   // NEW: Update HCO₃⁻ in equation
+
+    // Update classification
+    const classificationId = classifyABG(pH, PaCO2, HCO3);
+    const classificationInfo = getClassificationInfo(classificationId);
     classificationElement.textContent = classificationInfo.label;
     classificationElement.style.backgroundColor = classificationInfo.color.replace('0.5', '0.3');
 
+    // Update graph
     renderGraph(pH, PaCO2, HCO3);
 }
 
