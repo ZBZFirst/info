@@ -301,6 +301,88 @@ function generateClassificationGrid(gridSize = 150) {
 }
 
 // ======================
+// CLASSIFICATION EXPLANATION
+// ======================
+
+function explainClassification(pH, PaCO2, HCO3) {
+    const stepsElement = document.getElementById('classification-steps');
+    stepsElement.innerHTML = ''; // Clear previous steps
+    
+    const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
+    const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
+    const normalpH = pH >= 7.35 && pH <= 7.45;
+    
+    // Create step elements
+    const step1 = document.createElement('div');
+    step1.className = 'logic-step';
+    step1.innerHTML = `<strong>Step 1: Check pH</strong><br>Current pH: ${pH.toFixed(2)} (${pH < 7.35 ? 'Acidemia' : pH > 7.45 ? 'Alkalemia' : 'Normal pH'})`;
+    
+    const step2 = document.createElement('div');
+    step2.className = 'logic-step';
+    step2.innerHTML = `<strong>Step 2: Check primary disorder</strong><br>PaCO₂: ${PaCO2} (${normalPaCO2 ? 'Normal' : PaCO2 > 45 ? 'High → Respiratory Acidosis' : 'Low → Respiratory Alkalosis'})<br>
+                       HCO₃⁻: ${HCO3} (${normalHCO3 ? 'Normal' : HCO3 < 22 ? 'Low → Metabolic Acidosis' : 'High → Metabolic Alkalosis'})`;
+    
+    const step3 = document.createElement('div');
+    step3.className = 'logic-step';
+    
+    const classificationId = classifyABG(pH, PaCO2, HCO3);
+    const classificationInfo = getClassificationInfo(classificationId);
+    
+    step3.innerHTML = `<strong>Step 3: Determine compensation</strong><br>${getCompensationExplanation(pH, PaCO2, HCO3, classificationId)}`;
+    
+    const conclusion = document.createElement('div');
+    conclusion.className = 'logic-step active';
+    conclusion.innerHTML = `<strong>Conclusion:</strong> ${classificationInfo.label}`;
+    
+    // Append all steps
+    stepsElement.appendChild(step1);
+    stepsElement.appendChild(step2);
+    stepsElement.appendChild(step3);
+    stepsElement.appendChild(conclusion);
+    
+    // Highlight active steps based on pH
+    if (pH < 7.35) {
+        step1.classList.add('active');
+        step2.classList.add('active');
+        if (PaCO2 > 45 || HCO3 < 22) step3.classList.add('active');
+    } else if (pH > 7.45) {
+        step1.classList.add('active');
+        step2.classList.add('active');
+        if (PaCO2 < 35 || HCO3 > 26) step3.classList.add('active');
+    } else {
+        step1.classList.add('active');
+        if (!normalPaCO2 || !normalHCO3) {
+            step2.classList.add('active');
+            step3.classList.add('active');
+        }
+    }
+}
+
+function getCompensationExplanation(pH, PaCO2, HCO3, classificationId) {
+    const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
+    const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
+    
+    switch(classificationId) {
+        case 0: return "Mixed Acidosis: Both respiratory (high PaCO₂) and metabolic (low HCO₃⁻) acidosis present";
+        case 1: return "Partially Compensated Respiratory Acidosis: High PaCO₂ with elevated HCO₃⁻ but pH still acidic";
+        case 2: return "Uncompensated Respiratory Acidosis: High PaCO₂ without metabolic compensation";
+        case 3: return "Partially Compensated Metabolic Acidosis: Low HCO₃⁻ with respiratory compensation but pH still acidic";
+        case 4: return "Uncompensated Metabolic Acidosis: Low HCO₃⁻ without respiratory compensation";
+        case 5: return "Partially Compensated Respiratory Alkalosis: Low PaCO₂ with decreased HCO₃⁻ but pH still alkaline";
+        case 6: return "Mixed Alkalosis: Both respiratory (low PaCO₂) and metabolic (high HCO₃⁻) alkalosis present";
+        case 7: return "Uncompensated Respiratory Alkalosis: Low PaCO₂ without metabolic compensation";
+        case 8: return "Partially Compensated Metabolic Alkalosis: High HCO₃⁻ with respiratory compensation but pH still alkaline";
+        case 9: return "Uncompensated Metabolic Alkalosis: High HCO₃⁻ without respiratory compensation";
+        case 10: return "Fully Compensated Respiratory Acidosis: Chronic respiratory acidosis with metabolic compensation bringing pH to low-normal range";
+        case 11: return "Fully Compensated Metabolic Acidosis: Metabolic acidosis with respiratory compensation bringing pH to low-normal range";
+        case 12: return "Fully Compensated Metabolic Alkalosis: Metabolic alkalosis with respiratory compensation bringing pH to high-normal range";
+        case 13: return "Fully Compensated Respiratory Alkalosis: Chronic respiratory alkalosis with metabolic compensation bringing pH to high-normal range";
+        case 14: return "Normal: Both PaCO₂ and HCO₃⁻ are within normal ranges";
+        default: return "Undefined pattern: Doesn't fit typical compensation patterns";
+    }
+}
+
+// ======================
 // UTILITY FUNCTIONS
 // ======================
 
