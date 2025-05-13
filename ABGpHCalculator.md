@@ -58,28 +58,6 @@ title: "ABG pH Calculator"
 </section>
 
 
-<section class="classification-logic">
-    <h3>Classification Logic Reference</h3>
-    <div class="table-responsive">
-        <table id="classification-table" class="logic-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Condition</th>
-                    <th>pH Range</th>
-                    <th>PaCO₂ Range</th>
-                    <th>HCO₃⁻ Range</th>
-                    <th>Compensation</th>
-                    <th>Color</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Will be populated dynamically -->
-            </tbody>
-        </table>
-    </div>
-</section>
-
 <link rel="stylesheet" href="_css/graph-components.css">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
