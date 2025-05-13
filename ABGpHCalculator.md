@@ -21,64 +21,70 @@ title: "ABG pH Calculator"
 </article>
 
 <section class="calculator-section">
-    <h2>ABG Calculator</h2>
-    <div class="calculator-grid">
-        <!-- Grid 1: Sliders -->
-        <div class="grid-item controls-container">
-            <div class="controls">
-                <div class="slider-container">
-                    <label for="paco2">PaCO₂ (mmHg):</label>
-                    <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
-                    <div class="value-display">Current: <span id="paco2-value">40</span></div>
+    <h2 class="section-title">ABG Calculator</h2>
+    <div class="calculator-wrapper">
+        <!-- Upper Group (Sliders + Equation) -->
+        <div class="calculator-group upper-group">
+            <!-- Grid 1: Sliders -->
+            <div class="grid-item controls-container">
+                <div class="controls">
+                    <div class="slider-container">
+                        <label for="paco2">PaCO₂ (mmHg):</label>
+                        <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
+                        <div class="value-display">Current: <span id="paco2-value">40</span></div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="hco3">HCO₃⁻ (mEq/L):</label>
+                        <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
+                        <div class="value-display">Current: <span id="hco3-value">24</span></div>
+                    </div>
                 </div>
-                
-                <div class="slider-container">
-                    <label for="hco3">HCO₃⁻ (mEq/L):</label>
-                    <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
-                    <div class="value-display">Current: <span id="hco3-value">24</span></div>
-                </div>
+            </div>
+
+            <!-- Grid 2: Equation -->
+            <div class="grid-item equation-container">
+                <section class="equation-section">
+                    <h3>Henderson-Hasselbalch Equation</h3>
+                    <div class="equation-content">
+                        <p>The pH is calculated using:</p>
+                        \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
+                        
+                        <div class="current-values">
+                            <p>With your current values:</p>
+                            <div id="dynamic-equation">
+                                \[ \text{pH} = 6.1 + \log\left(\frac{<span id="current-hco3">24</span>}{0.03 \times <span id="current-paco2">40</span>}\right) \]
+                            </div>
+                        </div>
+                        
+                        <div class="final-result">
+                            <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
+                            <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
 
-        <!-- Grid 2: Equation -->
-        <div class="grid-item equation-container">
-            <section class="equation-section">
-                <h3>Henderson-Hasselbalch Equation</h3>
-                <div class="equation-content">
-                    <p>The pH is calculated using:</p>
-                    \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
-                    
-                    <div class="current-values">
-                        <p>With your current values:</p>
-                        <div id="dynamic-equation">
-                            \[ \text{pH} = 6.1 + \log\left(\frac{<span id="current-hco3">24</span>}{0.03 \times <span id="current-paco2">40</span>}\right) \]
-                        </div>
+        <!-- Lower Group (Classification + Graph) -->
+        <div class="calculator-group lower-group">
+            <!-- Grid 3: Classification Logic -->
+            <div class="grid-item classification-container">
+                <section class="classification-logic">
+                    <h3>Classification Logic</h3>
+                    <div id="classification-steps" class="logic-steps">
+                        <!-- This will be populated dynamically -->
                     </div>
-                    
-                    <div class="final-result">
-                        <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
-                        <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
-                    </div>
-                </div>
-            </section>
-        </div>
+                </section>
+            </div>
 
-        <!-- Grid 3: Classification Logic -->
-        <div class="grid-item classification-container">
-            <section class="classification-logic">
-                <h3>Classification Logic</h3>
-                <div id="classification-steps" class="logic-steps">
-                    <!-- This will be populated dynamically -->
-                </div>
-            </section>
-        </div>
-
-        <!-- Grid 4: Graph -->
-        <div class="grid-item graph-container">
-            <section class="graph-section">
-                <h2 class="graph-heading">pH Visualization</h2>
-                <div id="graph" class="graph-content"></div>
-            </section>
+            <!-- Grid 4: Graph -->
+            <div class="grid-item graph-container">
+                <section class="graph-section">
+                    <h2 class="graph-heading">pH Visualization</h2>
+                    <div id="graph" class="graph-content"></div>
+                </section>
+            </div>
         </div>
     </div>
 </section>
