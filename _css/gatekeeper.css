@@ -77,8 +77,6 @@ body {
   min-height: 100vh;
   background-color: var(--bg-color);
   width: 100%;
-  max-width: var(--max-content-width);
-  margin: 0 auto;
   padding: var(--content-padding);
 }
 
@@ -113,6 +111,8 @@ h2 {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--space-xl);
+  max-width: var(--max-content-width);
+  margin: 0 auto;
   border: 1px solid var(--gold-border);
 }
 
