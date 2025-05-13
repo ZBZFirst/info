@@ -35,8 +35,9 @@ title: "ABG pH Calculator"
         <p>With your current values:</p>
         <div id="dynamic-equation">
             \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
-        </div>        
-        <div id="dynamic-equation">
+        </div>
+        <p>Final Result:</p>
+        <div id="final-result-dynamic-equation">
             \[ \text{pH} = 7.40 \]
         </div>
     </div>
