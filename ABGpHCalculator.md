@@ -35,15 +35,13 @@ title: "ABG pH Calculator"
         <p>With your current values:</p>
         <div id="dynamic-equation">
             \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
+        </div>        
+        <div id="dynamic-equation">
+            \[ \text{pH} = 7.40 \]
         </div>
     </div>
 </section>
 
-<section class="results">
-    <h3 class="results-heading">Results</h3>
-    <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
-    <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
-</section>
 
 <section class="classification-logic">
     <h3>Classification Logic</h3>
