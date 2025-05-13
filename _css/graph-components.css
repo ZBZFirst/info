@@ -33,66 +33,87 @@
     opacity: 0.7 !important;
 }
 
-.logic-steps {
+/* Classification Logic Section Styling */
+.classification-logic {
     background-color: #f8f9fa;
-    border-radius: 5px;
-    padding: 15px;
-    margin-top: 15px;
-    border-left: 4px solid #6c757d;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.classification-logic h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.logic-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .logic-step {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border-left: 4px solid #ddd;
+}
+
+.logic-step strong {
+    color: #2c3e50;
+    display: block;
     margin-bottom: 8px;
-    padding: 5px;
-    border-radius: 3px;
 }
 
 .logic-step.active {
-    background-color: #e2f3f8;
-    border-left: 3px solid #17a2b8;
+    border-left-color: #3498db;
+    background-color: #f0f7ff;
+}
+
+.logic-step.active strong {
+    color: #2980b9;
+}
+
+.logic-step.abnormal {
+    border-left-color: #e74c3c;
+    background-color: #fef0ef;
+}
+
+.logic-step.abnormal strong {
+    color: #c0392b;
+}
+
+.logic-step.normal {
+    border-left-color: #27ae60;
+    background-color: #f0fdf4;
+}
+
+.logic-step.normal strong {
+    color: #27ae60;
+}
+
+/* For the conclusion step */
+.logic-step.conclusion {
     font-weight: bold;
+    border-left-width: 6px;
+    background-color: #2c3e50;
+    color: white;
 }
 
-.logic-step.inactive {
-    color: #6c757d;
+.logic-step.conclusion strong {
+    color: white;
 }
 
-.logic-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    font-size: 0.9em;
-    font-family: sans-serif;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-
-.logic-table thead tr {
-    background-color: #17a2b8;
-    color: #ffffff;
-    text-align: left;
-}
-
-.logic-table th,
-.logic-table td {
-    padding: 12px 15px;
-    border: 1px solid #dddddd;
-}
-
-.logic-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-
-.logic-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
-}
-
-.logic-table tbody tr:last-of-type {
-    border-bottom: 2px solid #17a2b8;
-}
-
-.logic-table tbody tr.active-row {
-    font-weight: bold;
-    background-color: #e2f3f8;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .logic-step {
+        padding: 12px;
+    }
 }
 
 .parameter-value {
