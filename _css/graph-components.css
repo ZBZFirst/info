@@ -1,104 +1,233 @@
 /* ============================================= */
-/* VARIABLES */
+/* GRAPH COMPONENTS VARIABLES */
 /* ============================================= */
 :root {
   /* Colors */
-  --primary: #2c3e50;
-  --secondary: #3498db;
-  --accent: #ff4d00;
-  --accent-rgb: 255, 77, 0;
-  --success: #28a745;
-  --danger: #dc3545;
-  --warning: #ffc107;
-  --info: #17a2b8;
-  --light: #f8f9fa;
-  --dark: #343a40;
-  --white: #ffffff;
+  --graph-primary: #2c3e50;
+  --graph-secondary: #3498db;
+  --graph-accent: #ff4d00;
+  --graph-accent-rgb: 255, 77, 0;
+  --graph-success: #28a745;
+  --graph-danger: #dc3545;
+  --graph-warning: #ffc107;
+  --graph-info: #17a2b8;
+  --graph-light: #f8f9fa;
+  --graph-dark: #343a40;
   
   /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
+  --graph-space-xs: 0.25rem;
+  --graph-space-sm: 0.5rem;
+  --graph-space-md: 1rem;
+  --graph-space-lg: 1.5rem;
+  --graph-space-xl: 2rem;
   
   /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --graph-radius-sm: 4px;
+  --graph-radius-md: 8px;
+  --graph-radius-lg: 12px;
   
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --graph-shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --graph-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --graph-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
   
   /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
+  --graph-transition-fast: 0.15s ease;
+  --graph-transition-normal: 0.3s ease;
+  --graph-transition-slow: 0.5s ease;
 }
 
 /* ============================================= */
-/* BASE STYLES */
+/* CALCULATOR CONTROLS */
 /* ============================================= */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.6;
-  color: var(--primary);
-  background-color: var(--white);
+.controls {
+  display: grid;
+  gap: var(--graph-space-md);
+  margin-bottom: var(--graph-space-lg);
 }
 
-h1, h2, h3, h4 {
-  margin-top: 0;
-  line-height: 1.2;
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--graph-space-xs);
+  background: rgba(255, 255, 255, 0.9);
+  padding: var(--graph-space-md);
+  border-radius: var(--graph-radius-md);
+  box-shadow: var(--graph-shadow-sm);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
-a {
-  color: var(--secondary);
-  text-decoration: none;
-  transition: color var(--transition-fast);
+.slider-container label {
+  font-weight: 600;
+  color: var(--graph-primary);
 }
 
-a:hover {
-  color: var(--accent);
-}
-
-/* ============================================= */
-/* LAYOUT COMPONENTS */
-/* ============================================= */
-.container {
+.slider {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--space-md);
+  margin: var(--graph-space-sm) 0;
+  -webkit-appearance: none;
+  height: 8px;
+  border-radius: var(--graph-radius-sm);
+  background: linear-gradient(90deg, var(--graph-accent), var(--graph-secondary));
+  outline: none;
 }
 
-.section {
-  padding: var(--space-xl) 0;
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--graph-accent);
+  cursor: pointer;
+  box-shadow: var(--graph-shadow-md);
+  transition: all var(--graph-transition-fast);
 }
 
-.section-title {
-  margin-bottom: var(--space-lg);
-  padding-bottom: var(--space-sm);
-  border-bottom: 2px solid var(--light);
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.value-display {
+  font-size: 0.9rem;
+  color: var(--graph-dark);
+  font-weight: 500;
 }
 
 /* ============================================= */
-/* GRAPH COMPONENTS */
+/* EQUATION DISPLAY */
 /* ============================================= */
+.equation-section {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--graph-radius-lg);
+  padding: var(--graph-space-lg);
+  margin: var(--graph-space-lg) 0;
+  box-shadow: var(--graph-shadow-sm);
+}
+
+.equation-container {
+  text-align: center;
+}
+
+.equation-container p {
+  margin: 0 0 var(--graph-space-sm) 0;
+}
+
+/* ============================================= */
+/* RESULTS DISPLAY */
+/* ============================================= */
+.results {
+  background-color: var(--graph-light);
+  border-radius: var(--graph-radius-md);
+  padding: var(--graph-space-md);
+  margin: var(--graph-space-lg) 0;
+  text-align: center;
+}
+
+.result-label {
+  font-weight: bold;
+  padding: var(--graph-space-xs) var(--graph-space-sm);
+  border-radius: var(--graph-radius-sm);
+  display: inline-block;
+}
+
+/* Classification colors */
+.result-normal {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--graph-success);
+}
+
+.result-acidosis {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--graph-danger);
+}
+
+.result-alkalosis {
+  background-color: rgba(23, 162, 184, 0.1);
+  color: var(--graph-info);
+}
+
+/* ============================================= */
+/* CLASSIFICATION LOGIC */
+/* ============================================= */
+.classification-logic {
+  background-color: var(--graph-light);
+  border-radius: var(--graph-radius-md);
+  padding: var(--graph-space-lg);
+  margin: var(--graph-space-lg) 0;
+  box-shadow: var(--graph-shadow-sm);
+}
+
+.classification-logic h3 {
+  color: var(--graph-primary);
+  margin-bottom: var(--graph-space-md);
+  padding-bottom: var(--graph-space-sm);
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+}
+
+.logic-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--graph-space-md);
+}
+
+.logic-step {
+  background-color: white;
+  padding: var(--graph-space-md);
+  border-radius: var(--graph-radius-sm);
+  box-shadow: var(--graph-shadow-sm);
+  border-left: 4px solid #ddd;
+}
+
+.logic-step strong {
+  color: var(--graph-primary);
+  display: block;
+  margin-bottom: var(--graph-space-sm);
+}
+
+/* Value-specific coloring */
+.value-normal {
+  color: var(--graph-success);
+  font-weight: bold;
+}
+
+.value-acidosis {
+  color: var(--graph-danger);
+  font-weight: bold;
+}
+
+.value-alkalosis {
+  color: var(--graph-info);
+  font-weight: bold;
+}
+
+.conclusion {
+  font-weight: bold;
+  margin-top: var(--graph-space-md);
+  padding-top: var(--graph-space-md);
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+/* ============================================= */
+/* GRAPH VISUALIZATION */
+/* ============================================= */
+.graph-section {
+  margin-top: var(--graph-space-xl);
+}
+
 .graph-container {
   width: 100%;
-  height: 500px; /* Smaller default height for mobile */
-  border: 3px solid var(--accent);
-  border-radius: var(--radius-lg);
+  height: 500px;
+  border: 3px solid var(--graph-accent);
+  border-radius: var(--graph-radius-lg);
   background: transparent;
   box-shadow: 
-    0 4px 20px rgba(var(--accent-rgb), 0.3),
-    0 8px 30px rgba(var(--accent-rgb), 0.1);
-  transition: all var(--transition-normal);
+    0 4px 20px rgba(var(--graph-accent-rgb), 0.3),
+    0 8px 30px rgba(var(--graph-accent-rgb), 0.1);
+  transition: all var(--graph-transition-normal);
   position: relative;
   overflow: hidden;
-  margin: var(--space-lg) 0;
+  margin: var(--graph-space-lg) 0;
 }
 
 .graph-container::before {
@@ -110,9 +239,9 @@ a:hover {
   bottom: -10px;
   background: linear-gradient(
     45deg,
-    var(--accent) 0%,
-    var(--warning) 50%,
-    var(--accent) 100%
+    var(--graph-accent) 0%,
+    var(--graph-warning) 50%,
+    var(--graph-accent) 100%
   );
   z-index: -1;
   filter: blur(20px);
@@ -141,127 +270,6 @@ a:hover {
 }
 
 /* ============================================= */
-/* CLASSIFICATION LOGIC COMPONENTS */
-/* ============================================= */
-.classification-logic {
-  background-color: var(--light);
-  border-radius: var(--radius-md);
-  padding: var(--space-lg);
-  margin: var(--space-lg) 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.classification-logic h3 {
-  color: var(--primary);
-  margin-bottom: var(--space-md);
-  padding-bottom: var(--space-sm);
-  border-bottom: 2px solid rgba(0,0,0,0.1);
-}
-
-.logic-steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.logic-step {
-  background-color: var(--white);
-  padding: var(--space-md);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  border-left: 4px solid #ddd;
-}
-
-.logic-step strong {
-  color: var(--primary);
-  display: block;
-  margin-bottom: var(--space-sm);
-}
-
-/* Value-specific coloring */
-.value-normal {
-  color: var(--success);
-  font-weight: bold;
-}
-
-.value-acidosis {
-  color: var(--danger);
-  font-weight: bold;
-}
-
-.value-alkalosis {
-  color: var(--info);
-  font-weight: bold;
-}
-
-.conclusion {
-  font-weight: bold;
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid rgba(0,0,0,0.1);
-}
-
-/* ============================================= */
-/* FORM CONTROLS */
-/* ============================================= */
-.controls {
-  display: grid;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-}
-
-.slider-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.slider-container label {
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.slider {
-  width: 100%;
-  margin: var(--space-sm) 0;
-}
-
-.value-display {
-  font-size: 0.9rem;
-  color: var(--dark);
-}
-
-/* ============================================= */
-/* RESULTS DISPLAY */
-/* ============================================= */
-.results {
-  background-color: var(--light);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  margin: var(--space-lg) 0;
-}
-
-.result-label {
-  font-weight: bold;
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-sm);
-}
-
-/* ============================================= */
-/* EQUATION DISPLAY */
-/* ============================================= */
-.equation-container {
-  background-color: var(--light);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  margin: var(--space-lg) 0;
-}
-
-.equation-container p {
-  margin: 0 0 var(--space-sm) 0;
-}
-
-/* ============================================= */
 /* RESPONSIVE ADJUSTMENTS */
 /* ============================================= */
 @media (min-width: 768px) {
@@ -274,27 +282,17 @@ a:hover {
   .controls {
     grid-template-columns: 1fr 1fr;
   }
-  
-  /* More spacing on larger screens */
-  .section {
-    padding: var(--space-xl) 0;
-  }
 }
 
 @media (max-width: 480px) {
   /* Compact spacing on mobile */
-  .section {
-    padding: var(--space-lg) 0;
+  .graph-container {
+    height: 400px;
   }
   
   .classification-logic,
   .equation-container,
   .results {
-    padding: var(--space-md);
-  }
-  
-  /* Smaller text on very small screens */
-  body {
-    font-size: 0.9rem;
+    padding: var(--graph-space-md);
   }
 }
