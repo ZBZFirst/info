@@ -7,15 +7,14 @@ title: "ABG pH Calculator"
     <h1>Arterial Blood Gas (ABG) Calculator and Classifier</h1>
     <p>This interactive tool helps you understand and interpret arterial blood gas (ABG) results. Adjust the sliders for PaCO₂ and HCO₃⁻ values to see how they affect blood pH and the resulting classification.</p>
     <p>The calculator uses the Henderson-Hasselbalch equation to determine pH and classifies the acid-base status based on your inputs.</p>
+    <p><a href="abg_table.html">ABG Table to All Possible Value Pairs</a></p>
 </article>
 
 <section class="calculator-section">
     <h2>ABG Calculator</h2>
-    <p><a href="abg_table.html">ABG Table to All Possible Value Pairs</a></p>
-
     <div class="calculator-grid">
-        <!-- Left Column - Controls and Equation -->
-        <div class="calculator-column">
+        <!-- Grid 1: Sliders -->
+        <div class="grid-item controls-container">
             <div class="controls">
                 <div class="slider-container">
                     <label for="paco2">PaCO₂ (mmHg):</label>
@@ -29,10 +28,13 @@ title: "ABG pH Calculator"
                     <div class="value-display">Current: <span id="hco3-value">24</span></div>
                 </div>
             </div>
+        </div>
 
+        <!-- Grid 2: Equation -->
+        <div class="grid-item equation-container">
             <section class="equation-section">
                 <h3>Henderson-Hasselbalch Equation</h3>
-                <div class="equation-container">
+                <div class="equation-content">
                     <p>The pH is calculated using:</p>
                     \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
                     
@@ -51,18 +53,21 @@ title: "ABG pH Calculator"
             </section>
         </div>
 
-        <!-- Right Column - Classification and Graph -->
-        <div class="calculator-column">
+        <!-- Grid 3: Classification Logic -->
+        <div class="grid-item classification-container">
             <section class="classification-logic">
                 <h3>Classification Logic</h3>
                 <div id="classification-steps" class="logic-steps">
                     <!-- This will be populated dynamically -->
                 </div>
             </section>
+        </div>
 
+        <!-- Grid 4: Graph -->
+        <div class="grid-item graph-container">
             <section class="graph-section">
                 <h2 class="graph-heading">pH Visualization</h2>
-                <div id="graph" class="graph-container"></div>
+                <div id="graph" class="graph-content"></div>
             </section>
         </div>
     </div>
