@@ -112,35 +112,39 @@ document.addEventListener('DOMContentLoaded', function() {
             const checkbox = document.getElementById(`video-check-${index+1}`);
             if (checkbox) {
                 checkbox.checked = video.completed;
-                checkbox.disabled = !video.completed; // Keep disabled if not completed
+                checkbox.disabled = !video.completed;
             }
     
-            // Update progress bars if watched progress exists
-            if (video.watched > 0 && video.container) {
-                const progressBar = video.container.querySelector('.video-progress-bar');
-                const progressText = video.container.querySelector('.video-progress-text');
+            // Find the progress container - updated selector
+            const videoPlayer = document.querySelectorAll('.video-player')[index];
+            if (!videoPlayer) return;
+    
+            const progressBar = videoPlayer.querySelector('.video-progress-bar');
+            const progressText = videoPlayer.querySelector('.video-progress-text');
+            const percentDisplay = videoPlayer.querySelector('.video-progress-percent');
+            
+            if (progressBar && progressText) {
+                const percent = video.duration > 0 ? 
+                    Math.min(100, (video.watched / video.duration) * 100) : 
+                    (video.completed ? 100 : 0);
                 
-                if (progressBar && progressText) {
-                    const percent = video.duration > 0 ? 
-                        Math.min(100, (video.watched / video.duration) * 100) : 
-                        (video.completed ? 100 : 0);
-                    
-                    progressBar.style.width = `${percent}%`;
-                    progressText.textContent = `${Math.round(percent)}% watched`;
-                    
-                    if (video.completed) {
-                        progressBar.classList.add('complete');
-                    }
+                progressBar.style.width = `${percent}%`;
+                progressText.textContent = `${Math.round(percent)}% watched`;
+                if (percentDisplay) {
+                    percentDisplay.textContent = `${Math.round(percent)}%`;
+                }
+                
+                if (video.completed) {
+                    progressBar.classList.add('complete');
                 }
             }
     
             // Update card styling
-            if (video.completed && video.container) {
-                video.container.closest('.resource-card')?.classList.add('completed');
+            if (video.completed) {
+                videoPlayer.closest('.resource-card')?.classList.add('completed');
             }
         });
     
-        // Update quiz buttons based on completion status
         updateQuizButton();
     }
 
@@ -380,17 +384,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Enhanced progress tracking with logging
+    // Update the startProgressTracking function:
     function startProgressTracking(player, index) {
         console.log(`[MVGatekeeper][Player ${index}] Starting progress tracking`);
         
-        const container = videoTracker.videoData[index].container;
-        if (!container) {
+        const videoData = videoTracker.videoData[index];
+        if (!videoData || !videoData.container) {
             console.error(`[MVGatekeeper][Player ${index}] No container found for progress tracking`);
             return;
         }
     
-        // Find the existing progress bar (use the one in video-progress-container)
-        const progressContainer = container.closest('.video-wrapper').querySelector('.video-progress-container');
+        // Find the progress container - updated selector
+        const progressContainer = videoData.container.closest('.video-player')?.querySelector('.video-progress-container');
         if (!progressContainer) {
             console.error(`[MVGatekeeper][Player ${index}] No progress container found`);
             return;
@@ -398,47 +403,55 @@ document.addEventListener('DOMContentLoaded', function() {
     
         const progressBar = progressContainer.querySelector('.video-progress-bar');
         const progressText = progressContainer.querySelector('.video-progress-text');
+        const percentDisplay = progressContainer.querySelector('.video-progress-percent');
         
         if (!progressBar || !progressText) {
             console.error(`[MVGatekeeper][Player ${index}] Progress elements not found`);
             return;
         }
     
-        console.log(`[MVGatekeeper][Player ${index}] Found existing progress elements`);
+        console.log(`[MVGatekeeper][Player ${index}] Found progress elements`, {
+            progressBar, progressText, percentDisplay
+        });
+    
+        // Clear any existing interval
+        if (videoData.progressInterval) {
+            clearInterval(videoData.progressInterval);
+        }
     
         // Update progress periodically
-        const progressInterval = setInterval(() => {
+        videoData.progressInterval = setInterval(() => {
             try {
                 const currentTime = player.getCurrentTime();
                 const duration = player.getDuration();
                 const percentWatched = (currentTime / duration) * 100;
                 
-                // Update progress bar and text
+                // Update all progress elements
                 progressBar.style.width = `${percentWatched}%`;
                 progressText.textContent = `${Math.round(percentWatched)}% watched`;
-                videoTracker.videoData[index].watched = currentTime;
+                if (percentDisplay) {
+                    percentDisplay.textContent = `${Math.round(percentWatched)}%`;
+                }
+                
+                videoData.watched = currentTime;
                 
                 // Log progress every 10% or when significant changes occur
                 if (percentWatched % 10 < 0.5 || 
                     (percentWatched > 85 && percentWatched % 5 < 0.5)) {
-                    console.log(`[MVGatekeeper][Player ${index}] Progress: ${percentWatched.toFixed(1)}% (${currentTime.toFixed(1)}s/${duration.toFixed(1)}s)`);
+                    console.log(`[MVGatekeeper][Player ${index}] Progress: ${percentWatched.toFixed(1)}%`);
                 }
                 
                 // Check for completion (90% watched)
-                if (!videoTracker.videoData[index].completed && percentWatched >= 90) {
+                if (!videoData.completed && percentWatched >= 90) {
                     console.log(`[MVGatekeeper][Player ${index}] Reached 90% watched - marking complete`);
                     markVideoComplete(index);
-                    clearInterval(progressInterval);
+                    clearInterval(videoData.progressInterval);
                 }
             } catch (e) {
                 console.error(`[MVGatekeeper][Player ${index}] Progress tracking error:`, e);
-                clearInterval(progressInterval);
+                clearInterval(videoData.progressInterval);
             }
         }, 1000);
-    
-        // Store interval ID for cleanup
-        videoTracker.videoData[index].progressInterval = progressInterval;
-        console.log(`[MVGatekeeper][Player ${index}] Progress tracking initialized`);
     }
 
     // Fallback UI if YouTube API fails
