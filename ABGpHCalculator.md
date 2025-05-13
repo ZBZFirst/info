@@ -13,51 +13,59 @@ title: "ABG pH Calculator"
     <h2>ABG Calculator</h2>
     <p><a href="abg_table.html">ABG Table to All Possible Value Pairs</a></p>
 
-    <div class="controls">
-        <div class="slider-container">
-            <label for="paco2">PaCO₂ (mmHg):</label>
-            <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
-            <div class="value-display">Current: <span id="paco2-value">40</span></div>
-        </div>
-        
-        <div class="slider-container">
-            <label for="hco3">HCO₃⁻ (mEq/L):</label>
-            <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
-            <div class="value-display">Current: <span id="hco3-value">24</span></div>
-        </div>
-    </div>
-
-    <section class="equation-section">
-        <h3>Henderson-Hasselbalch Equation</h3>
-        <div class="equation-container">
-            <p>The pH is calculated using:</p>
-            \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
-            
-            <div class="current-values">
-                <p>With your current values:</p>
-                <div id="dynamic-equation">
-                    \[ \text{pH} = 6.1 + \log\left(\frac{<span id="current-hco3">24</span>}{0.03 \times <span id="current-paco2">40</span>}\right) \]
+    <div class="calculator-grid">
+        <!-- Left Column - Controls and Equation -->
+        <div class="calculator-column">
+            <div class="controls">
+                <div class="slider-container">
+                    <label for="paco2">PaCO₂ (mmHg):</label>
+                    <input type="range" id="paco2" class="slider" min="10" max="100" value="40" step="1">
+                    <div class="value-display">Current: <span id="paco2-value">40</span></div>
+                </div>
+                
+                <div class="slider-container">
+                    <label for="hco3">HCO₃⁻ (mEq/L):</label>
+                    <input type="range" id="hco3" class="slider" min="5" max="50" value="24" step="1">
+                    <div class="value-display">Current: <span id="hco3-value">24</span></div>
                 </div>
             </div>
-            
-            <div class="final-result">
-                <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
-                <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
-            </div>
-        </div>
-    </section>
 
-    <section class="classification-logic">
-        <h3>Classification Logic</h3>
-        <div id="classification-steps" class="logic-steps">
-            <!-- This will be populated dynamically -->
+            <section class="equation-section">
+                <h3>Henderson-Hasselbalch Equation</h3>
+                <div class="equation-container">
+                    <p>The pH is calculated using:</p>
+                    \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
+                    
+                    <div class="current-values">
+                        <p>With your current values:</p>
+                        <div id="dynamic-equation">
+                            \[ \text{pH} = 6.1 + \log\left(\frac{<span id="current-hco3">24</span>}{0.03 \times <span id="current-paco2">40</span>}\right) \]
+                        </div>
+                    </div>
+                    
+                    <div class="final-result">
+                        <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
+                        <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
+                    </div>
+                </div>
+            </section>
         </div>
-    </section>
 
-    <section class="graph-section">
-        <h2 class="graph-heading">pH Visualization</h2>
-        <div id="graph" class="graph-container"></div>
-    </section>
+        <!-- Right Column - Classification and Graph -->
+        <div class="calculator-column">
+            <section class="classification-logic">
+                <h3>Classification Logic</h3>
+                <div id="classification-steps" class="logic-steps">
+                    <!-- This will be populated dynamically -->
+                </div>
+            </section>
+
+            <section class="graph-section">
+                <h2 class="graph-heading">pH Visualization</h2>
+                <div id="graph" class="graph-container"></div>
+            </section>
+        </div>
+    </div>
 </section>
 
 <link rel="stylesheet" href="_css/graph-components.css">
