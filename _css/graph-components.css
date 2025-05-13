@@ -1,161 +1,300 @@
-/* graph-components.css */
-/* Base Graph Styling */
+/* ============================================= */
+/* VARIABLES */
+/* ============================================= */
+:root {
+  /* Colors */
+  --primary: #2c3e50;
+  --secondary: #3498db;
+  --accent: #ff4d00;
+  --accent-rgb: 255, 77, 0;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --light: #f8f9fa;
+  --dark: #343a40;
+  --white: #ffffff;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ============================================= */
+/* BASE STYLES */
+/* ============================================= */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: var(--primary);
+  background-color: var(--white);
+}
+
+h1, h2, h3, h4 {
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+/* ============================================= */
+/* LAYOUT COMPONENTS */
+/* ============================================= */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.section {
+  padding: var(--space-xl) 0;
+}
+
+.section-title {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--light);
+}
+
+/* ============================================= */
+/* GRAPH COMPONENTS */
+/* ============================================= */
 .graph-container {
-    width: 100%;
-    height: 600px;
-    border: 3px solid var(--graph-accent-color, #ff4d00);
-    border-radius: 12px;
-    background: transparent !important; /* Changed from white to transparent */
-    box-shadow: 
-        0 4px 20px rgba(var(--graph-accent-rgb, 255, 77, 0), 0.3),
-        0 8px 30px rgba(var(--graph-accent-rgb, 255, 0, 0), 0.1);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    margin: 20px 0;
+  width: 100%;
+  height: 500px; /* Smaller default height for mobile */
+  border: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  box-shadow: 
+    0 4px 20px rgba(var(--accent-rgb), 0.3),
+    0 8px 30px rgba(var(--accent-rgb), 0.1);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  margin: var(--space-lg) 0;
 }
 
-/* Plotly-specific overrides */
-.js-plotly-plot .plot-container.plotly {
-    background: transparent !important;
-}
-
-.js-plotly-plot .main-svg {
-    background: transparent !important;
-}
-
-.js-plotly-plot .bg {
-    fill: transparent !important;
-}
-
-/* Heatmap specific styling */
-.js-plotly-plot .heatmaplayer {
-    opacity: 0.7 !important;
-}
-
-/* Classification Logic Section Styling */
-.classification-logic {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.classification-logic h3 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.logic-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.logic-step {
-    background-color: white;
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    border-left: 4px solid #ddd;
-}
-
-.logic-step strong {
-    color: #2c3e50;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.logic-step.active {
-    border-left-color: #3498db;
-    background-color: #f0f7ff;
-}
-
-.logic-step.active strong {
-    color: #2980b9;
-}
-
-.logic-step.abnormal {
-    border-left-color: #e74c3c;
-    background-color: #fef0ef;
-}
-
-.logic-step.abnormal strong {
-    color: #c0392b;
-}
-
-.logic-step.normal {
-    border-left-color: #27ae60;
-    background-color: #f0fdf4;
-}
-
-.logic-step.normal strong {
-    color: #27ae60;
-}
-
-/* For the conclusion step */
-.logic-step.conclusion {
-    font-weight: bold;
-    border-left-width: 6px;
-    background-color: #2c3e50;
-    color: white;
-}
-
-.logic-step.conclusion strong {
-    color: white;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .logic-step {
-        padding: 12px;
-    }
-}
-
-.parameter-value {
-    font-weight: bold;
-}
-
-.normal {
-    color: #28a745;
-}
-
-.abnormal {
-    color: #dc3545;
-}
-
-.conclusion-cell {
-    font-weight: bold;
-    background-color: #f8f9fa;
-}
-
-/* Rest of your existing CSS remains the same */
 .graph-container::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    background: linear-gradient(
-        45deg,
-        var(--graph-accent-color, #ff4d00) 0%,
-        var(--graph-secondary-color, #ff9900) 50%,
-        var(--graph-accent-color, #ff4d00) 100%
-    );
-    z-index: -1;
-    filter: blur(20px);
-    opacity: 0.3;
-    animation: graphPulse 3s infinite alternate;
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(
+    45deg,
+    var(--accent) 0%,
+    var(--warning) 50%,
+    var(--accent) 100%
+  );
+  z-index: -1;
+  filter: blur(20px);
+  opacity: 0.3;
+  animation: graphPulse 3s infinite alternate;
 }
 
 @keyframes graphPulse {
-    0% { opacity: 0.2; }
-    100% { opacity: 0.4; }
+  0% { opacity: 0.2; }
+  100% { opacity: 0.4; }
 }
 
-/* ... rest of your existing CSS ... */
+/* Plotly-specific overrides */
+.js-plotly-plot .plot-container.plotly,
+.js-plotly-plot .main-svg,
+.js-plotly-plot .bg {
+  background: transparent !important;
+}
+
+.js-plotly-plot .bg {
+  fill: transparent !important;
+}
+
+.js-plotly-plot .heatmaplayer {
+  opacity: 0.7 !important;
+}
+
+/* ============================================= */
+/* CLASSIFICATION LOGIC COMPONENTS */
+/* ============================================= */
+.classification-logic {
+  background-color: var(--light);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin: var(--space-lg) 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.classification-logic h3 {
+  color: var(--primary);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+}
+
+.logic-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.logic-step {
+  background-color: var(--white);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid #ddd;
+}
+
+.logic-step strong {
+  color: var(--primary);
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+/* Value-specific coloring */
+.value-normal {
+  color: var(--success);
+  font-weight: bold;
+}
+
+.value-acidosis {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+.value-alkalosis {
+  color: var(--info);
+  font-weight: bold;
+}
+
+.conclusion {
+  font-weight: bold;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+/* ============================================= */
+/* FORM CONTROLS */
+/* ============================================= */
+.controls {
+  display: grid;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.slider-container label {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.slider {
+  width: 100%;
+  margin: var(--space-sm) 0;
+}
+
+.value-display {
+  font-size: 0.9rem;
+  color: var(--dark);
+}
+
+/* ============================================= */
+/* RESULTS DISPLAY */
+/* ============================================= */
+.results {
+  background-color: var(--light);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.result-label {
+  font-weight: bold;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================= */
+/* EQUATION DISPLAY */
+/* ============================================= */
+.equation-container {
+  background-color: var(--light);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.equation-container p {
+  margin: 0 0 var(--space-sm) 0;
+}
+
+/* ============================================= */
+/* RESPONSIVE ADJUSTMENTS */
+/* ============================================= */
+@media (min-width: 768px) {
+  /* Larger graph on desktop */
+  .graph-container {
+    height: 600px;
+  }
+  
+  /* Two-column layout for controls on desktop */
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  /* More spacing on larger screens */
+  .section {
+    padding: var(--space-xl) 0;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Compact spacing on mobile */
+  .section {
+    padding: var(--space-lg) 0;
+  }
+  
+  .classification-logic,
+  .equation-container,
+  .results {
+    padding: var(--space-md);
+  }
+  
+  /* Smaller text on very small screens */
+  body {
+    font-size: 0.9rem;
+  }
+}
