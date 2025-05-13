@@ -53,8 +53,8 @@ title: "ABG pH Calculator"
 </section>
 
 <section class="graph-section">
-    <h2>pH Visualization</h2>
-    <div id="graph"></div>
+    <h2 class="graph-heading">pH Visualization</h2>
+    <div id="graph" class="graph-container"></div>
 </section>
 
 
