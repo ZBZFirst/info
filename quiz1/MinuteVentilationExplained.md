@@ -15,13 +15,6 @@ title: "What Is Minute Ventilation?"
         <a href="MVInteractive.html" class="quiz-link disabled" title="Interactive Worksheet">Minute Ventilation Interactive Page - Fun</a>
     </nav>
 
-    <section class="citation-section">
-        <h2 class="citation-heading">References</h2>
-        <div class="citation-item">
-            <p>Lastname, Firstname. <cite>Title of Book in Italics</cite>. Publisher, Year. <span class="citation-page">pp. 123-145.</span></p>
-        </div>
-    </section>
-
     <div class="resource-card">
         <h3>Basic Equation</h3>
         <figure class="formula-figure">
@@ -132,6 +125,14 @@ title: "What Is Minute Ventilation?"
             <label for="video-check-4">Video 4 completed</label>
         </div>
     </div>
+
+    <section class="citation-section">
+        <h2 class="citation-heading">References</h2>
+        <div class="citation-item">
+            <p>Lastname, Firstname. <cite>Title of Book in Italics</cite>. Publisher, Year. <span class="citation-page">pp. 123-145.</span></p>
+        </div>
+    </section>
+    
 </article>
 <link rel="stylesheet" href="/info/_css/gatekeeper2.css">
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
