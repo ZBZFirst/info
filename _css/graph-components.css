@@ -1,108 +1,189 @@
 /* ============================================= */
-/* GRAPH COMPONENTS VARIABLES */
+/* GRAPH COMPONENTS - DESIGN SYSTEM */
 /* ============================================= */
+
 :root {
-  /* Colors */
+  /* ============ */
+  /* COLOR SYSTEM */
+  /* ============ */
   --graph-primary: #2c3e50;
+  --graph-primary-light: rgba(44, 62, 80, 0.1);
   --graph-secondary: #3498db;
+  --graph-secondary-light: rgba(52, 152, 219, 0.1);
   --graph-accent: #ff4d00;
+  --graph-accent-light: rgba(255, 77, 0, 0.1);
   --graph-accent-rgb: 255, 77, 0;
+  
+  /* State Colors */
   --graph-success: #28a745;
   --graph-danger: #dc3545;
   --graph-warning: #ffc107;
   --graph-info: #17a2b8;
+  
+  /* Neutrals */
   --graph-light: #f8f9fa;
+  --graph-lighter: rgba(248, 249, 250, 0.7);
   --graph-dark: #343a40;
+  --graph-border: rgba(0, 0, 0, 0.1);
   
-  /* Spacing */
-  --graph-space-xs: 0.25rem;
-  --graph-space-sm: 0.5rem;
-  --graph-space-md: 1rem;
-  --graph-space-lg: 1.5rem;
-  --graph-space-xl: 2rem;
+  /* ============= */
+  /* SPACING SCALE */
+  /* ============= */
+  --graph-space-xxs: 0.25rem;   /* 4px */
+  --graph-space-xs: 0.5rem;     /* 8px */
+  --graph-space-sm: 0.75rem;    /* 12px */
+  --graph-space-md: 1rem;       /* 16px */
+  --graph-space-lg: 1.5rem;     /* 24px */
+  --graph-space-xl: 2rem;       /* 32px */
+  --graph-space-xxl: 3rem;      /* 48px */
   
-  /* Border radius */
-  --graph-radius-sm: 4px;
-  --graph-radius-md: 8px;
-  --graph-radius-lg: 12px;
+  /* ================ */
+  /* BORDER RADIUS */
+  /* ================ */
+  --graph-radius-sm: 0.25rem;   /* 4px */
+  --graph-radius-md: 0.5rem;    /* 8px */
+  --graph-radius-lg: 0.75rem;   /* 12px */
+  --graph-radius-xl: 1rem;      /* 16px */
+  --graph-radius-pill: 100vmax;
   
-  /* Shadows */
-  --graph-shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --graph-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --graph-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  /* ============ */
+  /* SHADOWS */
+  /* ============ */
+  --graph-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --graph-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --graph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --graph-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --graph-shadow-accent: 0 4px 20px rgba(var(--graph-accent-rgb), 0.3);
   
-  /* Transitions */
+  /* ============ */
+  /* TRANSITIONS */
+  /* ============ */
   --graph-transition-fast: 0.15s ease;
   --graph-transition-normal: 0.3s ease;
   --graph-transition-slow: 0.5s ease;
+  --graph-transition-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
 }
 
 /* ============================================= */
-/* CALCULATOR CONTROLS */
+/* BASE COMPONENT STYLES */
 /* ============================================= */
-.controls {
+
+/* ------------------------ */
+/* CALCULATOR LAYOUT SYSTEM */
+/* ------------------------ */
+
+.calculator-grid {
   display: grid;
+  gap: var(--graph-space-lg);
+  width: 100%;
+}
+
+.calculator-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--graph-space-lg);
+}
+
+/* Desktop layout */
+@media (min-width: 992px) {
+  .calculator-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    align-items: start;
+  }
+}
+
+/* ------------------------ */
+/* INTERACTIVE CONTROLS */
+/* ------------------------ */
+
+.controls {
+  display: flex;
+  flex-direction: column;
   gap: var(--graph-space-md);
-  margin-bottom: var(--graph-space-lg);
 }
 
 .slider-container {
   display: flex;
   flex-direction: column;
   gap: var(--graph-space-xs);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--graph-lighter);
   padding: var(--graph-space-md);
   border-radius: var(--graph-radius-md);
   box-shadow: var(--graph-shadow-sm);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--graph-border);
+  transition: all var(--graph-transition-normal);
+}
+
+.slider-container:hover {
+  box-shadow: var(--graph-shadow-md);
+  border-color: rgba(var(--graph-accent-rgb), 0.2);
 }
 
 .slider-container label {
   font-weight: 600;
   color: var(--graph-primary);
+  font-size: 0.9rem;
 }
 
 .slider {
   width: 100%;
-  margin: var(--graph-space-sm) 0;
+  margin: var(--graph-space-xs) 0;
   -webkit-appearance: none;
-  height: 8px;
-  border-radius: var(--graph-radius-sm);
+  height: 6px;
+  border-radius: var(--graph-radius-pill);
   background: linear-gradient(90deg, var(--graph-accent), var(--graph-secondary));
   outline: none;
+  cursor: pointer;
+  transition: all var(--graph-transition-fast);
+}
+
+.slider:focus-visible {
+  box-shadow: 0 0 0 3px rgba(var(--graph-accent-rgb), 0.3);
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--graph-accent);
   cursor: pointer;
   box-shadow: var(--graph-shadow-md);
-  transition: all var(--graph-transition-fast);
+  transition: all var(--graph-transition-bounce);
+  transform: scale(1);
 }
 
 .slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.slider::-webkit-slider-thumb:active {
   transform: scale(1.1);
 }
 
 .value-display {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--graph-dark);
   font-weight: 500;
+  display: flex;
+  justify-content: space-between;
 }
 
-/* ============================================= */
+/* ------------------------ */
 /* EQUATION DISPLAY */
-/* ============================================= */
+/* ------------------------ */
+
 .equation-section {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--graph-lighter);
   border-radius: var(--graph-radius-lg);
   padding: var(--graph-space-lg);
-  margin: var(--graph-space-lg) 0;
   box-shadow: var(--graph-shadow-sm);
+  transition: all var(--graph-transition-normal);
+}
+
+.equation-section:hover {
+  box-shadow: var(--graph-shadow-md);
 }
 
 .equation-container {
@@ -113,68 +194,50 @@
   margin: 0 0 var(--graph-space-sm) 0;
 }
 
-/* ============================================= */
-/* RESULTS DISPLAY */
-/* ============================================= */
-.results {
-  background-color: var(--graph-light);
-  border-radius: var(--graph-radius-md);
-  padding: var(--graph-space-md);
-  margin: var(--graph-space-lg) 0;
-  text-align: center;
-  border: 1px solid rgba(0,0,0,0.1);
-  box-shadow: var(--graph-shadow-sm);
-}
-
-.results-heading {
-  color: var(--graph-primary);
-  margin-top: 0;
-  margin-bottom: var(--graph-space-md);
-  padding-bottom: var(--graph-space-sm);
-  border-bottom: 2px solid rgba(0,0,0,0.1);
-  font-size: 1.25rem;
-  text-align: center;
-}
-
-.result-label {
-  font-weight: bold;
-  padding: var(--graph-space-xs) var(--graph-space-sm);
+.current-values {
+  margin: var(--graph-space-md) 0;
+  padding: var(--graph-space-sm);
+  background: white;
+  border-left: 4px solid var(--graph-secondary);
   border-radius: var(--graph-radius-sm);
-  display: inline-block;
 }
 
-/* Classification colors */
-.result-normal {
-  background-color: rgba(40, 167, 69, 0.1);
-  color: var(--graph-success);
+.final-result {
+  margin: var(--graph-space-md) 0;
+  padding: var(--graph-space-md);
+  background: var(--graph-light);
+  border-radius: var(--graph-radius-md);
+  font-size: 1.1rem;
 }
 
-.result-acidosis {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: var(--graph-danger);
+.final-result p {
+  margin: var(--graph-space-xs) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.result-alkalosis {
-  background-color: rgba(23, 162, 184, 0.1);
-  color: var(--graph-info);
-}
+/* ------------------------ */
+/* CLASSIFICATION SYSTEM */
+/* ------------------------ */
 
-/* ============================================= */
-/* CLASSIFICATION LOGIC */
-/* ============================================= */
 .classification-logic {
   background-color: var(--graph-light);
-  border-radius: var(--graph-radius-md);
+  border-radius: var(--graph-radius-lg);
   padding: var(--graph-space-lg);
-  margin: var(--graph-space-lg) 0;
   box-shadow: var(--graph-shadow-sm);
+  transition: all var(--graph-transition-normal);
+}
+
+.classification-logic:hover {
+  box-shadow: var(--graph-shadow-md);
 }
 
 .classification-logic h3 {
   color: var(--graph-primary);
   margin-bottom: var(--graph-space-md);
-  padding-bottom: var(--graph-space-sm);
-  border-bottom: 2px solid rgba(0,0,0,0.1);
+  padding-bottom: var(--graph-space-xs);
+  border-bottom: 2px solid var(--graph-border);
 }
 
 .logic-steps {
@@ -188,82 +251,78 @@
   padding: var(--graph-space-md);
   border-radius: var(--graph-radius-sm);
   box-shadow: var(--graph-shadow-sm);
-  border-left: 4px solid #ddd;
+  border-left: 4px solid var(--graph-border);
+  transition: all var(--graph-transition-fast);
+}
+
+.logic-step:hover {
+  transform: translateX(2px);
+  border-left-color: var(--graph-accent);
 }
 
 .logic-step strong {
   color: var(--graph-primary);
   display: block;
-  margin-bottom: var(--graph-space-sm);
+  margin-bottom: var(--graph-space-xs);
 }
 
-/* Value-specific coloring */
-.value-normal {
+/* State Indicators */
+.result-label {
+  font-weight: bold;
+  padding: var(--graph-space-xxs) var(--graph-space-sm);
+  border-radius: var(--graph-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--graph-space-xxs);
+}
+
+.result-label::before {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.result-normal {
+  background-color: var(--graph-primary-light);
   color: var(--graph-success);
-  font-weight: bold;
 }
 
-.value-acidosis {
+.result-acidosis {
+  background-color: var(--graph-accent-light);
   color: var(--graph-danger);
-  font-weight: bold;
 }
 
-.value-alkalosis {
+.result-alkalosis {
+  background-color: var(--graph-secondary-light);
   color: var(--graph-info);
-  font-weight: bold;
 }
 
-.conclusion {
-  font-weight: bold;
-  margin-top: var(--graph-space-md);
-  padding-top: var(--graph-space-md);
-  border-top: 1px solid rgba(0,0,0,0.1);
-}
+/* ------------------------ */
+/* GRAPH VISUALIZATION */
+/* ------------------------ */
 
-.equation-container {
-    margin: 20px 0;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 5px;
-}
-
-.current-values {
-    margin: 15px 0;
-    padding: 10px;
-    background: #fff;
-    border-left: 4px solid #007bff;
-}
-
-.final-result {
-    margin: 15px 0;
-    padding: 10px;
-    background: #e9ecef;
-    border-radius: 5px;
-    font-size: 1.1em;
-}
-
-.final-result p {
-    margin: 5px 0;
-}
-
-/* ============================================= */
-/* GRAPH SECTION STYLES */
-/* ============================================= */
 .graph-section {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--graph-lighter);
   border-radius: var(--graph-radius-lg);
   padding: var(--graph-space-lg);
-  margin: var(--graph-space-xl) 0;
   box-shadow: var(--graph-shadow-md);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--graph-border);
+  transition: all var(--graph-transition-slow);
+}
+
+.graph-section:hover {
+  box-shadow: var(--graph-shadow-xl);
 }
 
 .graph-heading {
   color: var(--graph-accent);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   margin-top: 0;
-  margin-bottom: var(--graph-space-lg);
-  padding-bottom: var(--graph-space-sm);
+  margin-bottom: var(--graph-space-md);
+  padding-bottom: var(--graph-space-xs);
   border-bottom: 2px solid rgba(var(--graph-accent-rgb), 0.2);
   text-align: center;
   position: relative;
@@ -275,34 +334,28 @@
   bottom: -2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 50px;
+  width: 3rem;
   height: 2px;
   background: var(--graph-accent);
 }
 
-
 .graph-container {
   width: 100%;
-  height: 500px;
-  border: 3px solid var(--graph-accent);
+  height: 400px;
+  border: 2px solid var(--graph-accent);
   border-radius: var(--graph-radius-lg);
-  background: transparent;
-  box-shadow: 
-    0 4px 20px rgba(var(--graph-accent-rgb), 0.3),
-    0 8px 30px rgba(var(--graph-accent-rgb), 0.1);
+  background: white;
+  box-shadow: var(--graph-shadow-accent);
   transition: all var(--graph-transition-normal);
   position: relative;
   overflow: hidden;
-  margin: var(--graph-space-lg) 0;
+  margin-top: var(--graph-space-md);
 }
 
 .graph-container::before {
   content: '';
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
+  inset: -10px;
   background: linear-gradient(
     45deg,
     var(--graph-accent) 0%,
@@ -331,34 +384,34 @@
   fill: transparent !important;
 }
 
-.js-plotly-plot .heatmaplayer {
-  opacity: 0.7 !important;
-}
-
 /* ============================================= */
 /* RESPONSIVE ADJUSTMENTS */
 /* ============================================= */
+
 @media (min-width: 768px) {
-  /* Larger graph on desktop */
   .graph-container {
-    height: 600px;
+    height: 500px;
   }
   
-  /* Two-column layout for controls on desktop */
-  .controls {
-    grid-template-columns: 1fr 1fr;
+  .graph-heading {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .graph-container {
+    height: 600px;
   }
 }
 
 @media (max-width: 480px) {
-  /* Compact spacing on mobile */
-  .graph-container {
-    height: 400px;
+  .equation-section,
+  .classification-logic,
+  .graph-section {
+    padding: var(--graph-space-md);
   }
   
-  .classification-logic,
-  .equation-container,
-  .results {
-    padding: var(--graph-space-md);
+  .graph-container {
+    height: 350px;
   }
 }
