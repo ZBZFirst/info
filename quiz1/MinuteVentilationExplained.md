@@ -64,12 +64,14 @@ title: "What Is Minute Ventilation?"
                         <figcaption class="video-caption">Video 1: Base Equation Demonstration</figcaption>
                     </figure>
                     
-                    <div class="video-progress-container">
-                        <div class="video-progress">
-                            <div class="video-progress-bar"></div>
-                        </div>
-                        <div class="video-progress-text">0% watched</div>
+                <div class="video-progress-container">
+                  <div class="video-progress">
+                    <div class="video-progress-bar">
+                      <span class="video-progress-percent">0%</span>
                     </div>
+                  </div>
+                  <div class="video-progress-text">Watching</div>
+                </div>
                     
                     <div class="video-completion disabled">
                         <input type="checkbox" id="video-check-1" disabled>
@@ -93,12 +95,14 @@ title: "What Is Minute Ventilation?"
                         <figcaption class="video-caption">Video 2: Technical Application</figcaption>
                     </figure>
                     
-                    <div class="video-progress-container">
-                        <div class="video-progress">
-                            <div class="video-progress-bar"></div>
-                        </div>
-                        <div class="video-progress-text">0% watched</div>
+                <div class="video-progress-container">
+                  <div class="video-progress">
+                    <div class="video-progress-bar">
+                      <span class="video-progress-percent">0%</span>
                     </div>
+                  </div>
+                  <div class="video-progress-text">Watching</div>
+                </div>
                     
                     <div class="video-completion disabled">
                         <input type="checkbox" id="video-check-2" disabled>
@@ -127,10 +131,12 @@ title: "What Is Minute Ventilation?"
                     </figure>
                     
                     <div class="video-progress-container">
-                        <div class="video-progress">
-                            <div class="video-progress-bar"></div>
+                      <div class="video-progress">
+                        <div class="video-progress-bar">
+                          <span class="video-progress-percent">0%</span>
                         </div>
-                        <div class="video-progress-text">0% watched</div>
+                      </div>
+                      <div class="video-progress-text">Watching</div>
                     </div>
                     
                     <div class="video-completion disabled">
@@ -155,10 +161,12 @@ title: "What Is Minute Ventilation?"
                     </figure>
                     
                     <div class="video-progress-container">
-                        <div class="video-progress">
-                            <div class="video-progress-bar"></div>
+                      <div class="video-progress">
+                        <div class="video-progress-bar">
+                          <span class="video-progress-percent">0%</span>
                         </div>
-                        <div class="video-progress-text">0% watched</div>
+                      </div>
+                      <div class="video-progress-text">Watching</div>
                     </div>
                     
                     <div class="video-completion disabled">
