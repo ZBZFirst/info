@@ -40,9 +40,9 @@ title: "ABG pH Calculator"
 </section>
 
 <section class="results">
-        <h3>Results</h3>
-        <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
-        <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
+    <h3 class="results-heading">Results</h3>
+    <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
+    <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
 </section>
 
 <section class="classification-logic">
