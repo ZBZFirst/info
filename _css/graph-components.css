@@ -170,6 +170,119 @@
   justify-content: space-between;
 }
 
+/* ============================================= */
+/* ENHANCED CALCULATOR LAYOUT */
+/* ============================================= */
+
+.calculator-section {
+    background: var(--graph-light);
+    padding: var(--graph-space-xl);
+    border-radius: var(--graph-radius-lg);
+    box-shadow: var(--graph-shadow-md);
+    margin: var(--graph-space-xl) auto;
+    max-width: 1400px;
+    border: 1px solid var(--graph-border);
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: var(--graph-space-lg);
+    color: var(--graph-primary);
+    font-size: 1.75rem;
+    position: relative;
+    padding-bottom: var(--graph-space-xs);
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--graph-accent);
+    border-radius: var(--graph-radius-pill);
+}
+
+.calculator-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--graph-space-lg);
+}
+
+.calculator-group {
+    display: flex;
+    gap: var(--graph-space-lg);
+    background: white;
+    padding: var(--graph-space-lg);
+    border-radius: var(--graph-radius-lg);
+    box-shadow: var(--graph-shadow-sm);
+    transition: all var(--graph-transition-normal);
+}
+
+.calculator-group:hover {
+    box-shadow: var(--graph-shadow-md);
+}
+
+.upper-group {
+    background: linear-gradient(135deg, var(--graph-lighter) 0%, white 100%);
+}
+
+.lower-group {
+    background: linear-gradient(135deg, white 0%, var(--graph-lighter) 100%);
+}
+
+/* Grid item containers */
+.controls-container {
+    flex: 1;
+    background: rgba(var(--graph-accent-rgb), 0.03);
+    border: 1px solid rgba(var(--graph-accent-rgb), 0.1);
+}
+
+.equation-container {
+    flex: 1.5;
+    background: rgba(var(--graph-secondary-rgb), 0.03);
+    border: 1px solid rgba(var(--graph-secondary-rgb), 0.1);
+}
+
+.classification-container {
+    flex: 1;
+    background: rgba(var(--graph-primary-rgb), 0.03);
+    border: 1px solid rgba(var(--graph-primary-rgb), 0.1);
+}
+
+.graph-container {
+    flex: 1.5;
+    /* Your existing graph container styles remain */
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .calculator-group {
+        flex-direction: column;
+    }
+    
+    .calculator-section {
+        padding: var(--graph-space-lg);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .calculator-section {
+        padding: var(--graph-space-md);
+        margin: var(--graph-space-md) auto;
+    }
+    
+    .calculator-group {
+        padding: var(--graph-space-md);
+    }
+}
+
 /* ------------------------ */
 /* EQUATION DISPLAY */
 /* ------------------------ */
