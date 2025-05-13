@@ -1,16 +1,16 @@
 /* ===================== */
 /* === Header Styles === */
 /* ===================== */
-
 .site-header {
+  width: 100vw;
   text-align: center;
-  margin-bottom: 2rem;
-  padding: 2rem 0 1.5rem;
+  padding: 2rem 1rem;
   background: linear-gradient(135deg, #f8f9fd 0%, #e6e9f8 100%);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(2px);
+  margin-bottom: 2rem;
 }
 
 .site-header::before {
@@ -28,7 +28,7 @@
 }
 
 .site-title {
-  font-size: 2.8rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
   margin: 0 0 1.5rem 0;
   background: linear-gradient(45deg, #4361ee, #3a0ca3);
   -webkit-background-clip: text;
@@ -48,6 +48,7 @@
 }
 
 .nav-container {
+  width: 100%;
   max-width: 1000px;
   margin: 1.5rem auto 0;
   padding: 0 1rem;
@@ -57,16 +58,16 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.5rem;
   background-color: transparent;
   padding: 0;
   position: relative;
 }
 
 .nav-link {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 120px;
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   text-align: center;
   background: rgba(255, 255, 255, 0.95);
   color: #4361ee !important;
@@ -141,7 +142,6 @@
     inset 0 1px 2px rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Icon Enhancements */
 .nav-link::after {
   content: '';
   display: inline-block;
@@ -159,22 +159,17 @@
 
 @media (max-width: 768px) {
   .site-header {
-    padding: 1.5rem 0;
-  }
-  
-  .site-title {
-    font-size: 2.2rem;
-    padding: 0 0.5rem;
+    padding: 1.5rem 0.5rem;
   }
   
   .nav-table {
     flex-direction: column;
-    gap: 6px;
+    gap: 0.5rem;
   }
   
   .nav-link {
     min-width: 100%;
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 8px;
     backdrop-filter: blur(2px);
   }
