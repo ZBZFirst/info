@@ -4,9 +4,19 @@ title: "ABG pH Calculator"
 ---
 
 <article class="intro">
-    <h1>Arterial Blood Gas (ABG) Calculator and Classifier</h1>
-    <p>This interactive tool helps you understand and interpret arterial blood gas (ABG) results. Adjust the sliders for PaCO₂ and HCO₃⁻ values to see how they affect blood pH and the resulting classification.</p>
-    <p>The calculator uses the Henderson-Hasselbalch equation to determine pH and classifies the acid-base status based on your inputs.</p>
+    <h1>Arterial Blood Gas (<strong>ABG</strong>) Analysis and Classification</h1>
+    <p>
+        <strong>ABG</strong> analysis is a vital diagnostic process that evaluates a patient’s gas exchange and acid-base status. Typically performed after arterial puncture and specimen collection, <strong>ABG</strong> interpretation relies on comparing key values—such as partial pressure of oxygen (<strong>PaO₂</strong>), carbon dioxide (<strong>PaCO₂</strong>), and blood <strong>pH</strong>—against calibrated standards within the <strong>ABG</strong> analyzer. These values are measured using specialized electrodes: the <em>Clark electrode</em> for <strong>PaO₂</strong>, the <em>Severinghaus electrode</em> for <strong>PaCO₂</strong>, and the <em>Glass electrode</em> for <strong>pH</strong>.
+    </p>
+    <p>
+        Using the <strong>Henderson-Hasselbalch</strong> equation, clinicians can determine the blood's <strong>pH</strong> and evaluate its alignment with normal physiological parameters. By analyzing the relationship between <strong>PaCO₂</strong> (respiratory component) and bicarbonate (<strong>HCO₃⁻</strong>, metabolic component), we can classify the patient’s condition into categories such as <span style="color:red;">respiratory acidosis</span>, <span style="color:blue;">respiratory alkalosis</span>, <span style="color:red;">metabolic acidosis</span>, or <span style="color:blue;">metabolic alkalosis</span>.
+    </p>
+    <p>
+        <strong>ABG</strong> classification aids in identifying whether the body is compensating for an abnormality and if the condition is acute or chronic. Some results indicate a need for immediate medical intervention—such as severe <span style="color:red;">acidosis</span> or hypoxemia—while others may suggest a “wait and see” strategy, depending on severity and patient symptoms. However, any abnormal <strong>ABG</strong> finding warrants increased clinical observation, with overnight monitoring recommended before considering discharge.
+    </p>
+    <p>
+        This interactive <strong>ABG</strong> calculator demonstrates how changes in <strong>PaCO₂</strong> and <strong>HCO₃⁻</strong> affect <strong>pH</strong>, providing insights into the body’s acid-base balance and helping guide decision-making based on real-time inputs.
+    </p>
     <p><a href="abg_table.html">ABG Table to All Possible Value Pairs</a></p>
 </article>
 
