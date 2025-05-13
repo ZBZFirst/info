@@ -314,27 +314,30 @@ function explainClassification(pH, PaCO2, HCO3) {
     const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
     const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
     const normalpH = pH >= 7.35 && pH <= 7.45;
+    const classificationId = classifyABG(pH, PaCO2, HCO3);
+    const classificationInfo = getClassificationInfo(classificationId);
     
     // Create step elements
     const step1 = document.createElement('div');
     step1.className = 'logic-step';
+    if (pH < 7.35 || pH > 7.45) step1.classList.add('abnormal');
+    else step1.classList.add('normal');
     step1.innerHTML = `<strong>Step 1: Check pH</strong><br>Current pH: ${pH.toFixed(2)} (${pH < 7.35 ? 'Acidemia' : pH > 7.45 ? 'Alkalemia' : 'Normal pH'})`;
     
     const step2 = document.createElement('div');
     step2.className = 'logic-step';
+    if (!normalPaCO2 || !normalHCO3) step2.classList.add('abnormal');
+    else step2.classList.add('normal');
     step2.innerHTML = `<strong>Step 2: Check primary disorder</strong><br>PaCO₂: ${PaCO2} (${normalPaCO2 ? 'Normal' : PaCO2 > 45 ? 'High → Respiratory Acidosis' : 'Low → Respiratory Alkalosis'})<br>
                        HCO₃⁻: ${HCO3} (${normalHCO3 ? 'Normal' : HCO3 < 22 ? 'Low → Metabolic Acidosis' : 'High → Metabolic Alkalosis'})`;
     
     const step3 = document.createElement('div');
     step3.className = 'logic-step';
-    
-    const classificationId = classifyABG(pH, PaCO2, HCO3);
-    const classificationInfo = getClassificationInfo(classificationId);
-    
+    if (classificationId !== 14) step3.classList.add('active'); // Not normal
     step3.innerHTML = `<strong>Step 3: Determine compensation</strong><br>${getCompensationExplanation(pH, PaCO2, HCO3, classificationId)}`;
     
     const conclusion = document.createElement('div');
-    conclusion.className = 'logic-step active';
+    conclusion.className = 'logic-step conclusion';
     conclusion.innerHTML = `<strong>Conclusion:</strong> ${classificationInfo.label}`;
     
     // Append all steps
@@ -342,23 +345,6 @@ function explainClassification(pH, PaCO2, HCO3) {
     stepsElement.appendChild(step2);
     stepsElement.appendChild(step3);
     stepsElement.appendChild(conclusion);
-    
-    // Highlight active steps based on pH
-    if (pH < 7.35) {
-        step1.classList.add('active');
-        step2.classList.add('active');
-        if (PaCO2 > 45 || HCO3 < 22) step3.classList.add('active');
-    } else if (pH > 7.45) {
-        step1.classList.add('active');
-        step2.classList.add('active');
-        if (PaCO2 < 35 || HCO3 > 26) step3.classList.add('active');
-    } else {
-        step1.classList.add('active');
-        if (!normalPaCO2 || !normalHCO3) {
-            step2.classList.add('active');
-            step3.classList.add('active');
-        }
-    }
 }
 
 function getCompensationExplanation(pH, PaCO2, HCO3, classificationId) {
