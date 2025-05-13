@@ -221,11 +221,39 @@
 }
 
 /* ============================================= */
-/* GRAPH VISUALIZATION */
+/* GRAPH SECTION STYLES */
 /* ============================================= */
 .graph-section {
-  margin-top: var(--graph-space-xl);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--graph-radius-lg);
+  padding: var(--graph-space-lg);
+  margin: var(--graph-space-xl) 0;
+  box-shadow: var(--graph-shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
+
+.graph-heading {
+  color: var(--graph-accent);
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: var(--graph-space-lg);
+  padding-bottom: var(--graph-space-sm);
+  border-bottom: 2px solid rgba(var(--graph-accent-rgb), 0.2);
+  text-align: center;
+  position: relative;
+}
+
+.graph-heading::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 2px;
+  background: var(--graph-accent);
+}
+
 
 .graph-container {
   width: 100%;
