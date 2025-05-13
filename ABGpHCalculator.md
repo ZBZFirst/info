@@ -27,12 +27,6 @@ title: "ABG pH Calculator"
         </div>
 </div>
 
-<section class="results">
-        <h3>Results</h3>
-        <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
-        <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
-</section>
-
 <section class="equation-section">
     <h3>Henderson-Hasselbalch Equation</h3>
     <div class="equation-container">
@@ -43,6 +37,12 @@ title: "ABG pH Calculator"
             \[ \text{pH} = 6.1 + \log\left(\frac{\text{HCO}_3^-}{0.03 \times \text{PaCO}_2}\right) \]
         </div>
     </div>
+</section>
+
+<section class="results">
+        <h3>Results</h3>
+        <p><strong>Calculated pH:</strong> <span id="ph-value">7.40</span></p>
+        <p><strong>Classification:</strong> <span id="classification" class="result-label">Normal</span></p>
 </section>
 
 <section class="classification-logic">
