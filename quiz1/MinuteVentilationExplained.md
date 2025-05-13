@@ -9,12 +9,6 @@ title: "What Is Minute Ventilation?"
         <p>Read the following guide and watch the videos below. Upon completing the videos, the Quiz and Interactive Page will become unlocked. That Access Code Button is for future functionality while I finish this page with citations and the rest of that jazz.</p>
     </header>
 
-    <nav class="quiz-nav">
-        <a href="https://buy.stripe.com/8wM17H2yObCt8Mw008" class="quiz-link" title="Go Here to Obtain an Access Codez">Access Code Checkout Page</a>
-        <a href="testquiz.html" class="quiz-link disabled" title="Test Minute Ventilation Quiz">Minute Ventilation Quiz</a>
-        <a href="MVInteractive.html" class="quiz-link disabled" title="Interactive Worksheet">Minute Ventilation Interactive Page - Fun</a>
-    </nav>
-
     <div class="resource-card">
         <h3>Basic Equation</h3>
         <figure class="formula-figure">
@@ -132,8 +126,14 @@ title: "What Is Minute Ventilation?"
             <p>Lastname, Firstname. <cite>Title of Book in Italics</cite>. Publisher, Year. <span class="citation-page">pp. 123-145.</span></p>
         </div>
     </section>
-    
 </article>
+
+<nav class="quiz-nav">
+        <a href="https://buy.stripe.com/8wM17H2yObCt8Mw008" class="quiz-link" title="Go Here to Obtain an Access Codez">Access Code Checkout Page</a>
+        <a href="testquiz.html" class="quiz-link disabled" title="Test Minute Ventilation Quiz">Minute Ventilation Quiz</a>
+        <a href="MVInteractive.html" class="quiz-link disabled" title="Interactive Worksheet">Minute Ventilation Interactive Page - Fun</a>
+</nav>
+
 <link rel="stylesheet" href="/info/_css/gatekeeper2.css">
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
