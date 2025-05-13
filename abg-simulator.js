@@ -313,33 +313,57 @@ function explainClassification(pH, PaCO2, HCO3) {
     
     const normalPaCO2 = PaCO2 >= 35 && PaCO2 <= 45;
     const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
-    const normalpH = pH >= 7.35 && pH <= 7.45;
     const classificationId = classifyABG(pH, PaCO2, HCO3);
     const classificationInfo = getClassificationInfo(classificationId);
-    
+
+    // Helper function to wrap text with appropriate color class
+    const colorClass = (value, normalCondition, type) => {
+        if (normalCondition) return `<span class="normal-value">${value}</span>`;
+        return `<span class="${type}-value">${value}</span>`;
+    };
+
     // Create step elements
     const step1 = document.createElement('div');
     step1.className = 'logic-step';
-    if (pH < 7.35 || pH > 7.45) step1.classList.add('abnormal');
-    else step1.classList.add('normal');
-    step1.innerHTML = `<strong>Step 1: Check pH</strong><br>Current pH: ${pH.toFixed(2)} (${pH < 7.35 ? 'Acidemia' : pH > 7.45 ? 'Alkalemia' : 'Normal pH'})`;
-    
+    const pHStatus = pH < 7.35 ? 'Acidosis' : pH > 7.45 ? 'Alkalosis' : 'Normal';
+    const pHClass = pH < 7.35 ? 'acidosis' : pH > 7.45 ? 'alkalosis' : 'normal';
+    step1.innerHTML = `
+        <strong>Step 1: Check pH</strong><br>
+        Current pH: ${colorClass(pH.toFixed(2), pH >= 7.35 && pH <= 7.45, pHClass)} 
+        (${colorClass(pHStatus, pH >= 7.35 && pH <= 7.45, pHClass)})
+    `;
+
     const step2 = document.createElement('div');
     step2.className = 'logic-step';
-    if (!normalPaCO2 || !normalHCO3) step2.classList.add('abnormal');
-    else step2.classList.add('normal');
-    step2.innerHTML = `<strong>Step 2: Check primary disorder</strong><br>PaCO₂: ${PaCO2} (${normalPaCO2 ? 'Normal' : PaCO2 > 45 ? 'High → Respiratory Acidosis' : 'Low → Respiratory Alkalosis'})<br>
-                       HCO₃⁻: ${HCO3} (${normalHCO3 ? 'Normal' : HCO3 < 22 ? 'Low → Metabolic Acidosis' : 'High → Metabolic Alkalosis'})`;
+    const pCO2Status = normalPaCO2 ? 'Normal' : PaCO2 > 45 ? 'Respiratory Acidosis' : 'Respiratory Alkalosis';
+    const pCO2Class = normalPaCO2 ? 'normal' : PaCO2 > 45 ? 'acidosis' : 'alkalosis';
+    const hco3Status = normalHCO3 ? 'Normal' : HCO3 < 22 ? 'Metabolic Acidosis' : 'Metabolic Alkalosis';
+    const hco3Class = normalHCO3 ? 'normal' : HCO3 < 22 ? 'acidosis' : 'alkalosis';
     
+    step2.innerHTML = `
+        <strong>Step 2: Check primary disorder</strong><br>
+        PaCO₂: ${colorClass(PaCO2, normalPaCO2, pCO2Class)} 
+        (${colorClass(pCO2Status, normalPaCO2, pCO2Class)})<br>
+        HCO₃⁻: ${colorClass(HCO3, normalHCO3, hco3Class)} 
+        (${colorClass(hco3Status, normalHCO3, hco3Class)})
+    `;
+
     const step3 = document.createElement('div');
     step3.className = 'logic-step';
-    if (classificationId !== 14) step3.classList.add('active'); // Not normal
-    step3.innerHTML = `<strong>Step 3: Determine compensation</strong><br>${getCompensationExplanation(pH, PaCO2, HCO3, classificationId)}`;
-    
+    step3.innerHTML = `
+        <strong>Step 3: Determine compensation</strong><br>
+        ${getCompensationExplanation(pH, PaCO2, HCO3, classificationId)}
+    `;
+
     const conclusion = document.createElement('div');
     conclusion.className = 'logic-step conclusion';
-    conclusion.innerHTML = `<strong>Conclusion:</strong> ${classificationInfo.label}`;
-    
+    const conclusionClass = classificationId === 14 ? 'normal' : 
+                          classificationInfo.label.includes('Acidosis') ? 'acidosis' : 'alkalosis';
+    conclusion.innerHTML = `
+        <strong>Conclusion:</strong> 
+        <span class="${conclusionClass}-value">${classificationInfo.label}</span>
+    `;
+
     // Append all steps
     stepsElement.appendChild(step1);
     stepsElement.appendChild(step2);
