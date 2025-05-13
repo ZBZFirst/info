@@ -220,6 +220,32 @@
   border-top: 1px solid rgba(0,0,0,0.1);
 }
 
+.equation-container {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.current-values {
+    margin: 15px 0;
+    padding: 10px;
+    background: #fff;
+    border-left: 4px solid #007bff;
+}
+
+.final-result {
+    margin: 15px 0;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+    font-size: 1.1em;
+}
+
+.final-result p {
+    margin: 5px 0;
+}
+
 /* ============================================= */
 /* GRAPH SECTION STYLES */
 /* ============================================= */
