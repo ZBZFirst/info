@@ -1,0 +1,31 @@
+  .graph {
+    position: relative;
+    height: 80vh;
+    transform-style: preserve-3d;
+    perspective: 2000px;
+    margin: 50px;
+    border: 1px solid #eee;
+  }
+
+  .container {
+    position: absolute;
+    left: calc(50% + var(--x) * var(--x-scale, 5px)));
+    top: calc(50% - var(--z) * var(--z-scale, 5px)));
+    transform: 
+      translate(-50%, -50%)
+      translateY(calc(-1 * var(--y) * var(--y-scale, 20px)));
+    
+    width: 3px;
+    height: 3px;
+    background: hsl(calc(var(--y) * 120), 80%, 50%);
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+
+  .container:hover {
+    transform: translate(-50%, -50%) 
+               translateY(calc(-1 * var(--y) * var(--y-scale, 20px))) 
+               scale(5);
+    z-index: 100;
+  }
+
