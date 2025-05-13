@@ -376,21 +376,21 @@ function getCompensationExplanation(pH, PaCO2, HCO3, classificationId) {
     const normalHCO3 = HCO3 >= 22 && HCO3 <= 26;
     
     switch(classificationId) {
-        case 0: return "Mixed Acidosis: Both respiratory (high PaCO₂) and metabolic (low HCO₃⁻) acidosis present";
-        case 1: return "Partially Compensated Respiratory Acidosis: High PaCO₂ with elevated HCO₃⁻ but pH still acidic";
-        case 2: return "Uncompensated Respiratory Acidosis: High PaCO₂ without metabolic compensation";
-        case 3: return "Partially Compensated Metabolic Acidosis: Low HCO₃⁻ with respiratory compensation but pH still acidic";
-        case 4: return "Uncompensated Metabolic Acidosis: Low HCO₃⁻ without respiratory compensation";
-        case 5: return "Partially Compensated Respiratory Alkalosis: Low PaCO₂ with decreased HCO₃⁻ but pH still alkaline";
-        case 6: return "Mixed Alkalosis: Both respiratory (low PaCO₂) and metabolic (high HCO₃⁻) alkalosis present";
-        case 7: return "Uncompensated Respiratory Alkalosis: Low PaCO₂ without metabolic compensation";
-        case 8: return "Partially Compensated Metabolic Alkalosis: High HCO₃⁻ with respiratory compensation but pH still alkaline";
-        case 9: return "Uncompensated Metabolic Alkalosis: High HCO₃⁻ without respiratory compensation";
-        case 10: return "Fully Compensated Respiratory Acidosis: Chronic respiratory acidosis with metabolic compensation bringing pH to low-normal range";
-        case 11: return "Fully Compensated Metabolic Acidosis: Metabolic acidosis with respiratory compensation bringing pH to low-normal range";
-        case 12: return "Fully Compensated Metabolic Alkalosis: Metabolic alkalosis with respiratory compensation bringing pH to high-normal range";
-        case 13: return "Fully Compensated Respiratory Alkalosis: Chronic respiratory alkalosis with metabolic compensation bringing pH to high-normal range";
-        case 14: return "Normal: Both PaCO₂ and HCO₃⁻ are within normal ranges";
+        case 0: return "Both respiratory (high PaCO₂) and metabolic (low HCO₃⁻) acidosis present";
+        case 1: return "High PaCO₂ with elevated HCO₃⁻ but pH still acidic";
+        case 2: return "High PaCO₂ without metabolic compensation";
+        case 3: return "Low HCO₃⁻ with respiratory compensation but pH still acidic";
+        case 4: return "Low HCO₃⁻ without respiratory compensation";
+        case 5: return "Low PaCO₂ with decreased HCO₃⁻ but pH still alkaline";
+        case 6: return "Both respiratory (low PaCO₂) and metabolic (high HCO₃⁻) alkalosis present";
+        case 7: return "Low PaCO₂ without metabolic compensation";
+        case 8: return "High HCO₃⁻ with respiratory compensation but pH still alkaline";
+        case 9: return "High HCO₃⁻ without respiratory compensation";
+        case 10: return "Chronic respiratory acidosis with metabolic compensation bringing pH to low-normal range";
+        case 11: return "Metabolic acidosis with respiratory compensation bringing pH to low-normal range";
+        case 12: return "Metabolic alkalosis with respiratory compensation bringing pH to high-normal range";
+        case 13: return "Chronic respiratory alkalosis with metabolic compensation bringing pH to high-normal range";
+        case 14: return "Both PaCO₂ and HCO₃⁻ are within normal ranges";
         default: return "Undefined pattern: Doesn't fit typical compensation patterns";
     }
 }
