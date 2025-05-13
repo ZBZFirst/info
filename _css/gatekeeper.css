@@ -14,6 +14,10 @@
   --text-light: #6c757d;
   --bg-color: #f8f9fa;
   --card-bg: white;
+  --max-content-width: 1200px;
+  --content-padding: clamp(1rem, 5vw, 2rem);
+  --card-max-width: 1000px;
+  --mobile-breakpoint: 768px;
   --border-color: #e1e4e8;
   --border-radius: 6px;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
@@ -32,10 +36,14 @@ body {
   font-family: 'Arial', sans-serif;
   line-height: 1.6;
   color: var(--text-color);
-  max-width: 1900 px;
-  margin: 0 auto;
-  padding: 20px;
+  min-height: 100vh;
+  padding: var(--content-padding);
   background-color: var(--bg-color);
+  
+  /* New responsive width approach */
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
 }
 
 /* ======================== */
@@ -63,14 +71,15 @@ h2 {
 /* === Card Components === */
 /* ======================== */
 .resource-card {
-  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: var(--space-lg);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: var(--space-md);
   background-color: var(--card-bg);
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
-  position: relative;
 }
 
 .resource-card:hover {
@@ -98,13 +107,13 @@ h2 {
 /* ======================== */
 .embed-container {
   position: relative;
+  width: 100%;
+  max-width: 800px; /* Or your preferred max width */
+  margin: 0 auto;
   padding-bottom: 56.25%; /* 16:9 aspect ratio */
   height: 0;
   overflow: hidden;
-  max-width: 100%;
-  margin: 1rem 0;
-  border-radius: 4px;
-  background: #000;
+  border-radius: var(--border-radius);
 }
 
 .embed-container iframe {
@@ -316,9 +325,57 @@ button:active:not(:disabled) {
   color: white;
 }
 
+/* Width Utilities */
+.w-full { width: 100%; }
+.w-screen { width: 100vw; }
+.max-w-full { max-width: 100%; }
+.max-w-screen { max-width: 100vw; }
+.max-w-content { max-width: var(--max-content-width); }
+.max-w-card { max-width: var(--card-max-width); }
+
+/* Responsive width classes */
+@media (min-width: 768px) {
+  .md\:w-1\/2 { width: 50%; }
+  .md\:w-1\/3 { width: 33.333%; }
+  .md\:w-2\/3 { width: 66.666%; }
+}
+
+
 /* ======================== */
 /* === Layout Components === */
 /* ======================== */
+
+
+.content-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--content-padding);
+}
+
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-md);
+  width: 100%;
+}
+
+.card-container {
+  width: 100%;
+  max-width: var(--card-max-width);
+  margin: 0 auto;
+}
+
+/* For full-width sections (like headers) */
+.full-width-container {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding: var(--space-md) var(--content-padding);
+}
+
 .interaction-container {
   margin: 2rem auto;
   padding: 1.5rem;
@@ -372,21 +429,28 @@ button:active:not(:disabled) {
 /* === Responsive Design === */
 /* ======================== */
 @media (max-width: 768px) {
-  body {
-    padding: 15px;
+  :root {
+    --content-padding: 1rem;
+    --card-max-width: 100%;
   }
+  
+  body {
+    padding: 0;
+  }
+
+  .content-container {
+    padding: var(--space-sm);  }
   
   .resource-card {
-    padding: 1rem;
+    border-radius: 0;
+    margin-bottom: var(--space-md);
+    box-shadow: none;
+    border-left: none;
+    border-right: none;
   }
   
-  h1 {
-    font-size: 1.8rem;
-  }
-  
-  h2 {
-    font-size: 1.3rem;
-  }
+  h1 {font-size: 1.8rem;  }
+  h2 {font-size: 1.3rem;  }
   
   .quiz-link {
     display: block;
