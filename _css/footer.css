@@ -1,7 +1,6 @@
 /* ===================== */
 /* === Footer Styles === */
 /* ===================== */
-
 @property --pulse-r {
   syntax: '<number>';
   initial-value: 0;
@@ -21,10 +20,10 @@
 }
 
 .site-footer {
-  padding: 4rem 1rem 2rem;
+  width: 100vw;
+  padding: 3rem 1rem;
   font-size: 0.9rem;
   color: #6c757d;
-  margin-top: 4rem;
   background: linear-gradient(135deg, #f8f9fd 0%, #e6e9f8 100%);
   position: relative;
   overflow: hidden;
@@ -32,7 +31,6 @@
   animation: pulse-cycle 180s linear infinite;
 }
 
-/* Pulse animation layer */
 .site-footer::before {
   content: '';
   position: absolute;
@@ -50,14 +48,13 @@
   z-index: 0;
 }
 
-/* Biblical Watermark */
 .site-footer::after {
   content: "ECCLESIASTES 1:8-11";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-5deg);
-  font-size: 4rem;
+  font-size: clamp(1.5rem, 8vw, 4rem);
   font-weight: 900;
   color: rgba(67, 97, 238, 0.05);
   white-space: nowrap;
@@ -68,39 +65,19 @@
 }
 
 @keyframes pulse-cycle {
-  0%, 33.3% {
-    --pulse-r: 240;
-    --pulse-g: 20;
-    --pulse-b: 20;
-  }
-  33.4%, 66.6% {
-    --pulse-r: 20;
-    --pulse-g: 240;
-    --pulse-b: 20;
-  }
-  66.7%, 100% {
-    --pulse-r: 20;
-    --pulse-g: 20;
-    --pulse-b: 240;
-  }
+  0%, 33.3% { --pulse-r: 240; --pulse-g: 20; --pulse-b: 20; }
+  33.4%, 66.6% { --pulse-r: 20; --pulse-g: 240; --pulse-b: 20; }
+  66.7%, 100% { --pulse-r: 20; --pulse-g: 20; --pulse-b: 240; }
 }
 
 @keyframes pulse-fade {
-  0%, 100% {
-    opacity: 0;
-    filter: blur(40px);
-  }
-  15%, 85% {
-    opacity: 0.1;
-    filter: blur(30px);
-  }
-  50% {
-    opacity: 0.15;
-    filter: blur(20px);
-  }
+  0%, 100% { opacity: 0; filter: blur(40px); }
+  15%, 85% { opacity: 0.1; filter: blur(30px); }
+  50% { opacity: 0.15; filter: blur(20px); }
 }
 
 .footer-content {
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
   position: relative;
@@ -113,16 +90,16 @@
     rgba(67, 97, 238, 0) 0%, 
     rgba(67, 97, 238, 0.15) 50%, 
     rgba(67, 97, 238, 0) 100%);
-  margin: 0 auto 2rem;
+  margin: 0 auto 1.5rem;
   width: 60%;
 }
 
 .footer-links {
-  display: inline-flex;
-  gap: 1.5rem;
+  display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
@@ -141,11 +118,6 @@
   color: #4361ee;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
-}
-
-.link-separator {
-  color: rgba(67, 97, 238, 0.2);
-  user-select: none;
 }
 
 .footer-copyright {
@@ -171,32 +143,16 @@
 
 @media (max-width: 768px) {
   .site-footer {
-    padding: 3rem 1rem 2rem;
-  }
-  
-  .site-footer::after {
-    font-size: 2rem;
-    transform: translate(-50%, -50%) rotate(-3deg);
+    padding: 2rem 1rem;
   }
   
   .footer-links {
-    gap: 1rem;
     flex-direction: column;
-  }
-  
-  .link-separator {
-    display: none;
+    gap: 0.5rem;
   }
   
   .footer-link {
     width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .site-footer::after {
-    font-size: 1.5rem;
-    letter-spacing: normal;
   }
 }
 
