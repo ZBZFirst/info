@@ -4,17 +4,41 @@
 /* ============================================ */
 
 :root {
-  /* Gold Color Palette */
-  --gk2-gold-primary: #D4AF37;       /* Classic metallic gold */
-  --gk2-gold-light: #FFD700;         /* Bright gold */
-  --gk2-gold-dark: #996515;          /* Deep bronze-gold */
-  --gk2-gold-bg: #FFF9E6;            /* Parchment-like background */
-  --gk2-gold-border: #E6C200;        /* Gold border accents */
+  /* Existing Gold Palette */
+  --gk2-gold-primary: #D4AF37;
+  --gk2-gold-light: #FFD700;
+  --gk2-gold-dark: #996515;
+  --gk2-gold-bg: #FFF9E6;
+  --gk2-gold-border: #E6C200;
+  --gk2-royal-blue: #00539C;
+  --gk2-off-white: #F8F8F8;
+  --gk2-dark-text: #333333;
+
+  /* New Spacing System (matches your design system) */
+  --gk2-space-xxs: 0.25rem;   /* 4px */
+  --gk2-space-xs: 0.5rem;     /* 8px */
+  --gk2-space-sm: 0.75rem;    /* 12px */
+  --gk2-space-md: 1rem;       /* 16px */
+  --gk2-space-lg: 1.5rem;     /* 24px */
+  --gk2-space-xl: 2rem;       /* 32px */
+  --gk2-space-xxl: 3rem;      /* 48px */
+
+  /* Border Radius */
+  --gk2-radius-sm: 0.25rem;   /* 4px */
+  --gk2-radius-md: 0.5rem;    /* 8px */
+  --gk2-radius-lg: 0.75rem;   /* 12px */
+  --gk2-radius-xl: 1rem;      /* 16px */
   
-  /* Complementary Colors */
-  --gk2-royal-blue: #00539C;         /* For contrast elements */
-  --gk2-off-white: #F8F8F8;          /* Clean backgrounds */
-  --gk2-dark-text: #333333;          /* Readable dark text */
+  /* Shadows */
+  --gk2-shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --gk2-shadow-md: 0 4px 6px rgba(0,0,0,0.15);
+  --gk2-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --gk2-shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+  
+  /* Transitions */
+  --gk2-transition-fast: 0.15s ease;
+  --gk2-transition-normal: 0.3s ease;
+  --gk2-transition-slow: 0.5s ease;
 }
 
 /* ======================== */
@@ -23,18 +47,18 @@
 
 .main-content {
   background-color: var(--gk2-off-white);
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-  margin-bottom: 2rem;
+  padding: var(--gk2-space-xl);
+  border-radius: var(--gk2-radius-lg);
+  box-shadow: var(--gk2-shadow-sm);
+  margin-bottom: var(--gk2-space-xl);
   border: 1px solid var(--gk2-gold-border);
 }
 
 .main-content header {
   background: linear-gradient(135deg, var(--gk2-gold-primary), var(--gk2-gold-light));
   color: white;
-  padding: 1.5rem;
-  margin: -2rem -2rem 2rem -2rem;
+  padding: var(--gk2-space-lg);
+  margin: calc(-1 * var(--gk2-space-xl)) calc(-1 * var(--gk2-space-xl)) var(--gk2-space-xl) calc(-1 * var(--gk2-space-xl));
   border-bottom: 3px solid var(--gk2-gold-dark);
   position: relative;
 }
@@ -46,7 +70,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: 95%;
-  height: 10px;
+  height: var(--gk2-space-md);
   background: linear-gradient(to bottom, rgba(212,175,55,0.3), transparent);
 }
 
@@ -57,36 +81,35 @@
 .quiz-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.8rem;
-  margin: 2rem 0;
-  padding: 1rem;
+  gap: var(--gk2-space-sm);
+  margin: var(--gk2-space-xl) 0;
+  padding: var(--gk2-space-md);
   background-color: rgba(255, 248, 220, 0.5);
-  border-radius: 6px;
+  border-radius: var(--gk2-radius-md);
 }
 
 .quiz-nav a.quiz-link {
   background: var(--gk2-gold-primary);
   color: white;
   border: 1px solid var(--gk2-gold-dark);
-  transition: all 0.3s ease;
-}
-
-.quiz-nav a.quiz-link:hover {
-  background: var(--gk2-gold-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(153, 101, 21, 0.2);
+  transition: var(--gk2-transition-normal);
+  padding: var(--gk2-space-sm) var(--gk2-space-md);
+  border-radius: var(--gk2-radius-md);
+  margin: 0;
 }
 
 /* ======================== */
 /* === Content Components === */
 /* ======================== */
 
-/* Video Resource Cards */
 .video-resource {
   border-top: 4px solid var(--gk2-gold-primary);
   background-color: var(--gk2-gold-bg);
   position: relative;
   overflow: hidden;
+  margin-bottom: var(--gk2-space-lg);
+  border-radius: var(--gk2-radius-md);
+  padding: var(--gk2-space-lg);
 }
 
 .video-resource::before {
@@ -96,18 +119,18 @@
   right: 0;
   background: var(--gk2-gold-dark);
   color: white;
-  padding: 0.3rem 1rem;
+  padding: var(--gk2-space-xxs) var(--gk2-space-md);
   font-size: 0.7rem;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-bottom-left-radius: 6px;
+  border-bottom-left-radius: var(--gk2-radius-sm);
 }
 
 .video-wrapper {
-  margin: 1.5rem 0;
+  margin: var(--gk2-space-lg) 0;
   border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 6px;
+  border-radius: var(--gk2-radius-md);
   overflow: hidden;
 }
 
@@ -143,9 +166,9 @@
 
 .citation-section {
   background: var(--gk2-off-white);
-  padding: 1.5rem;
-  border-radius: 6px;
-  margin: 2.5rem 0;
+  padding: var(--gk2-space-lg);
+  border-radius: var(--gk2-radius-md);
+  margin: var(--gk2-space-xxl) 0;
   border-left: 4px solid var(--gk2-royal-blue);
   position: relative;
 }
@@ -153,13 +176,13 @@
 .citation-section::before {
   content: "References";
   position: absolute;
-  top: -12px;
-  left: 20px;
+  top: calc(-1 * var(--gk2-space-sm));
+  left: var(--gk2-space-md);
   background: var(--gk2-royal-blue);
   color: white;
-  padding: 0.2rem 1rem;
+  padding: var(--gk2-space-xxs) var(--gk2-space-md);
   font-size: 0.8rem;
-  border-radius: 4px;
+  border-radius: var(--gk2-radius-sm);
 }
 
 .citation-heading {
@@ -208,31 +231,28 @@ mark {
   position: absolute;
 }
 
+
 /* ======================== */
 /* === Responsive Design === */
 /* ======================== */
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 1.5rem;
+    padding: var(--gk2-space-lg);
   }
   
   .main-content header {
-    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    margin: calc(-1 * var(--gk2-space-lg)) calc(-1 * var(--gk2-space-lg)) var(--gk2-space-lg) calc(-1 * var(--gk2-space-lg));
+    padding: var(--gk2-space-md);
   }
   
-  .quiz-nav {
-    flex-direction: column;
+  .video-resource {
+    padding: var(--gk2-space-md);
   }
   
-  .video-resource::before {
-    font-size: 0.6rem;
-    padding: 0.2rem 0.8rem;
-  }
-  
-  .citation-section::before {
-    left: 10px;
-    font-size: 0.7rem;
+  .citation-section {
+    padding: var(--gk2-space-md);
+    margin: var(--gk2-space-xl) 0;
   }
 }
 
