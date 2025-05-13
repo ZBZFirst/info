@@ -122,6 +122,18 @@
   padding: var(--graph-space-md);
   margin: var(--graph-space-lg) 0;
   text-align: center;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: var(--graph-shadow-sm);
+}
+
+.results-heading {
+  color: var(--graph-primary);
+  margin-top: 0;
+  margin-bottom: var(--graph-space-md);
+  padding-bottom: var(--graph-space-sm);
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+  font-size: 1.25rem;
+  text-align: center;
 }
 
 .result-label {
