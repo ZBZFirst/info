@@ -33,7 +33,7 @@
 
   /* Dynamic opacity for density management */
   opacity: calc(0.15 + (var(--y) * 0.85));
-  transform: scale(1);
+  transform: scale(.1);
   transform-origin: center;
   will-change: transform, opacity;
   transition: all 0.1s ease-out;
