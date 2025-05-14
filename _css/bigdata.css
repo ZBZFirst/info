@@ -1,39 +1,45 @@
 .graph {
   display: grid;
-  grid-template-columns: repeat(41, 1fr); /* 0-40 inclusive = 41 columns */
-  grid-template-rows: repeat(41, 1fr);    /* Same for Z-axis */
-  gap: 0; /* Remove all gaps between cells */
-  width: 100%; /* Or fixed width like 820px for 20px per unit */
-  aspect-ratio: 1; /* Keep square */
-  overflow: hidden; /* Clip to grid boundaries */
-  border: 1px solid #ddd; /* Optional border */
+  grid-template-columns: repeat(41, minmax(0, 1fr)); /* Strict column control */
+  grid-template-rows: repeat(41, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: visible; /* Changed to show all points */
+  image-rendering: pixelated; /* Crisp tiny points */
+  margin: 0 auto;
 }
 
 .container {
-  /* Position each point in the grid */
-  grid-column: calc(var(--x) + 1); /* +1 because CSS grid is 1-indexed */
+  /* Micro-sizing with precise positioning */
+  grid-column: calc(var(--x) + 1);
   grid-row: calc(var(--z) + 1);
+  width: 0.5px;
+  height: 0.5px;
+  min-width: 0.5px;
+  min-height: 0.5px;
   
-  /* Exact 1x1 pixel rendering */
-  width: 1px;
-  height: 1px;
-  min-width: 1px; /* Prevent grid stretching */
-  min-height: 1px;
-  
-  /* Color by Y-value */
+  /* Visual treatment */
   background: hsl(
-    calc(var(--y) * 120), /* Hue range: 0-120deg */
-    80%, 
-    clamp(30%, calc(var(--y) * 100%), 70%)
+    calc(var(--y) * 100), 
+    90%, 
+    clamp(40%, calc(var(--y) * 80%), 70%)
   );
-  
-  /* Visual enhancements */
-  transform: scale(1.5); /* Slightly enlarge while maintaining grid */
-  transition: transform 0.1s;
+  transform: scale(2);
+  transform-origin: center;
+  will-change: transform;
+  transition: transform 0.05s;
 }
 
 .container:hover {
-  transform: scale(4); /* Enlarge on hover */
-  z-index: 1;
-  box-shadow: 0 0 2px white; /* Highlight */
+  transform: scale(6);
+  z-index: 100;
+  outline: 0.5px solid white;
+  box-shadow: 0 0 1px 0.5px rgba(255,255,255,0.8);
 }
+
+/* Density compensation */
+.container:nth-child(4n + 1) { opacity: 0.9; }
+.container:nth-child(4n + 2) { opacity: 0.7; }
+.container:nth-child(4n + 3) { opacity: 0.5; }
+.container:nth-child(4n + 4) { opacity: 0.3; }
