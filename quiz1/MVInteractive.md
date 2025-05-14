@@ -8246,3 +8246,4 @@ title: "Minute Ventilation Calculator"
 <div class="container" style="--x:40; --y:0.995; --z:39.8; --row-index:8239"><h2>Point #8240</h2><div class="coord">X: <span>40</span></div><div class="coord">Y: <span>0.995</span></div><div class="coord">Z: <span>39.8</span></div></div>
 <div class="container" style="--x:40; --y:1.0; --z:40.0; --row-index:8240"><h2>Point #8241</h2><div class="coord">X: <span>40</span></div><div class="coord">Y: <span>1.0</span></div><div class="coord">Z: <span>40.0</span></div></div>
                                                                                               </div>
+<script src="MvGraph.js">
