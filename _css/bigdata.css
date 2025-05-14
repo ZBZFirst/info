@@ -25,7 +25,7 @@
     90%, 
     clamp(40%, calc(var(--y) * 80%), 70%)
   );
-  transform: scale(2);
+  transform: scale(0.75);
   transform-origin: center;
   will-change: transform;
   transition: transform 0.05s;
