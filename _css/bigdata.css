@@ -1,11 +1,39 @@
 .graph {
   display: grid;
-  grid-template-columns: repeat(40, 1fr); /* For X:0-40 */
-  gap: 1px;
+  grid-template-columns: repeat(41, 1fr); /* 0-40 inclusive = 41 columns */
+  grid-template-rows: repeat(41, 1fr);    /* Same for Z-axis */
+  gap: 0; /* Remove all gaps between cells */
+  width: 100%; /* Or fixed width like 820px for 20px per unit */
+  aspect-ratio: 1; /* Keep square */
+  overflow: hidden; /* Clip to grid boundaries */
+  border: 1px solid #ddd; /* Optional border */
 }
+
 .container {
-  grid-column: calc(var(--x) + 1);
+  /* Position each point in the grid */
+  grid-column: calc(var(--x) + 1); /* +1 because CSS grid is 1-indexed */
   grid-row: calc(var(--z) + 1);
-  height: 3px;
-  background: hsl(calc(var(--y) * 120), 80%, 50%);
+  
+  /* Exact 1x1 pixel rendering */
+  width: 1px;
+  height: 1px;
+  min-width: 1px; /* Prevent grid stretching */
+  min-height: 1px;
+  
+  /* Color by Y-value */
+  background: hsl(
+    calc(var(--y) * 120), /* Hue range: 0-120deg */
+    80%, 
+    clamp(30%, calc(var(--y) * 100%), 70%)
+  );
+  
+  /* Visual enhancements */
+  transform: scale(1.5); /* Slightly enlarge while maintaining grid */
+  transition: transform 0.1s;
+}
+
+.container:hover {
+  transform: scale(4); /* Enlarge on hover */
+  z-index: 1;
+  box-shadow: 0 0 2px white; /* Highlight */
 }
