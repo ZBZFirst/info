@@ -1,45 +1,60 @@
 .graph {
   display: grid;
-  grid-template-columns: repeat(41, minmax(0, 1fr)); /* Strict column control */
+  grid-template-columns: repeat(41, minmax(0, 1fr));
   grid-template-rows: repeat(41, minmax(0, 1fr));
   gap: 0;
   width: 100%;
   aspect-ratio: 1;
-  overflow: visible; /* Changed to show all points */
-  image-rendering: pixelated; /* Crisp tiny points */
+  overflow: visible;
+  image-rendering: crisp-edges;
   margin: 0 auto;
+  background: #f0f0f0; /* Light background for contrast */
 }
 
 .container {
-  /* Micro-sizing with precise positioning */
+  /* Dynamic sizing based on Y-value */
+  --size-base: 0.4px;
+  --size-multiplier: calc(0.3 + (var(--y) * 2));
+  
   grid-column: calc(var(--x) + 1);
   grid-row: calc(var(--z) + 1);
-  width: 0.5px;
-  height: 0.5px;
-  min-width: 0.5px;
-  min-height: 0.5px;
-  
-  /* Visual treatment */
+  width: calc(var(--size-base) * var(--size-multiplier));
+  height: calc(var(--size-base) * var(--size-multiplier));
+  min-width: 0.3px;
+  min-height: 0.3px;
+
+  /* Logarithmic color scaling for small values */
+  --log-y: calc(log(max(0.0001, var(--y))) / 5 + 1);
   background: hsl(
-    calc(var(--y) * 100), 
-    90%, 
-    clamp(40%, calc(var(--y) * 80%), 70%)
+    calc(var(--log-y) * 120),
+    90%,
+    clamp(30%, calc(var(--log-y) * 70%), 70%)
   );
-  transform: scale(0.1);
+
+  /* Dynamic opacity for density management */
+  opacity: calc(0.15 + (var(--y) * 0.85));
+  transform: scale(1);
   transform-origin: center;
-  will-change: transform;
-  transition: transform 0.05s;
+  will-change: transform, opacity;
+  transition: all 0.1s ease-out;
+}
+
+/* Highlight clusters of small values */
+.container[style*="--y:0"] {
+  background: #ff0000;
+  opacity: 0.8;
+  z-index: 10;
 }
 
 .container:hover {
-  transform: scale(6);
-  z-index: 100;
-  outline: 0.5px solid white;
-  box-shadow: 0 0 1px 0.5px rgba(255,255,255,0.8);
+  transform: scale(8);
+  opacity: 1;
+  z-index: 1000;
+  box-shadow: 0 0 2px 1px rgba(255,255,255,0.9);
+  outline: none;
 }
 
-/* Density compensation */
-.container:nth-child(4n + 1) { opacity: 0.9; }
-.container:nth-child(4n + 2) { opacity: 0.7; }
-.container:nth-child(4n + 3) { opacity: 0.5; }
-.container:nth-child(4n + 4) { opacity: 0.3; }
+/* Value-range specific styling */
+.container[style*="--y:0.005"] {
+  border: 0.3px solid rgba(0,0,255,0.5);
+}
