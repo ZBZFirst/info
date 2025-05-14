@@ -75,6 +75,5 @@ window.addEventListener('resize', () => {
 });
 
 // 8. Add orbit controls (for mouse interaction)
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
