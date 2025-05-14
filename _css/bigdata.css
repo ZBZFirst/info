@@ -1,60 +1,17 @@
-.graph {
-  display: grid;
-  grid-template-columns: repeat(41, minmax(0, 1fr));
-  grid-template-rows: repeat(41, minmax(0, 1fr));
-  gap: 0;
+.graph-3d {
   width: 100%;
-  aspect-ratio: 1;
-  overflow: visible;
-  image-rendering: crisp-edges;
-  margin: 0 auto;
-  background: #f0f0f0; /* Light background for contrast */
+  height: 80vh;
+  position: relative;
+  overflow: hidden;
+  background: #f0f0f0;
 }
 
-.container {
-  /* Dynamic sizing based on Y-value */
-  --size-base: 0.4px;
-  --size-multiplier: calc(0.3 + (var(--y) * 2));
-  
-  grid-column: calc(var(--x) + 1);
-  grid-row: calc(var(--z) + 1);
-  width: calc(var(--size-base) * var(--size-multiplier));
-  height: calc(var(--size-base) * var(--size-multiplier));
-  min-width: 0.3px;
-  min-height: 0.3px;
-
-  /* Logarithmic color scaling for small values */
-  --log-y: calc(log(max(0.0001, var(--y))) / 5 + 1);
-  background: hsl(
-    calc(var(--log-y) * 120),
-    90%,
-    clamp(30%, calc(var(--log-y) * 70%), 70%)
-  );
-
-  /* Dynamic opacity for density management */
-  opacity: calc(0.15 + (var(--y) * 0.85));
-  transform: scale(.1);
-  transform-origin: center;
-  will-change: transform, opacity;
-  transition: all 0.1s ease-out;
-}
-
-/* Highlight clusters of small values */
-.container[style*="--y:0"] {
-  background: #ff0000;
-  opacity: 0.8;
-  z-index: 10;
-}
-
-.container:hover {
-  transform: scale(8);
-  opacity: 1;
-  z-index: 1000;
-  box-shadow: 0 0 2px 1px rgba(255,255,255,0.9);
-  outline: none;
-}
-
-/* Value-range specific styling */
-.container[style*="--y:0.005"] {
-  border: 0.3px solid rgba(0,0,255,0.5);
+.data-point {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  transform: translate3d(-50%, -50%, 0);
+  transition: transform 0.2s, opacity 0.2s;
+  will-change: transform;
 }
