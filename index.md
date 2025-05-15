@@ -12,17 +12,17 @@ title: Paul's Desktop Reference
     
     <div class="image-gallery">
       <figure class="image-container">
-        <img src="/pictures/ArduinoUnoHookup.jpg" alt="Arduino Uno Hookup Diagram">
+        <img src="pictures/ArduinoUnoHookup.jpg" alt="Arduino Uno Hookup Diagram">
         <figcaption>Figure 1: Arduino Uno setup used for data collection</figcaption>
       </figure>
       
       <figure class="image-container">
-        <img src="/pictures/RS232-Pin-Config-Avea.jpg" alt="RS232 Pin Configuration for Avea Ventilator">
+        <img src="pictures/RS232-Pin-Config-Avea.jpg" alt="RS232 Pin Configuration for Avea Ventilator">
         <figcaption>Figure 2: RS-232 pin configuration for Avea ventilator</figcaption>
       </figure>
       
       <figure class="image-container">
-        <img src="/pictures/Vent-Arduino-Hookup.jpg" alt="Ventilator to Arduino Connection">
+        <img src="pictures/Vent-Arduino-Hookup.jpg" alt="Ventilator to Arduino Connection">
         <figcaption>Figure 3: Complete ventilator to Arduino connection setup</figcaption>
       </figure>
     </div>
