@@ -30,7 +30,10 @@ title: Paul's Desktop Reference
     <h3>The data was collected by using a Arduino Uno to perform a Analog Read of the voltages from the RS-232 Data Pins by sticking a DuPont Pin into the RS-232 Pin Holes. This was then written to a CSV for every reading recorded. This was then parsed and loaded for working with at this page. This is the raw ventilator sensor data. This is what the ventilator manufacturers DONT want you to be able to collect.</h3>
     <h3>By exporting the data this way, you are essentially making a data table for each patient that is hooked up the ventilator for raw values. These raw values can then be processed by each individual facility according to their institutions metric for counting breaths. Currently, this is handled by the manufacturers but due to the rapid expansion of ventilator manufacturers has allowed for independent development of Ventilator Sensor Data Interpretation.</h3>
     <h3>Essentially, I do not agree with how breaths are counted and I think we may disagree on the math, so lets review the source code and argue how it SHOULD be done instead of how it is currently working. Especially since random people who have never been mentioned made these devices.</h3>
-  </header>
+
+<p>
+  CareFusion. (n.d.). <cite>AVEA® ventilator system service manual</cite> (Rev. D) [Service manual]. Chapter 11: Appendices, pp. 244–246.
+</p>  </header>
 
   <div class="dashboard-controls">
     <div class="control-panel">
