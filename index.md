@@ -14,7 +14,7 @@ title: Paul's Desktop Reference
   <figure class="image-container"><img src="pictures/ArduinoUnoHookup.jpg" alt="Arduino Uno Hookup Diagram"><figcaption>Figure 1: Arduino Uno setup used for data collection</figcaption></figure>
   <figure class="image-container"><img src="pictures/RS232-Pin-Config-Avea.jpg" alt="RS232 Pin Configuration for Avea Ventilator"><figcaption>Figure 2: RS-232 pin configuration for Avea ventilator</figcaption></figure>
   <figure class="image-container"><img src="pictures/Vent-Arduino-Hookup.jpg" alt="Ventilator to Arduino Connection"><figcaption>Figure 3: Complete ventilator to Arduino connection setup</figcaption></figure>
-/div>
+</div>
 
 <h3>The data was collected by using a Arduino Uno to perform a Analog Read of the voltages from the RS-232 Data Pins by sticking a DuPont Pin into the RS-232 Pin Holes. This was then written to a CSV for every reading recorded. This was then parsed and loaded for working with at this page. This is the raw ventilator sensor data. This is what the ventilator manufacturers DONT want you to be able to collect.</h3>
 <h3>By exporting the data this way, you are essentially making a data table for each patient that is hooked up the ventilator for raw values. These raw values can then be processed by each individual facility according to their institutions metric for counting breaths. Currently, this is handled by the manufacturers but due to the rapid expansion of ventilator manufacturers has allowed for independent development of Ventilator Sensor Data Interpretation.</h3>
