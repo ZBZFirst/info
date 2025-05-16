@@ -178,7 +178,7 @@ function addShape(type, config = {}) {
 }
 
 function addResizeHandles(shape) {
-    const resizeHandleSize = 10;
+    const resizeHandleSize = 40;
     const resizeHandle = document.createElement('div');
     resizeHandle.className = 'resize-handle';
     resizeHandle.style.width = `${resizeHandleSize}px`;
