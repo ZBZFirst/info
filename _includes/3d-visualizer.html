@@ -1,14 +1,26 @@
 <div id="graph3d" class="graph-3d"></div>
 
 <script type="module">
-// Use explicit CDN paths for all Three.js imports
+console.log("Script started loading"); // Track script execution
+
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+console.log("THREE imported successfully:", THREE); // Verify THREE import
+
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+console.log("OrbitControls imported successfully"); // Verify OrbitControls import
 
 class DataVisualizer {
   constructor(containerId, data) {
+    console.log("Creating DataVisualizer instance"); // Track instantiation
     this.container = document.getElementById(containerId);
+    console.log("Container element:", this.container); // Verify container exists
+    
+    if (!this.container) {
+      throw new Error(`Container element with ID ${containerId} not found`);
+    }
+    
     this.data = data;
+    console.log("Data received:", data); // Verify data
     this.init();
   }
 
@@ -107,4 +119,5 @@ class DataVisualizer {
 
 // Export for use in other modules
 window.DataVisualizer = DataVisualizer;
+console.log("DataVisualizer class exposed to window"); // Verify global exposure
 </script>
