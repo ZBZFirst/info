@@ -4,14 +4,24 @@
   position: relative;
   overflow: hidden;
   background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 20px 0;
 }
 
-.data-point {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  transform: translate3d(-50%, -50%, 0);
-  transition: transform 0.2s, opacity 0.2s;
-  will-change: transform;
+/* Loading state */
+.graph-3d::before {
+  content: "Loading visualization...";
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .graph-3d {
+    height: 60vh;
+  }
 }
