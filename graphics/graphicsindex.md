@@ -5,7 +5,7 @@ title: Interactive Draggable Graphics
 
 # Geometry Movement Test Page
 
-Color Demonstration Test
+Color Picker by RGB Numbering
 [View the Interactive Color Page](/info/interactive/color.html)
 
 Simple Interactive Graphics Test
@@ -18,12 +18,6 @@ Mobius Strip - Experimental - May not work
 [Saw something cool, wanted to try it out](/info/graphics/graphics3.html)
 
 # Animation Movement Test Page
-
-A Test of Moving Graphics with No Java
-[View the Moving Circle Graphic Page](/info/graphics/nojavagraphics.html)
-
-Simple Animation Test Page
-[View the Set of Icons Moving Page](/info/graphics/shapes-demo.html)
 
 A Fast Fourier Transofmration Visualizer
 [View the FFT Audio Visualizer](/info/graphics/FFT1.html)
