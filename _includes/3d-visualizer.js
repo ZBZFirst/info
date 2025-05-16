@@ -1,5 +1,7 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+---
+---
+// Use window.THREE instead of importing
+const THREE = window.THREE;
 
 // Label styles matching Python prototype
 const LABEL_STYLES = {
@@ -32,7 +34,6 @@ const COLORMAPS = {
     c.setHSL(0.1 + t * 0.7, 0.9, 0.5);
     return c;
   },
-  // Add other colormap implementations...
 };
 
 export class InteractiveVisualizer {
