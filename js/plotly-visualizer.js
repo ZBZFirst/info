@@ -311,7 +311,7 @@ class DataVisualizer {
       </div>
     `;
   }
-}
+
 
   destroy() {
     window.removeEventListener('resize', this.resizeHandler);
