@@ -1,6 +1,6 @@
 // MvGraph.js - Complete 3D Visualization Solution
-import * as THREE from 'https://unpkg.com/three@0.132.2/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
 
 // Wait for DOM to load
 document.addEventListener('DOMContentLoaded', function() {
