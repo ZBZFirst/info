@@ -3,6 +3,8 @@ class DataVisualizer {
     this.container = document.getElementById(containerId);
     this.data = null;
     this.columns = [];
+    this.addFullscreenButton();
+    this.isFullscreen = false;
     this.currentParams = {
       coordSystem: 'cartesian',
       xCol: '',
@@ -170,6 +172,110 @@ class DataVisualizer {
     return result;
   }
 
+  addFullscreenButton() {
+    const btn = document.createElement('button');
+    btn.className = 'fullscreen-toggle';
+    btn.innerHTML = '⛶ Fullscreen';
+    btn.onclick = () => this.toggleFullscreen();
+    
+    // Style the button
+    btn.style.position = 'absolute';
+    btn.style.top = '10px';
+    btn.style.right = '10px';
+    btn.style.zIndex = '100';
+    btn.style.padding = '5px 10px';
+    btn.style.background = 'rgba(255,255,255,0.7)';
+    btn.style.border = '1px solid #ccc';
+    btn.style.borderRadius = '3px';
+    btn.style.cursor = 'pointer';
+    
+    this.container.style.position = 'relative';
+    this.container.appendChild(btn);
+  }
+
+  toggleFullscreen() {
+    if (this.isFullscreen) {
+      this.exitFullscreen();
+    } else {
+      this.enterFullscreen();
+    }
+  }
+
+  enterFullscreen() {
+    // Store original dimensions
+    this.originalDimensions = {
+      width: this.container.style.width,
+      height: this.container.style.height,
+      position: this.container.style.position,
+      top: this.container.style.top,
+      left: this.container.style.left,
+      zIndex: this.container.style.zIndex,
+      background: this.container.style.background
+    };
+    
+    // Apply fullscreen styles
+    Object.assign(this.container.style, {
+      width: '100vw',
+      height: '100vh',
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      zIndex: '1000',
+      background: 'white'
+    });
+    
+    // Update Plotly
+    Plotly.relayout(this.container, {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      margin: { l: 0, r: 0, b: 0, t: 0 }
+    });
+    
+    this.isFullscreen = true;
+    document.querySelector('.fullscreen-toggle').innerHTML = '✕ Exit Fullscreen';
+  }
+
+  exitFullscreen() {
+    // Restore original dimensions
+    if (this.originalDimensions) {
+      Object.assign(this.container.style, this.originalDimensions);
+    } else {
+      // Default fallback
+      this.container.style.width = '100%';
+      this.container.style.height = '600px';
+      this.container.style.position = 'relative';
+      this.container.style.zIndex = '';
+      this.container.style.background = '';
+    }
+    
+    // Update Plotly
+    Plotly.relayout(this.container, {
+      width: this.container.clientWidth,
+      height: this.container.clientHeight,
+      margin: { l: 0, r: 0, b: 0, t: 30 }
+    });
+    
+    this.isFullscreen = false;
+    document.querySelector('.fullscreen-toggle').innerHTML = '⛶ Fullscreen';
+  }
+
+  handleResize() {
+    if (this.plot) {
+      if (this.isFullscreen) {
+        Plotly.relayout(this.container, {
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      } else {
+        Plotly.relayout(this.container, {
+          width: this.container.clientWidth,
+          height: this.container.clientHeight
+        });
+      }
+    }
+  }
+
+  
   getLabels() {
     const { coordSystem, labelStyle } = this.currentParams;
     const styles = {
@@ -204,6 +310,14 @@ class DataVisualizer {
         <p>${message}</p>
       </div>
     `;
+  }
+}
+
+  destroy() {
+    window.removeEventListener('resize', this.resizeHandler);
+    if (this.plot) {
+      Plotly.purge(this.container);
+    }
   }
 }
 
