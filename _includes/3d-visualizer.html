@@ -1,8 +1,9 @@
 <div id="graph3d" class="graph-3d"></div>
 
 <script type="module">
-import * as THREE from 'https://unpkg.com/three@0.132.2/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+// Use explicit CDN paths for all Three.js imports
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
 
 class DataVisualizer {
   constructor(containerId, data) {
