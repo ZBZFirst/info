@@ -9,14 +9,27 @@
   margin: 20px 0;
 }
 
-/* Loading state */
-.graph-3d::before {
-  content: "Loading visualization...";
+/* Loading states */
+.graph-3d.loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
   color: #666;
+}
+
+.graph-3d.loading::after {
+  content: "Loading visualization...";
+}
+
+.graph-3d.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #d33;
+}
+
+.graph-3d.error::after {
+  content: attr(data-error);
 }
 
 /* Responsive adjustments */
