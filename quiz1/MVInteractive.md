@@ -64,4 +64,9 @@ title: "Minute Ventilation Calculator"
   <div id="graph3d" class="graph-3d"></div>
 </div>
 
-<script type="module" src="/info/_includes/3d-visualizer.js"></script>
+<script type="module">
+  import { InteractiveVisualizer } from '/info/_includes/3d-visualizer.js';
+  document.addEventListener('DOMContentLoaded', () => {
+    new InteractiveVisualizer('graph3d');
+  });
+</script>
