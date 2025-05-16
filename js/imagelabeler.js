@@ -51,8 +51,9 @@ function copySelectedShape() {
 function loadImage(index, useDefaults = false) {
     currentImageIndex = index;
     const imageName = `ventscreen${currentImageIndex}.jpg`;
+    const imagePath = `/info/graphics/${imageName}`; // Updated path
     const container = document.getElementById('shapeContainer');
-    container.style.backgroundImage = `url('/info/graphics/${imageName}')`;
+    container.style.backgroundImage = `url('${imagePath}')`;
     document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
     clearAllShapes();
 
