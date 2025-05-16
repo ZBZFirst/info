@@ -49,74 +49,69 @@ function copySelectedShape() {
 }
 
 function loadImage(index, useDefaults = false) {
-    console.log(`[loadImage] Loading image index ${index}, useDefaults: ${useDefaults}`);
-    
     currentImageIndex = index;
     const imageName = `ventscreen${currentImageIndex}.jpg`;
     const imagePath = `/info/graphics/${imageName}`;
-    console.log(`[loadImage] Image path: ${imagePath}`);
-    
     const container = document.getElementById('shapeContainer');
-    if (!container) {
-        console.error('[loadImage] Container element not found!');
+    const img = new Image(); // Create new image to track loading
+    
+    // Clear existing shapes
+    clearAllShapes();
+    
+    // Load image first
+    img.onload = function() {
+        container.style.backgroundImage = `url('${imagePath}')`;
+        document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
+        
+        // Now load shapes after ensuring container has proper dimensions
+        if (!useDefaults && imageConfigurations[imageName]) {
+            loadShapesWithRetry(container, imageName);
+        } else {
+            createDefaultShapes();
+        }
+    };
+    
+    img.onerror = function() {
+        console.error(`Failed to load image: ${imagePath}`);
+        alert(`Image not found: ${imageName}. Please check the file path.`);
+    };
+    
+    img.src = imagePath; // Start loading the image
+}
+
+function loadShapesWithRetry(container, imageName, attempt = 0) {
+    const containerRect = container.getBoundingClientRect();
+    
+    if (containerRect.width === 0 && attempt < 3) {
+        // Retry after a short delay if width is still 0
+        setTimeout(() => loadShapesWithRetry(container, imageName, attempt + 1), 100);
         return;
     }
     
-    container.style.backgroundImage = `url('${imagePath}')`;
-    document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
-    console.log(`[loadImage] Set background image to ${imagePath}`);
-    
-    clearAllShapes();
-    console.log('[loadImage] Cleared all existing shapes');
+    const config = imageConfigurations[imageName];
+    config.labels.forEach(label => {
+        // Use normalized coordinates if available, otherwise use pixels
+        const left = label.normalized ? 
+            label.normalized.x * containerRect.width : 
+            label.position.x;
+        const top = label.normalized ? 
+            label.normalized.y * containerRect.height : 
+            label.position.y;
+        const width = label.normalized ? 
+            label.normalized.width * containerRect.width : 
+            label.size.width;
+        const height = label.normalized ? 
+            label.normalized.height * containerRect.height : 
+            label.size.height;
 
-    if (!useDefaults && imageConfigurations[imageName]) {
-        console.log('[loadImage] Loading saved configuration');
-        const config = imageConfigurations[imageName];
-        console.log('[loadImage] Configuration:', config);
-        
-        const containerRect = container.getBoundingClientRect();
-        console.log('[loadImage] Container dimensions:', {
-            width: containerRect.width,
-            height: containerRect.height
+        addShape(label.type, {
+            label: label.label,
+            left: `${left}px`,
+            top: `${top}px`,
+            width: `${width}px`,
+            height: `${height}px`
         });
-
-        config.labels.forEach((label, i) => {
-            console.log(`[loadImage] Processing label ${i}:`, label);
-            
-            // Use normalized coordinates if available, otherwise use pixels
-            const left = label.normalized ? 
-                label.normalized.x * containerRect.width : 
-                label.position.x;
-            const top = label.normalized ? 
-                label.normalized.y * containerRect.height : 
-                label.position.y;
-            const width = label.normalized ? 
-                label.normalized.width * containerRect.width : 
-                label.size.width;
-            const height = label.normalized ? 
-                label.normalized.height * containerRect.height : 
-                label.size.height;
-
-            console.log(`[loadImage] Calculated dimensions for label ${i}:`, {
-                left, top, width, height
-            });
-
-            addShape(label.type, {
-                label: label.label,
-                left: `${left}px`,
-                top: `${top}px`,
-                width: `${width}px`,
-                height: `${height}px`
-            });
-            
-            console.log(`[loadImage] Added shape for label ${i}`);
-        });
-    } else {
-        console.log('[loadImage] Creating default shapes');
-        createDefaultShapes();
-    }
-    
-    console.log('[loadImage] Image loading completed');
+    });
 }
 
 
