@@ -50,7 +50,7 @@ function copySelectedShape() {
 
 function loadImage(index, useDefaults = false) {
     currentImageIndex = index;
-    const imageName = `ventscreen${currentImageIndex}.jpg`;
+    const imageName = `graphics/ventscreen${currentImageIndex}.jpg`;
     const container = document.getElementById('shapeContainer');
     container.style.backgroundImage = `url('${imageName}')`;
     clearAllShapes();
@@ -402,7 +402,7 @@ function loadConfiguration() {
     if (config.currentImageIndex) {
         currentImageIndex = config.currentImageIndex;
         const container = document.getElementById('shapeContainer');
-        container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
+        container.style.backgroundImage = `url('graphics/ventscreen${currentImageIndex}.jpg')`;
         document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
     }
 }
