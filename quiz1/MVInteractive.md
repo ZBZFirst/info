@@ -8247,5 +8247,3 @@ title: "Minute Ventilation Calculator"
 <div class="container" style="--x:40; --y:1.0; --z:40.0; --row-index:8240"><h2>Point #8241</h2><div class="coord">X: <span>40</span></div><div class="coord">Y: <span>1.0</span></div><div class="coord">Z: <span>40.0</span></div></div>
                                                                                               </div>
 <script type="module" src="MvGraph.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.min.js"></script>
