@@ -49,19 +49,40 @@ function copySelectedShape() {
 }
 
 function loadImage(index, useDefaults = false) {
+    console.log(`[loadImage] Loading image index ${index}, useDefaults: ${useDefaults}`);
+    
     currentImageIndex = index;
     const imageName = `ventscreen${currentImageIndex}.jpg`;
-    const imagePath = `/info/graphics/${imageName}`; // Updated path
+    const imagePath = `/info/graphics/${imageName}`;
+    console.log(`[loadImage] Image path: ${imagePath}`);
+    
     const container = document.getElementById('shapeContainer');
+    if (!container) {
+        console.error('[loadImage] Container element not found!');
+        return;
+    }
+    
     container.style.backgroundImage = `url('${imagePath}')`;
     document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
+    console.log(`[loadImage] Set background image to ${imagePath}`);
+    
     clearAllShapes();
+    console.log('[loadImage] Cleared all existing shapes');
 
     if (!useDefaults && imageConfigurations[imageName]) {
+        console.log('[loadImage] Loading saved configuration');
         const config = imageConfigurations[imageName];
+        console.log('[loadImage] Configuration:', config);
+        
         const containerRect = container.getBoundingClientRect();
+        console.log('[loadImage] Container dimensions:', {
+            width: containerRect.width,
+            height: containerRect.height
+        });
 
-        config.labels.forEach(label => {
+        config.labels.forEach((label, i) => {
+            console.log(`[loadImage] Processing label ${i}:`, label);
+            
             // Use normalized coordinates if available, otherwise use pixels
             const left = label.normalized ? 
                 label.normalized.x * containerRect.width : 
@@ -76,6 +97,10 @@ function loadImage(index, useDefaults = false) {
                 label.normalized.height * containerRect.height : 
                 label.size.height;
 
+            console.log(`[loadImage] Calculated dimensions for label ${i}:`, {
+                left, top, width, height
+            });
+
             addShape(label.type, {
                 label: label.label,
                 left: `${left}px`,
@@ -83,10 +108,15 @@ function loadImage(index, useDefaults = false) {
                 width: `${width}px`,
                 height: `${height}px`
             });
+            
+            console.log(`[loadImage] Added shape for label ${i}`);
         });
     } else {
+        console.log('[loadImage] Creating default shapes');
         createDefaultShapes();
     }
+    
+    console.log('[loadImage] Image loading completed');
 }
 
 
