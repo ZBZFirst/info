@@ -65,16 +65,36 @@ title: "Minute Ventilation Calculator"
 </div>
 
 <script type="module">
-  // Import THREE and OrbitControls from CDN with full paths
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
-  import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+  console.log("Starting module import test...");
   
-  // Make THREE available globally for your visualizer
-  window.THREE = THREE;
-  
-  // Load your visualizer after dependencies are available
-  const visualizerModule = await import('/info/_includes/3d-visualizer.js');
-  document.addEventListener('DOMContentLoaded', () => {
-    new visualizerModule.InteractiveVisualizer('graph3d');
-  });
+  try {
+    // Test THREE.js import
+    console.log("Attempting to import THREE...");
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+    console.log("THREE imported successfully:", THREE);
+    
+    // Test OrbitControls import
+    console.log("Attempting to import OrbitControls...");
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+    console.log("OrbitControls imported successfully");
+    
+    // Test your visualizer import
+    console.log("Attempting to import visualizer...");
+    const visualizerModule = await import('/info/_includes/3d-visualizer.js');
+    console.log("Visualizer imported successfully");
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log("Initializing visualizer...");
+      new visualizerModule.InteractiveVisualizer('graph3d');
+    });
+  } catch (error) {
+    console.error("Import chain failed:", error);
+    document.getElementById('graph3d').innerHTML = `
+      <div class="error">
+        <h3>Import Error</h3>
+        <p>${error.message}</p>
+        <p>Check console for details</p>
+      </div>
+    `;
+  }
 </script>
