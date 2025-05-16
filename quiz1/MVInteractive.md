@@ -4,8 +4,11 @@ title: "Minute Ventilation Calculator"
 ---
 
 <link rel="stylesheet" href="/info/_css/bigdata.css">
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script src="/js/plotly-visualizer.js" defer></script>
+<!-- Use specific Plotly version instead of "latest" -->
+<script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+
+<!-- Update path to match your actual file location -->
+<script src="/info/js/plotly-visualizer.js" defer></script>
 
 <div class="visualization-container">
   <!-- Control Panel -->
