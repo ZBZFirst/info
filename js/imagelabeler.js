@@ -468,7 +468,7 @@ function parseCSVConfigurations(csvData) {
         for (let i = 0; i < Math.min(headers.length, columns.length); i++) {
             const header = headers[i];
             const columnValue = columns[i];
-            console.log(`Column ${i} (${header}):`, columnValue);
+            // console.log(`Column ${i} (${header}):`, columnValue);
 
             // Try to parse JSON if the column looks like JSON
             if (columnValue.startsWith('{') || columnValue.startsWith('[')) {
