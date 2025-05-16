@@ -63,11 +63,18 @@ title: "Minute Ventilation Calculator"
   <!-- Visualization Area -->
   <div id="graph3d" class="graph-3d"></div>
 </div>
-
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
   // Static imports at top level
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
-  import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   
   // Dynamic import for your visualizer
   let Visualizer;
