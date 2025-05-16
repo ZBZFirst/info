@@ -35,9 +35,14 @@ const COLORMAPS = {
   // Add other colormap implementations...
 };
 
-class InteractiveVisualizer {
+export class InteractiveVisualizer {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
+    if (!this.container) {
+      console.error(`Container with ID ${containerId} not found`);
+      return;
+    }
+    
     this.data = null;
     this.columns = [];
     this.currentParams = {
@@ -51,29 +56,36 @@ class InteractiveVisualizer {
       labelStyle: 'simple'
     };
     
+    // Initialize Three.js and controls
     this.initThreeJS();
-    this.initControls();
-    this.loadData();
+    this.loadData().then(() => {
+      this.setupUI();
+      this.updateVisualization();
+    });
   }
 
   async loadData() {
     try {
       const response = await fetch('/info/quiz1/x_y_z_data.csv');
+      if (!response.ok) throw new Error('Network response was not ok');
       const csv = await response.text();
       this.processData(csv);
     } catch (error) {
       console.error('Error loading data:', error);
-      this.showError('Failed to load data');
+      this.showError('Failed to load data: ' + error.message);
     }
   }
 
   processData(csv) {
-    const lines = csv.split('\n');
+    const lines = csv.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 2) {
+      throw new Error('CSV file is empty or has no data rows');
+    }
+    
     this.columns = lines[0].split(',').map(col => col.trim());
     this.data = [];
     
     for (let i = 1; i < lines.length; i++) {
-      if (!lines[i]) continue;
       const values = lines[i].split(',');
       const point = {};
       this.columns.forEach((col, j) => {
@@ -81,10 +93,8 @@ class InteractiveVisualizer {
       });
       this.data.push(point);
     }
-    
-    this.setupUI();
-    this.updateVisualization();
   }
+
 
   setupUI() {
     // Populate dropdowns
@@ -298,6 +308,37 @@ class InteractiveVisualizer {
     `;
   }
 }
+
+// Define constants outside the class for cleaner exports
+export const LABEL_STYLES = {
+  simple: {
+    x: 'X',
+    y: 'Y',
+    z: 'Z',
+    transformed_x: 'Transformed X',
+    transformed_y: 'Transformed Y'
+  },
+  clinical: {
+    x: 'Respiratory Rate (breaths/min)',
+    y: 'Tidal Volume (mL)',
+    z: 'Minute Ventilation (L/min)',
+    transformed_x: 'Transformed Respiratory',
+    transformed_y: 'Transformed Tidal'
+  }
+};
+
+export const COLORMAPS = {
+  viridis: (t) => {
+    const c = new THREE.Color();
+    c.setHSL(0.3 + t * 0.5, 0.9, 0.5 - t * 0.2);
+    return c;
+  },
+  plasma: (t) => {
+    const c = new THREE.Color();
+    c.setHSL(0.1 + t * 0.7, 0.9, 0.5);
+    return c;
+  }
+};
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
