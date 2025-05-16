@@ -402,7 +402,7 @@ function loadConfiguration() {
     if (config.currentImageIndex) {
         currentImageIndex = config.currentImageIndex;
         const container = document.getElementById('shapeContainer');
-        container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
+        container.style.backgroundImage = `url('graphics/ventscreen${currentImageIndex}.jpg')`;
         document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
     }
 }
