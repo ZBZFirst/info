@@ -65,36 +65,28 @@ title: "Minute Ventilation Calculator"
 </div>
 
 <script type="module">
-  console.log("Starting module import test...");
+  // Static imports at top level
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+  import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
   
+  // Dynamic import for your visualizer
+  let Visualizer;
   try {
-    // Test THREE.js import
-    console.log("Attempting to import THREE...");
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
-    console.log("THREE imported successfully:", THREE);
-    
-    // Test OrbitControls import
-    console.log("Attempting to import OrbitControls...");
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
-    console.log("OrbitControls imported successfully");
-    
-    // Test your visualizer import
-    console.log("Attempting to import visualizer...");
-    const visualizerModule = await import('/info/_includes/3d-visualizer.js');
-    console.log("Visualizer imported successfully");
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log("Initializing visualizer...");
-      new visualizerModule.InteractiveVisualizer('graph3d');
-    });
+    const module = await import('/info/_includes/3d-visualizer.js');
+    Visualizer = module.InteractiveVisualizer;
   } catch (error) {
-    console.error("Import chain failed:", error);
+    console.error('Failed to load visualizer:', error);
     document.getElementById('graph3d').innerHTML = `
       <div class="error">
-        <h3>Import Error</h3>
+        <h3>Loading Error</h3>
         <p>${error.message}</p>
-        <p>Check console for details</p>
       </div>
     `;
+    throw error;
   }
+
+  // Initialize when ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new Visualizer('graph3d');
+  });
 </script>
