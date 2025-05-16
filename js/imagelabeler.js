@@ -481,7 +481,7 @@ function parseCSVConfigurations(csvData) {
                     // Replace escaped quotes
                     jsonString = jsonString.replace(/""/g, '"');
                     
-                    console.log('Attempting to parse JSON:', jsonString);
+                    // console.log('Attempting to parse JSON:', jsonString);
                     const parsedConfig = JSON.parse(jsonString);
                     imageConfigurations[header] = parsedConfig;
                     console.log(`Successfully parsed configuration for ${header}`);
