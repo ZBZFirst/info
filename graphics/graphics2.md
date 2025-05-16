@@ -156,10 +156,11 @@ title: Label a Vent
 <h1>Label a Ventilator</h1>
 <p>Warning, not optimized for Mobile</p>
 
-<p>The problem with mechanical ventilators is that they all show the same thing in different ways. The following is for educators to utilize in the classroom to create transparent shapes to label values on the different ventilator screens.</p>
-<p>A good example of how to use this is to use the Squares the highlight areas in the image and then use the Circles to contain and label certain items in an area.</p>
+<p>The problem with mechanical ventilators is that they all show the same thing in different ways. The following is for educators to utilize in the classroom to create transparent shapes to focus on certain values across the different ventilator screens.</p>
 
-<p>Statement on Artifical Intelligence in Respiratory Therapy: The usage of AI in respiratory therapy will not occur from the visualization and parsing of ventilator screens, too much granularity in the data is lost to be used for analysis. Connection to the sensor pins in the RS-232 Port will be how A.I. inherits control of the Mechancail Ventilator.</p>
+<p>A good example of how to use this is to use a Square to highlight a waveform area in the image and then use a circle to highlight an abnormality on the waveform for further review or for example, circling Minute Ventilation and its value.</p>
+
+<p>The goal is simple, change the labels to how your instructor wants it to be labeled.</p>
 
 <div class="shape-container" id="shapeContainer">
     <!-- Initial shapes will be added here dynamically -->
