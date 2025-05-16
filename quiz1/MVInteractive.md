@@ -65,8 +65,15 @@ title: "Minute Ventilation Calculator"
 </div>
 
 <script type="module">
-  import { InteractiveVisualizer } from '/info/_includes/3d-visualizer.js';
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+  import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+  
+  // Make THREE available globally for your visualizer
+  window.THREE = THREE;
+  
+  // Load your visualizer after dependencies are available
+  const visualizerModule = await import('/info/_includes/3d-visualizer.js');
   document.addEventListener('DOMContentLoaded', () => {
-    new InteractiveVisualizer('graph3d');
+    new visualizerModule.InteractiveVisualizer('graph3d');
   });
 </script>
