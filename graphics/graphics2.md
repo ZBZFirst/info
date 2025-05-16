@@ -5,14 +5,18 @@ title: Label a Vent
 
 <style>
     .shape-container {
-        margin: 0;
-        overflow: hidden;
-        height: 60vh;
+        width: 100%;
+        min-height: 500px; /* Ensures container has height even when empty */
+        height: 60vh; /* Responsive height */
         position: relative;
-        background: url('ventscreen1.jpg') no-repeat center center;
+        background-color: #f0f0f0; /* Fallback if image fails */
         background-size: contain;
-        background-color: #f0f0f0;
-        cursor: grab;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin: 20px 0;
+        border: 1px solid #ddd; /* Visual boundary for debugging */
+        box-sizing: border-box;
+        overflow: visible; /* Changed from 'hidden' to allow shapes to extend */
     }
 
     .shape {
