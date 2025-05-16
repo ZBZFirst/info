@@ -51,7 +51,7 @@ function copySelectedShape() {
 function loadImage(index, useDefaults = false) {
     currentImageIndex = index;
     const imageName = `ventscreen${currentImageIndex}.jpg`;
-    const imagePath = `/info/graphics/${imageName}`;
+    const imagePath = `https://zbzfirst.github.io/info/graphics/${imageName}`;
     const container = document.getElementById('shapeContainer');
     const img = new Image(); // Create new image to track loading
     
