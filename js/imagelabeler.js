@@ -52,7 +52,8 @@ function loadImage(index, useDefaults = false) {
     currentImageIndex = index;
     const imageName = `ventscreen${currentImageIndex}.jpg`;
     const container = document.getElementById('shapeContainer');
-    container.style.backgroundImage = `url('${imageName}')`;
+    container.style.backgroundImage = `url('/info/graphics/${imageName}')`;
+    document.getElementById('currentImageDisplay').textContent = `Current: ${imageName}`;
     clearAllShapes();
 
     if (!useDefaults && imageConfigurations[imageName]) {
@@ -402,7 +403,7 @@ function loadConfiguration() {
     if (config.currentImageIndex) {
         currentImageIndex = config.currentImageIndex;
         const container = document.getElementById('shapeContainer');
-        container.style.backgroundImage = `url('ventscreen${currentImageIndex}.jpg')`;
+        container.style.backgroundImage = `url('/info/graphics/ventscreen${currentImageIndex}.jpg')`;
         document.getElementById('currentImageDisplay').textContent = `Current: ventscreen${currentImageIndex}.jpg`;
     }
 }
