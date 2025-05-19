@@ -1,7 +1,7 @@
-import * as SoundInput from './modules/sound-input.js';
-import * as FFTDisplay from './modules/fft-display.js';
-import * as UI from './modules/ui.js';
-import * as Canvas from './modules/canvas.js';
+import * as SoundInput from './sound-input.js';
+import * as FFTDisplay from './fft-display.js';
+import * as UI from './ui.js';
+import * as Canvas from './canvas.js';
 
 class FFTVisualizer {
   constructor() {
