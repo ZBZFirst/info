@@ -1,3 +1,5 @@
+//fft.js file start
+
 import * as SoundInput from './modules/sound-input.js';
 import * as FFTDisplay from './modules/fft-display.js';
 import * as UI from './modules/ui.js';
@@ -43,3 +45,5 @@ class FFTVisualizer {
 }
 
 new FFTVisualizer();
+
+//fft.js file end
