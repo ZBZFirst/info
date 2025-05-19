@@ -1,3 +1,5 @@
+//canvas.js file start
+
 export function init(visualizer) {
   const canvas = document.getElementById('visualizer');
   
@@ -39,3 +41,5 @@ export function init(visualizer) {
     }
   };
 }
+
+//canvas.js file end
