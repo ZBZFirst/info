@@ -1,3 +1,5 @@
+//ui.js file start
+
 export function init(visualizer) {
   // Private functions
   function setupEventListeners() {
@@ -32,3 +34,5 @@ export function init(visualizer) {
     }
   };
 }
+
+//ui.js file end
