@@ -1,3 +1,5 @@
+//sound-input.js file start
+
 let audioContext;
 let analyser;
 let audioSource;
@@ -59,3 +61,4 @@ export function init(visualizer) {
     }
   };
 }
+//sound-input.js file end
