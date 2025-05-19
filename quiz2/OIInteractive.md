@@ -4,6 +4,7 @@ title: "Oxygenation Index"
 mathjax: true
 ---
 <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script src="/info/js/OIInteractive.js"></script>
 
 <div class="container">
