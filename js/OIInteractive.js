@@ -1,4 +1,6 @@
 // OIInteractive.js
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 // Load and parse the CSV data
 function loadAndVisualizeData() {
     // Show loading indicator
