@@ -31,28 +31,35 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = results.data;
             const traces = [];
             
-            // Extract columns from CSV
-            const x = data.map(row => row.x);
-            const y = data.map(row => row.y);
-            const z = data.map(row => row.OI);
-            const colors = data.map(row => row.OI);
+            // Extract clinical parameters directly
+            const fio2 = data.map(row => row.FiO2);
+            const map = data.map(row => row.MAP);
+            const pao2 = data.map(row => row.PaO2);
+            const oi = data.map(row => row.OI);
+            
+            // Create hover text with all parameters
             const texts = data.map(row => 
-                `PaO₂: ${row.PaO2}<br>FiO₂: ${row.FiO2}<br>MAP: ${row.MAP}<br>OI: ${row.OI}`
+                `FiO₂: ${row.FiO2.toFixed(2)}<br>
+                 MAP: ${row.MAP} cmH₂O<br>
+                 PaO₂: ${row.PaO2} mmHg<br>
+                 OI: ${row.OI.toFixed(1)}`
             );
             
-            // Create the trace
+            // Create the trace with clinical parameters on axes
             traces.push({
-                x: x,
-                y: y,
-                z: z,
+                x: fio2,  // FiO2 on x-axis
+                y: map,   // MAP on y-axis
+                z: pao2,  // PaO2 on z-axis
                 mode: 'markers',
                 type: 'scatter3d',
                 marker: {
-                    size: 3,
+                    size: 5,
                     opacity: 0.8,
-                    color: colors,
-                    colorscale: 'RdYlGn',
+                    color: oi,  // Color by OI value
+                    colorscale: 'Jet',  // Better clinical color scale
                     reversescale: true,
+                    cmin: 0,    // Minimum OI value
+                    cmax: 40,   // Maximum OI value
                     colorbar: {
                         title: 'Oxygenation Index',
                         thickness: 20
@@ -62,13 +69,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: texts
             });
             
-            // Layout configuration
+            // Clinical layout configuration
             const layout = {
-                title: 'Oxygenation Index Visualization',
+                title: 'Clinical Oxygenation Parameters',
                 scene: {
-                    xaxis: { title: 'X (Normalized)' },
-                    yaxis: { title: 'Y (Normalized)' },
-                    zaxis: { title: 'Oxygenation Index' },
+                    xaxis: { 
+                        title: 'FiO₂',
+                        range: [0.21, 1.0],
+                        tickvals: [0.21, 0.4, 0.6, 0.8, 1.0]
+                    },
+                    yaxis: { 
+                        title: 'MAP (cmH₂O)',
+                        range: [5, 30]
+                    },
+                    zaxis: { 
+                        title: 'PaO₂ (mmHg)',
+                        range: [40, 100]
+                    },
                     camera: {
                         eye: { x: 1.5, y: 1.5, z: 0.8 }
                     }
