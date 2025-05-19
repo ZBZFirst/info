@@ -1,8 +1,7 @@
 // OIInteractive.js
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-// Load and parse the CSV data
-function loadAndVisualizeData() {
+// OIInteractive.js
+document.addEventListener('DOMContentLoaded', function() {
     // Show loading indicator
     const loadingDiv = document.createElement('div');
     loadingDiv.textContent = "Loading data...";
@@ -12,6 +11,13 @@ function loadAndVisualizeData() {
         z-index: 1000; font-family: Arial, sans-serif;
     `;
     document.body.appendChild(loadingDiv);
+    
+    // Check if PapaParse is loaded
+    if (typeof Papa === 'undefined') {
+        loadingDiv.textContent = "Error: PapaParse not loaded";
+        console.error("PapaParse library not loaded");
+        return;
+    }
     
     // Fetch and parse the CSV file
     Papa.parse('/info/quiz2/oxygenation_index_dataset.csv', {
@@ -81,8 +87,4 @@ function loadAndVisualizeData() {
             console.error("Error loading CSV:", error);
         }
     });
-}
-
-// Initialize the visualization when the page loads
-document.addEventListener('DOMContentLoaded', loadAndVisualizeData);
-
+});
