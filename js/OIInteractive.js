@@ -1,5 +1,4 @@
 // OIInteractive.js
-
 // Load and parse the CSV data
 function loadAndVisualizeData() {
     // Show loading indicator
