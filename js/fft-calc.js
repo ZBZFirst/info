@@ -1,3 +1,5 @@
+//fft-calc.js file start
+
 const settings = {
   history: [],
   maxHistory: 10,
@@ -70,3 +72,5 @@ export function init(visualizer) {
     }
   };
 }
+
+//fft-calc.js file end
