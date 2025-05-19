@@ -1,3 +1,6 @@
+//fft-display.js file start
+
+
 let animationId;
 let ctx;
 
@@ -85,3 +88,5 @@ export function init(visualizer) {
     }
   };
 }
+
+//fft-display.js file end
