@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingDiv = document.createElement('div');
     loadingDiv.innerHTML = `
         <div class="loading-content">
-            <h3>Loading Oxygenation Data</h3>
+            <h3>Loading Oxygenation Data by MAP to 70</h3>
             <div class="progress-container">
                 <div class="progress-bar"></div>
                 <div class="progress-text">0%</div>
