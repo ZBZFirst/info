@@ -88,11 +88,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     yaxis: { 
                         title: 'MAP (cmH₂O)',
-                        range: [5, 30]
+                        range: [5, 70]
                     },
                     zaxis: { 
                         title: 'PaO₂ (mmHg)',
-                        range: [40, 100]
+                        range: [40, 1000]
                     },
                     camera: {
                         eye: { x: 1.5, y: 1.5, z: 0.8 }
