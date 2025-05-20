@@ -152,7 +152,7 @@ title: "What Is Minute Ventilation?"
         <div class="video-container">
             <div class="video-content">
                 <h3>Large Dataset Visualization</h3>
-                
+                <p>Let us attempt to graph a large amount of data points from computing Minute Ventilation and see the shape it would take on, then proceed to the Interactive Graph Exhibit to play with all the values instead of the small section we show graphed here.
                 <div class="video-player">
                     <figure class="video-wrapper">
                         <div class="embed-container">
