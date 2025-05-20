@@ -18,9 +18,9 @@ title: Paul's Desktop Reference
 
 <h3>The data was collected by using a Arduino Uno to perform a Analog Read of the voltages from the RS-232 Data Pins by sticking a DuPont Pin into the RS-232 Pin Holes. This was then written to a CSV for every reading recorded. This was then parsed and loaded for working with at this page. This is the raw ventilator sensor data. This is what the ventilator manufacturers DONT want you to be able to collect.</h3>
 <h3>By exporting the data this way, you are essentially making a data table for each patient that is hooked up the ventilator for raw values. These raw values can then be processed by each individual facility according to their institutions metric for counting breaths. Currently, this is handled by the manufacturers but due to the rapid expansion of ventilator manufacturers has allowed for independent development of Ventilator Sensor Data Interpretation.</h3>
-<h3>Essentially, I do not agree with how breaths are counted and I think we may disagree on the math, so lets review the source code and argue how it SHOULD be done instead of how it is currently working. Especially since random people who have never been mentioned made these devices.</h3>
+<h3>I have no idea who made Mechanical Ventilators. If I could find out who coded all of this beyond the service manual, I would gladly cite them, if you know who made these devices, let them know to contact me on GitHub so I can update this citation.</h3>
 <h3>CareFusion. (n.d.). <cite>AVEA® ventilator system service manual</cite> (Rev. D) [Service manual]. Chapter 11: Appendices, pp. 244–246.</h3>
-
+<h4>There is no other citation to give honestly. I only needed this single source to create what is below. From here, I will continue to use discrete Mathematics and Real Time Operating Systems to demonstrate what is going on with the Mechanical Ventilator as well as some other random stuff on this website. I will cite things that are absolutely necessary when I encounter them.</h4>
 </header>
 
   <div class="dashboard-controls">
