@@ -192,7 +192,7 @@ title: "What Is Minute Ventilation?"
     <div class="quiz-links">
         <a href="https://buy.stripe.com/8wM17H2yObCt8Mw008" class="quiz-link">Access Code Checkout Page</a>
         <a href="testquiz.html" class="quiz-link disabled">Minute Ventilation Quiz</a>
-        <a href="MVInteractive.html" class="quiz-link disabled">Interactive Worksheet</a>
+        <a href="MVInteractive.html" class="quiz-link disabled">Interactive Graph Exhibit</a>
     </div>
 </nav>
 
