@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             [45, 50], [50, 55], [55, 60], [60, 65], [65, 70]
         ],
         sampleRate: 0.2, // Sample 20% of points from each range
-        maxPoints: 20000 // Maximum points to display at once
+        maxPoints: 200000 // Maximum points to display at once
     };
 
     // Initialize plot
