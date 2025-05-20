@@ -1,52 +1,3 @@
-// Create worker.js content as a Blob URL to avoid separate file
-const workerCode = `
-  self.importScripts('https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js');
-
-  self.onmessage = function(e) {
-    const { url, mapRange } = e.data;
-    
-    Papa.parse(url, {
-      download: true,
-      header: true,
-      dynamicTyping: true,
-      skipEmptyLines: true,
-      chunk: function(results, parser) {
-        const filtered = results.data.filter(row => 
-          row.FiO2 !== null && 
-          row.MAP !== null && 
-          row.PaO2 !== null && 
-          row.OI !== null &&
-          row.MAP >= mapRange[0] && 
-          row.MAP < mapRange[1]
-        );
-        
-        if (filtered.length > 0) {
-          self.postMessage({
-            status: 'chunk',
-            data: filtered,
-            mapRange: mapRange
-          });
-        }
-      },
-      complete: function() {
-        self.postMessage({
-          status: 'complete',
-          mapRange: mapRange
-        });
-      },
-      error: function(error) {
-        self.postMessage({
-          status: 'error',
-          error: error.message
-        });
-      }
-    });
-  };
-`;
-
-const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-const workerUrl = URL.createObjectURL(workerBlob);
-
 document.addEventListener('DOMContentLoaded', function() {
     // Enhanced loading indicator
     const loadingDiv = document.createElement('div');
@@ -66,31 +17,14 @@ document.addEventListener('DOMContentLoaded', function() {
         z-index: 1000; font-family: Arial, sans-serif;
         display: flex; justify-content: center; align-items: center;
     `;
-    loadingDiv.querySelector('.loading-content').style.cssText = `
-        max-width: 500px; padding: 2rem; text-align: center;
-    `;
-    loadingDiv.querySelector('.progress-container').style.cssText = `
-        width: 100%; height: 20px; background: #333;
-        border-radius: 10px; margin: 1rem 0; position: relative;
-        overflow: hidden;
-    `;
-    loadingDiv.querySelector('.progress-bar').style.cssText = `
-        height: 100%; width: 0%; background: linear-gradient(90deg, #4361ee, #3a0ca3);
-        transition: width 0.3s ease;
-    `;
-    loadingDiv.querySelector('.progress-text').style.cssText = `
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        display: flex; justify-content: center; align-items: center;
-        font-size: 0.8rem;
-    `;
     document.body.appendChild(loadingDiv);
-    
+
     // Check for required libraries
     if (typeof Papa === 'undefined' || typeof Plotly === 'undefined') {
         loadingDiv.innerHTML = `<div class="error">Error: Required libraries not loaded. Please check your internet connection.</div>`;
         return;
     }
-    
+
     // Configuration
     const config = {
         csvUrl: '/info/quiz2/oxygenation_index_dataset.csv',
@@ -102,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sampleRate: 0.2, // Sample 20% of points from each range
         maxPoints: 20000 // Maximum points to display at once
     };
-    
+
     // Initialize plot
     const plotDiv = document.getElementById('plot');
     Plotly.newPlot(plotDiv, [], {
@@ -113,14 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
             zaxis: { title: 'PaO₂ (mmHg)', range: [40, 1000] }
         }
     });
-    
+
     // State management
     let allData = [];
     let loadedRanges = 0;
-    let currentTrace = null;
-    
-    // Process each MAP range
-    function loadNextRange() {
+
+    // Process CSV data directly (without Web Worker)
+    function loadData() {
         if (loadedRanges >= config.mapRanges.length) {
             // All ranges loaded
             loadingDiv.querySelector('.loading-details').textContent = 'Finalizing visualization...';
@@ -130,68 +63,77 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
             return;
         }
-        
+
         const currentRange = config.mapRanges[loadedRanges];
         loadingDiv.querySelector('.loading-details').textContent = 
             `Loading MAP range: ${currentRange[0]} to ${currentRange[1]} cmH₂O`;
-        
-        const worker = new Worker(workerUrl);
-        worker.postMessage({
-            url: config.csvUrl,
-            mapRange: currentRange
-        });
-        
-        worker.onmessage = function(e) {
-            const { status, data, mapRange, error } = e.data;
-            
-            if (status === 'error') {
-                console.error('Worker error:', error);
-                worker.terminate();
-                return;
-            }
-            
-            if (status === 'chunk' && data && data.length > 0) {
-                // Sample the data to reduce points
-                const sampledData = data.length > 1000 ? 
-                    data.filter(() => Math.random() < config.sampleRate) : 
-                    data;
-                
-                allData = allData.concat(sampledData);
-                
-                // Limit total points
-                if (allData.length > config.maxPoints) {
-                    allData = allData.slice(allData.length - config.maxPoints);
+
+        Papa.parse(config.csvUrl, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            step: function(results, parser) {
+                const row = results.data;
+                if (row.FiO2 !== null && row.MAP !== null && 
+                    row.PaO2 !== null && row.OI !== null &&
+                    row.MAP >= currentRange[0] && row.MAP < currentRange[1]) {
+                    
+                    // Sample the data to reduce points
+                    if (Math.random() < config.sampleRate) {
+                        allData.push({
+                            FiO2: parseFloat(row.FiO2),
+                            MAP: parseFloat(row.MAP),
+                            PaO2: parseFloat(row.PaO2),
+                            OI: parseFloat(row.OI)
+                        });
+                    }
+
+                    // Update plot periodically
+                    if (allData.length % 500 === 0) {
+                        updatePlot();
+                    }
                 }
-                
-                // Update plot
-                updatePlot();
-            }
-            
-            if (status === 'complete') {
+            },
+            complete: function() {
                 loadedRanges++;
                 const progress = (loadedRanges / config.mapRanges.length) * 100;
                 loadingDiv.querySelector('.progress-bar').style.width = `${progress}%`;
                 loadingDiv.querySelector('.progress-text').textContent = `${Math.round(progress)}%`;
-                worker.terminate();
-                setTimeout(loadNextRange, 100); // Small delay between ranges
+                
+                // Final update for this range
+                updatePlot();
+                
+                // Small delay before next range
+                setTimeout(loadData, 100);
+            },
+            error: function(error) {
+                console.error('CSV parsing error:', error);
+                loadingDiv.querySelector('.loading-details').textContent = 
+                    `Error loading data: ${error.message}`;
             }
-        };
+        });
     }
-    
+
     // Update the plot with current data
     function updatePlot() {
         if (allData.length === 0) return;
-        
+
+        // Limit total points
+        const displayData = allData.length > config.maxPoints 
+            ? allData.slice(allData.length - config.maxPoints)
+            : allData;
+
         const traces = [{
-            x: allData.map(row => row.FiO2),
-            y: allData.map(row => row.MAP),
-            z: allData.map(row => row.PaO2),
+            x: displayData.map(row => row.FiO2),
+            y: displayData.map(row => row.MAP),
+            z: displayData.map(row => row.PaO2),
             mode: 'markers',
             type: 'scatter3d',
             marker: {
                 size: 3,
                 opacity: 0.6,
-                color: allData.map(row => row.OI),
+                color: displayData.map(row => row.OI),
                 colorscale: 'Jet',
                 cmin: 0,
                 cmax: 40,
@@ -201,15 +143,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             hoverinfo: 'text',
-            text: allData.map(row => 
+            text: displayData.map(row => 
                 `FiO₂: ${row.FiO2.toFixed(2)}<br>
                  MAP: ${row.MAP.toFixed(1)} cmH₂O<br>
                  PaO₂: ${row.PaO2.toFixed(1)} mmHg<br>
                  OI: ${row.OI.toFixed(1)}`
             ),
-            name: `Data (${allData.length.toLocaleString()} points)`
+            name: `Data (${displayData.length.toLocaleString()} points)`
         }];
-        
+
         Plotly.react(plotDiv, traces, {
             title: 'Clinical Oxygenation Parameters',
             scene: {
@@ -233,13 +175,44 @@ document.addEventListener('DOMContentLoaded', function() {
             margin: { l: 0, r: 0, b: 0, t: 30 }
         });
     }
-    
+
     // Start loading process
-    loadNextRange();
-    
+    loadData();
+
     // Add CSS for loading animation
     const style = document.createElement('style');
     style.textContent = `
+        .loading-content {
+            max-width: 500px;
+            padding: 2rem;
+            text-align: center;
+        }
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+        }
         @keyframes pulse {
             0% { opacity: 0.6; }
             50% { opacity: 1; }
