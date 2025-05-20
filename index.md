@@ -8,8 +8,8 @@ title: Paul's Desktop Reference
 <div class="dashboard-container">
 <header class="dashboard-header">
 <h1>Pauls Waveform Recording</h1>
-<h2>I forgot where exactly I recorded this as I have a few recordings of Mechanical Ventilator Waveforms but this is what you would expect to see.</h2>
-    
+<h2>Mechanical Ventilator Waveforms from an AVEA CareStation</h2>
+<h3>I Did It For Free, How Much Did It Cost You?</h3>    
 <div class="image-gallery">
   <figure class="image-container"><img src="pictures/ArduinoUnoHookup.jpg" alt="Arduino Uno Hookup Diagram"><figcaption>Figure 1: Arduino Uno setup used for data collection</figcaption></figure>
   <figure class="image-container"><img src="pictures/RS232-Pin-Config-Avea.jpg" alt="RS232 Pin Configuration for Avea Ventilator"><figcaption>Figure 2: RS-232 pin configuration for Avea ventilator</figcaption></figure>
