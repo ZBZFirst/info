@@ -8,6 +8,7 @@ title: "What Is Minute Ventilation?"
         <header class="content-header">
             <h1>What is Minute Ventilation?</h1>
             <p class="content-intro">Read the following guide and watch the videos below. Upon completing the videos, the Quiz and Interactive Page will become unlocked.</p>
+            <p>At the end, there is an interactive graph to review where the possible values for the Minute Ventilation are graphed in their entirety. It is quite fun to look at and play with!</p>
         </header>
 
         <div class="formula-group">
