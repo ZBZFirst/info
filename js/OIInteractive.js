@@ -1,6 +1,3 @@
-// OIInteractive.js
-
-// OIInteractive.js
 document.addEventListener('DOMContentLoaded', function() {
     // Show loading indicator
     const loadingDiv = document.createElement('div');
@@ -24,42 +21,53 @@ document.addEventListener('DOMContentLoaded', function() {
         download: true,
         header: true,
         dynamicTyping: true,
+        skipEmptyLines: true,  // Add this to skip empty rows
         complete: function(results) {
             loadingDiv.textContent = "Processing data...";
             
-            // Process the data
-            const data = results.data;
-            const traces = [];
-            
-            // Extract clinical parameters directly
-            const fio2 = data.map(row => row.FiO2);
-            const map = data.map(row => row.MAP);
-            const pao2 = data.map(row => row.PaO2);
-            const oi = data.map(row => row.OI);
-            
-            // Create hover text with all parameters
-            const texts = data.map(row => 
-                `FiO₂: ${row.FiO2.toFixed(2)}<br>
-                 MAP: ${row.MAP} cmH₂O<br>
-                 PaO₂: ${row.PaO2} mmHg<br>
-                 OI: ${row.OI.toFixed(1)}`
+            // Filter out rows with null values
+            const cleanData = results.data.filter(row => 
+                row.FiO2 !== null && 
+                row.MAP !== null && 
+                row.PaO2 !== null && 
+                row.OI !== null
             );
             
-            // Create the trace with clinical parameters on axes
-            traces.push({
-                x: fio2,  // FiO2 on x-axis
-                y: map,   // MAP on y-axis
-                z: pao2,  // PaO2 on z-axis
+            if (cleanData.length === 0) {
+                loadingDiv.textContent = "Error: No valid data found";
+                console.error("All rows contained null values");
+                return;
+            }
+            
+            // Extract clinical parameters from clean data
+            const fio2 = cleanData.map(row => parseFloat(row.FiO2));
+            const map = cleanData.map(row => parseFloat(row.MAP));
+            const pao2 = cleanData.map(row => parseFloat(row.PaO2));
+            const oi = cleanData.map(row => parseFloat(row.OI));
+            
+            // Create hover text with all parameters
+            const texts = cleanData.map(row => 
+                `FiO₂: ${parseFloat(row.FiO2).toFixed(2)}<br>
+                 MAP: ${parseFloat(row.MAP).toFixed(1)} cmH₂O<br>
+                 PaO₂: ${parseFloat(row.PaO2).toFixed(1)} mmHg<br>
+                 OI: ${parseFloat(row.OI).toFixed(1)}`
+            );
+            
+            // Create the trace
+            const trace = {
+                x: fio2,
+                y: map,
+                z: pao2,
                 mode: 'markers',
                 type: 'scatter3d',
                 marker: {
                     size: 5,
                     opacity: 0.8,
-                    color: oi,  // Color by OI value
-                    colorscale: 'Jet',  // Better clinical color scale
-                    reversescale: true,
-                    cmin: 0,    // Minimum OI value
-                    cmax: 40,   // Maximum OI value
+                    color: oi,
+                    colorscale: 'Jet',
+                    reversescale: false,
+                    cmin: 0,
+                    cmax: 40,
                     colorbar: {
                         title: 'Oxygenation Index',
                         thickness: 20
@@ -67,9 +75,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 hoverinfo: 'text',
                 text: texts
-            });
+            };
             
-            // Clinical layout configuration
+            // Layout configuration
             const layout = {
                 title: 'Clinical Oxygenation Parameters',
                 scene: {
@@ -94,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Create the plot
-            Plotly.newPlot('plot', traces, layout);
+            Plotly.newPlot('plot', [trace], layout);
             
             loadingDiv.textContent = "Ready!";
             setTimeout(() => loadingDiv.remove(), 2000);
