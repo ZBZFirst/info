@@ -182,7 +182,7 @@ title: "What Is Minute Ventilation?"
     <section class="content-group references-container">
         <h2 class="section-title">References</h2>
         <div class="citation-item">
-            <p>Lastname, Firstname. <cite>Title of Book in Italics</cite>. Publisher, Year. <span class="citation-page">pp. 123-145.</span></p>
+            <p>Casillas, Paul. <cite>Graphics Minute Ventilation</cite>. 2025, March. <span class="citation-page"></span></p>
         </div>
     </section>
 </article>
