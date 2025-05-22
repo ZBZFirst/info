@@ -35,7 +35,7 @@ title: Respiratory Calculator
     <div class="calculation-container">
       <h3>Convert Actual Weight to Kilograms (kg)</h3>
       <div class="formula-box">
-        <p>Actualy Weight in kg = lbs / 2.2</p>
+        <p>Actual Weight in kg = Total Pounds / 2.2 pounds/kg</p>
         <p id="weight-conversion-steps">Calculating...</p>
       </div>
     </div>
