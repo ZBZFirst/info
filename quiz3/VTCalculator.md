@@ -6,7 +6,7 @@ title: Respiratory Calculator
 <div class="container">
   <div class="intro">
     <h1>Respiratory Calculator</h1>
-    <p>This calculator is adapted from the National Board for Respiratory Care's "Setting Initial Tidal Volume" guidelines for Respiratory Care Practitioners in the United States. In order to become a Respiratory Therapist or a Respiratory Care Practitioner, you must demonstrate how to set the initial tidal volume. Below is the process you must use as I have used it. The experimental section at the end is my own addition but the section prior to that are taken from here: <a href="https://www.nbrc.org/wp-content/uploads/2017/07/Setting-the-Tidal-Volume.pdf" class="btn btn-outline">NBRC Guidelines on Setting the Tidal Volume</a></p>
+    <p>This calculator is adapted from the National Board for Respiratory Care's (NBRC) "Setting Initial Tidal Volume" guidelines for Respiratory Care Practitioners in the United States. In order to become a Respiratory Therapist or a Respiratory Care Practitioner, you must demonstrate how to set the initial tidal volume. Below this is the Calculator in HTML form as described by the NBRC. The experimental section at the end is my own addition but the section prior to that are taken from here: <a href="https://www.nbrc.org/wp-content/uploads/2017/07/Setting-the-Tidal-Volume.pdf" class="btn btn-outline">NBRC Guidelines on Setting the Tidal Volume</a></p>
   </div>
 
   <div class="section">
@@ -70,6 +70,9 @@ title: Respiratory Calculator
 
     <div class="card">
       <h3>Experimental Minute Ventilation</h3>
+      <p>Respiratory Rate for Adults can be defined as normal when between 12 to 20 breaths per minute. If this constraint is used, then applying the low normal respiratory rate to the lower range of tidal volume can give an absolute normal range based on normal parameters.</p>
+      <p><strong>An exmaple is provided...</strong></p>
+
       <div class="formula-box">
         <p><strong>VE = VT × RR</strong></p>
         <div id="ventilation-steps">
