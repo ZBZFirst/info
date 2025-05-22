@@ -1,42 +1,52 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Get all input elements
   const heightSlider = document.getElementById('height');
+  const heightValue = document.getElementById('height-value');
   const weightSlider = document.getElementById('weight');
+  const weightValue = document.getElementById('weight-value');
   const genderRadios = document.querySelectorAll('input[name="gender"]');
-  
-  // Display initial values
+
+  // Initialize display
+  updateDisplayValues();
   updateCalculations();
-  
-  // Add event listeners
-  heightSlider.addEventListener('input', updateCalculations);
-  weightSlider.addEventListener('input', updateCalculations);
-  genderRadios.forEach(radio => radio.addEventListener('change', updateCalculations));
-  
+
+  // Event listeners for real-time updates
+  heightSlider.addEventListener('input', function() {
+    heightValue.textContent = this.value;
+    updateCalculations();
+  });
+
+  weightSlider.addEventListener('input', function() {
+    weightValue.textContent = this.value;
+    updateCalculations();
+  });
+
+  genderRadios.forEach(radio => {
+    radio.addEventListener('change', updateCalculations);
+  });
+
+  function updateDisplayValues() {
+    heightValue.textContent = heightSlider.value;
+    weightValue.textContent = weightSlider.value;
+  }
+
   function updateCalculations() {
     // Get current values
     const height = parseFloat(heightSlider.value);
     const weight = parseFloat(weightSlider.value);
     const gender = document.querySelector('input[name="gender"]:checked').value;
-    
-    // Update displayed values
-    document.getElementById('height-value').textContent = height;
-    document.getElementById('weight-value').textContent = weight;
-    
-    // Perform calculations
+
+    // Calculate weight conversion
     const weightKg = (weight / 2.2).toFixed(1);
-    const heightDiff = (height - 60).toFixed(1);
-    const ibwStep1 = (2.3 * heightDiff).toFixed(1);
-    const ibwBase = gender === 'M' ? 50 : 45.5;
-    const ibw = (parseFloat(ibwBase) + parseFloat(ibwStep1)).toFixed(1);
-    const vtLow = (6 * ibw).toFixed(1);
-    const vtHigh = (8 * ibw).toFixed(1);
-    const veMin = (vtLow * 12).toFixed(1);
-    const veMax = (vtHigh * 20).toFixed(1);
-    
-    // Update weight conversion
     document.getElementById('weight-conversion-steps').innerHTML = 
       `${weight} / 2.2 = <strong>${weightKg} kg</strong>`;
+
+    // Calculate IBW
+    const ibwBase = gender === 'M' ? 50 : 45.5;
+    const heightDiff = (height - 60).toFixed(1);
+    const ibwStep1 = (2.3 * (height - 60)).toFixed(1);
+    const ibw = (parseFloat(ibwBase) + parseFloat(ibwStep1)).toFixed(1);
     
-    // Update IBW calculation
     document.getElementById('ibw-formula').textContent = 
       `IBW = ${ibwBase} + (2.3 × (height - 60))`;
     document.getElementById('ibw-steps').innerHTML = `
@@ -44,14 +54,18 @@ document.addEventListener('DOMContentLoaded', function() {
       <p>Step 2: 2.3 × ${heightDiff} = ${ibwStep1}</p>
       <p>Step 3: ${ibwBase} + ${ibwStep1} = <strong>${ibw} kg</strong></p>
     `;
-    
-    // Update tidal volume
+
+    // Calculate Tidal Volume
+    const vtLow = (6 * ibw).toFixed(1);
+    const vtHigh = (8 * ibw).toFixed(1);
     document.getElementById('tidal-volume-steps').innerHTML = `
       <p>6 × ${ibw} = <strong>${vtLow} ml</strong></p>
       <p>8 × ${ibw} = <strong>${vtHigh} ml</strong></p>
     `;
-    
-    // Update ventilation
+
+    // Calculate Minute Ventilation
+    const veMin = (vtLow * 12).toFixed(1);
+    const veMax = (vtHigh * 20).toFixed(1);
     document.getElementById('ventilation-steps').innerHTML = `
       <p>Min VE: ${vtLow} × 12 = <strong>${veMin} ml/min</strong></p>
       <p>Max VE: ${vtHigh} × 20 = <strong>${veMax} ml/min</strong></p>
