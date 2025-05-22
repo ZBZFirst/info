@@ -75,4 +75,4 @@ title: Respiratory Calculator
   </div>
 </div>
 
-<script src="{{ '/js/calculator.js' | relative_url }}"></script>
+<script src="{{ '/info/js/calculator.js' | relative_url }}"></script>
