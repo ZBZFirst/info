@@ -11,7 +11,7 @@ title: Respiratory Calculator
     
     <div class="slider-container">
       <label for="height">Height (inches):</label>
-      <input type="range" id="height" min="48" max="84" value="70" step="0.1">
+      <input type="range" id="height" min="60" max="84" value="70" step="0.1">
       <span id="height-value">70</span>
     </div>
     
@@ -33,9 +33,9 @@ title: Respiratory Calculator
   <div class="results-section">
     <!-- Weight Conversion -->
     <div class="calculation-container">
-      <h3>Weight Conversion</h3>
+      <h3>Convert Actual Weight to Kilograms (kg)</h3>
       <div class="formula-box">
-        <p>kg = lbs / 2.2</p>
+        <p>Actualy Weight in kg = lbs / 2.2</p>
         <p id="weight-conversion-steps">Calculating...</p>
       </div>
     </div>
