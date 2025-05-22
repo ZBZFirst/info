@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Minute Ventilation Calculator"
+title: "Initial Tidal Volume Calculator"
 ---
 
 <h1 class="graph-title">Minute Ventilation Simulator</h1>
