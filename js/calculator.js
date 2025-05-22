@@ -50,15 +50,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('ibw-formula').textContent = 
       `IBW = ${ibwBase} + (2.3 × (height - 60))`;
     document.getElementById('ibw-steps').innerHTML = `
-      <p>Step 1: ${height} - 60 = ${heightDiff}</p>
-      <p>Step 2: 2.3 × ${heightDiff} = ${ibwStep1}</p>
-      <p>Step 3: ${ibwBase} + ${ibwStep1} = <strong>${ibw} kg</strong></p>
+      <p>Step 1, Subtract Height Difference: ${height} - 60 = ${heightDiff}</p>
+      <p>Step 2, Multiply Difference by 2.3: 2.3 × ${heightDiff} = ${ibwStep1}</p>
+      <p>Step 3, Add the reamining Values: ${ibwBase} + ${ibwStep1} = <strong>${ibw} kg</strong></p>
     `;
 
     // Calculate Tidal Volume
     const vtLow = (6 * ibw).toFixed(1);
     const vtHigh = (8 * ibw).toFixed(1);
     document.getElementById('tidal-volume-steps').innerHTML = `
+      <p>Utilize 6 - 8 ml/kg per NBRC White Paper</p>
       <p>6 × ${ibw} = <strong>${vtLow} ml</strong></p>
       <p>8 × ${ibw} = <strong>${vtHigh} ml</strong></p>
     `;
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const veMin = (vtLow * 12).toFixed(1);
     const veMax = (vtHigh * 20).toFixed(1);
     document.getElementById('ventilation-steps').innerHTML = `
+      <p>Computing a full normal range for Minute Ventilation given a height is possible according to the equations below.</p>
       <p>Min VE: ${vtLow} × 12 = <strong>${veMin} ml/min</strong></p>
       <p>Max VE: ${vtHigh} × 20 = <strong>${veMax} ml/min</strong></p>
     `;
