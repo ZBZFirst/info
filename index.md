@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Paul's Desktop Reference
+title: Respiratory Therapy Reference
 ---
 
 <link rel="stylesheet" href="/info/_css/dashboard.css">
 
 <div class="dashboard-container">
 <header class="dashboard-header">
-<h1>Pauls Waveform Recording</h1>
+<h1>How to Hack a Mechanical Ventilator to Export the Waveforms Using an Arduino</h1>
 <h2>Mechanical Ventilator Waveforms from an AVEA CareStation</h2>
 <h3>I Did It For Free, How Much Did It Cost You?</h3>    
 <div class="image-gallery">
