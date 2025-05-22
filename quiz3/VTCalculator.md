@@ -51,7 +51,7 @@ title: Respiratory Calculator
     <div class="card">
       <h3>Ideal Body Weight</h3>
       <div class="formula-box">
-        <p><strong>IBW = Base + (2.3 × (height - 60))</strong></p>
+            <p id="ibw-formula"><strong>IBW = Base + (2.3 × (height - 60))</strong></p>
         <div id="ibw-steps">
           <p>Waiting for input...</p>
         </div>
