@@ -36,7 +36,7 @@ title: Respiratory Calculator
       <h3>Weight Conversion</h3>
       <div class="formula-box">
         <p>kg = lbs / 2.2</p>
-        <p id="weight-conversion-steps">150 / 2.2 = 68.2 kg</p>
+        <p id="weight-conversion-steps">Calculating...</p>
       </div>
     </div>
 
@@ -44,11 +44,9 @@ title: Respiratory Calculator
     <div class="calculation-container">
       <h3>Ideal Body Weight</h3>
       <div class="formula-box">
-        <p id="ibw-formula">IBW = 50 + (2.3 × (height - 60))</p>
+        <p id="ibw-formula">IBW = Base + (2.3 × (height - 60))</p>
         <div id="ibw-steps">
-          <p>Step 1: 70 - 60 = 10</p>
-          <p>Step 2: 2.3 × 10 = 23</p>
-          <p>Step 3: 50 + 23 = 73 kg</p>
+          <p>Waiting for input...</p>
         </div>
       </div>
     </div>
@@ -59,8 +57,7 @@ title: Respiratory Calculator
       <div class="formula-box">
         <p>6-8 ml/kg IBW</p>
         <div id="tidal-volume-steps">
-          <p>6 × 73 = 438 ml</p>
-          <p>8 × 73 = 584 ml</p>
+          <p>Waiting for IBW calculation...</p>
         </div>
       </div>
     </div>
@@ -71,12 +68,11 @@ title: Respiratory Calculator
       <div class="formula-box">
         <p>VE = VT × RR</p>
         <div id="ventilation-steps">
-          <p>Min VE: 438 × 12 = 5256 ml/min</p>
-          <p>Max VE: 584 × 20 = 11680 ml/min</p>
+          <p>Waiting for tidal volume calculation...</p>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script src="assets/js/calculator.js"></script>
+<script src="{{ '/assets/js/calculator.js' | relative_url }}"></script>
