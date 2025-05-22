@@ -5,7 +5,7 @@ title: Respiratory Calculator
 
 <div class="calculator-container">
   <h1>Respiratory Calculator</h1>
-  <h2>This calculator is adapted from the National Board for Respiratory Cares "Setting Initial Tidal Volume" guidelines for Respiratory Care Practitioners in the United States. In order to become a Respiratory Therapit or a Respiratory Care Practitoner, you must demonstrate how to set the initial tidal volume. Below is the process you must use as I have used it. The experimental section at the end is my own addition but the section prior to that are taken from here https://www.nbrc.org/wp-content/uploads/2017/07/Setting-the-Tidal-Volume.pdf</h2>
+  <h2>This calculator is adapted from the National Board for Respiratory Cares "Setting Initial Tidal Volume" guidelines for Respiratory Care Practitioners in the United States. In order to become a Respiratory Therapit or a Respiratory Care Practitoner, you must demonstrate how to set the initial tidal volume. Below is the process you must use as I have used it. The experimental section at the end is my own addition but the section prior to that are taken from here: <a href="https://www.nbrc.org/wp-content/uploads/2017/07/Setting-the-Tidal-Volume.pdf">NBRC Guidelines on Setting the Tidal Volume</a>/h2>
   
   <div class="input-section">
     <h2>Patient Parameters</h2>
