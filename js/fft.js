@@ -74,8 +74,9 @@ class FFTVisualizer {
     }
   }
   
-  // ... rest of your class methods
-}
+  async getAudioDevices() {
+      return await getAudioDevices();
+  }}
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log("[FFT] DOM fully loaded");
