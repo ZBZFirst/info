@@ -10,3 +10,5 @@
   url: "/info/quiz2/OIInteractive.html"
 - name: "Determining Initial Tidal Volume"
   url: "/info/quiz3/VTCalculator.html"
+- name: "Changing the Tidal Volume based on PaCO2"
+  url: "/info/quiz4/paco2-calculator.html"
