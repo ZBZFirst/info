@@ -1,7 +1,7 @@
-import * as SoundInput from './sound-input.js';
-import * as FFTDisplay from './fft-display.js';
-import * as UI from './ui.js';
-import * as Canvas from './canvas.js';
+import { start as startSoundInput, stop as stopSoundInput, getAudioDevices } from './sound-input.js';
+import { init as initFFTDisplay } from './fft-display.js';
+import { init as initUI } from './ui.js';
+import { init as initCanvas, toggleFullscreen } from './canvas.js';
 
 class FFTVisualizer {
   constructor() {
