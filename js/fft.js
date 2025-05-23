@@ -1,3 +1,5 @@
+// In your fft.js file, update the imports and initialization:
+
 import { start as startSoundInput, stop as stopSoundInput, getAudioDevices } from './sound-input.js';
 import { init as initFFTDisplay } from './fft-display.js';
 import { init as initUI } from './ui.js';
@@ -52,16 +54,20 @@ class FFTVisualizer {
   async init() {
     console.log("[FFT] Starting initialization...");
     try {
-      this.canvas = Canvas.init(this);
+      // Change Canvas.init to initCanvas
+      this.canvas = initCanvas(this);
       console.log("[FFT] Canvas initialized");
       
-      UI.init(this);
+      // Change UI.init to initUI
+      initUI(this);
       console.log("[FFT] UI initialized");
       
-      await SoundInput.init(this);
+      // Change SoundInput.init to startSoundInput
+      await startSoundInput(null, this); // Passing null for default device
       console.log("[FFT] SoundInput initialized");
       
-      FFTDisplay.init(this);
+      // Change FFTDisplay.init to initFFTDisplay
+      initFFTDisplay(this);
       console.log("[FFT] FFTDisplay initialized");
     } catch (error) {
       console.error("[FFT] Initialization error:", error);
