@@ -4,7 +4,7 @@ let audioContext;
 let analyser;
 let audioSource;
 
-async function getAudioDevices() {
+export async function getAudioDevices() {
   try {
     await navigator.mediaDevices.getUserMedia({ audio: true });
     return navigator.mediaDevices.enumerateDevices();
