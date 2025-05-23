@@ -12,8 +12,9 @@ export function init(visualizer) {
     const visualOptions = document.querySelectorAll('.visual-option');
     const deviceList = document.getElementById('deviceList');
     const toggleDevicesBtn = document.createElement('button'); // New device toggle button
+    const canvas = document.querySelector('canvas'); // Get the canvas element
 
-    if (!startBtn || !fullscreenBtn || !sensitivitySlider || !deviceList) {
+    if (!startBtn || !fullscreenBtn || !sensitivitySlider || !deviceList || !canvas) {
         console.error('[UI] Could not find all required elements!');
         return null;
     }
@@ -24,6 +25,28 @@ export function init(visualizer) {
     toggleDevicesBtn.textContent = 'Show Audio Devices';
     toggleDevicesBtn.className = 'secondary';
     deviceList.parentNode.insertBefore(toggleDevicesBtn, deviceList.nextSibling);
+
+    // Fullscreen functionality
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            canvas.requestFullscreen().catch(err => {
+                console.error('[UI] Error attempting to enable fullscreen:', err);
+                showError('Fullscreen failed: ' + err.message);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    // Update fullscreen button text based on current state
+    function updateFullscreenButton() {
+        fullscreenBtn.textContent = document.fullscreenElement 
+            ? 'Exit Fullscreen' 
+            : 'Enter Fullscreen';
+    }
+
+    // Listen for fullscreen change events
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
 
     // Event Listeners
     startBtn.addEventListener('click', async () => {
@@ -47,10 +70,7 @@ export function init(visualizer) {
 
     fullscreenBtn.addEventListener('click', () => {
         console.log('[UI] Fullscreen button clicked');
-        visualizer.toggleFullscreen();
-        fullscreenBtn.textContent = visualizer.settings.isFullscreen 
-            ? 'Exit Fullscreen' 
-            : 'Enter Fullscreen';
+        toggleFullscreen();
     });
 
     // Sliders
@@ -153,6 +173,7 @@ export function init(visualizer) {
 
     return {
         showError,
-        refreshDevices: populateDeviceList
+        refreshDevices: populateDeviceList,
+        toggleFullscreen
     };
 }
