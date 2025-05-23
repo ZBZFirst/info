@@ -55,13 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
       <p><strong>New VE = ${newVE.toFixed(1)} ml/min (${(newVE/1000).toFixed(2)} L/min)</strong></p>
     `;
     
-    // Calculate option 1: adjust RR only
-    const newRR = newVE / currentVT;
-    document.getElementById('new-rr-steps').innerHTML = `
-      <p>New RR = ${newVE.toFixed(1)} / ${currentVT}</p>
-      <p><strong>New RR = ${newRR.toFixed(1)} breaths/min</strong></p>
-    `;
-    
     // Calculate option 1: adjust RR only (keep VT constant)
     // New RR = (Current PaCO2 × Current RR) / Desired PaCO2
     const newRR = (currentPaCO2 * currentRR) / desiredPaCO2;
@@ -80,10 +73,22 @@ document.addEventListener('DOMContentLoaded', function() {
       <p>New VE with this VT = ${newVT.toFixed(1)} ml × ${currentRR} = ${(newVT * currentRR).toFixed(1)} ml/min</p>
     `;
     
+    // Calculate option 3: proportional adjustment
+    const adjustmentFactor = newVE / currentVE;
+    const sqrtAdjustment = Math.sqrt(adjustmentFactor);
+    const propNewRR = currentRR * sqrtAdjustment;
+    const propNewVT = currentVT * sqrtAdjustment;
+    
+    document.getElementById('adjustment-factor-steps').innerHTML = `
+      <p>Adjustment Factor = ${newVE.toFixed(1)} / ${currentVE.toFixed(1)}</p>
+      <p><strong>Adjustment Factor = ${adjustmentFactor.toFixed(3)}</strong></p>
+    `;
+    
     document.getElementById('proportional-adjustment-steps').innerHTML = `
       <p>Square root of adjustment factor = ${sqrtAdjustment.toFixed(3)}</p>
       <p>New RR = ${currentRR} × ${sqrtAdjustment.toFixed(3)} = <strong>${propNewRR.toFixed(1)} breaths/min</strong></p>
       <p>New VT = ${currentVT} × ${sqrtAdjustment.toFixed(3)} = <strong>${propNewVT.toFixed(1)} ml</strong></p>
+      <p>New VE = ${propNewVT.toFixed(1)} × ${propNewRR.toFixed(1)} = ${(propNewVT * propNewRR).toFixed(1)} ml/min</p>
     `;
   }
   
