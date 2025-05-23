@@ -18,7 +18,7 @@ async function setupAudio(deviceId) {
   console.log("[SoundInput] Setting up audio context");
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioContext.createAnalyser();
-  analyser.fftSize = 2048;
+  analyser.fftSize = 4096;
   
   console.log("[SoundInput] Requesting microphone access");
   const stream = await navigator.mediaDevices.getUserMedia({
