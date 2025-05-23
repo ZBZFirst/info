@@ -5,12 +5,13 @@ let analyser;
 let audioSource;
 
 export async function getAudioDevices() {
-  try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
-    return navigator.mediaDevices.enumerateDevices();
-  } catch (error) {
-    throw error;
-  }
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        return devices.filter(device => device.kind === 'audioinput');
+    } catch (error) {
+        console.error("[SoundInput] Error getting devices:", error);
+        throw error;
+    }
 }
 
 async function setupAudio(deviceId) {
