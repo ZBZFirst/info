@@ -1,60 +1,53 @@
 console.log('[Canvas] Module loading...');
 
-export function init(visualizer) {
+const canvasApi = {
+  canvas: null,
+  visualizer: null,
+
+  init(visualizer) {
     console.log('[Canvas] Initializing with visualizer:', visualizer);
+    this.visualizer = visualizer;
+    this.canvas = document.getElementById('visualizer');
     
-    const canvas = document.getElementById('visualizer');
-    if (!canvas) {
-        console.error('[Canvas] Could not find canvas element!');
-        return null;
+    if (!this.canvas) {
+      console.error('[Canvas] Could not find canvas element!');
+      return null;
     }
 
-    console.log('[Canvas] Found canvas element:', canvas);
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+    document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
 
-    function resizeCanvas() {
-        console.log('[Canvas] Resizing canvas');
-        const width = Math.min(800, window.innerWidth - 40);
-        canvas.width = width;
-        canvas.height = width * 0.5;
-        console.debug(`[Canvas] New dimensions: ${canvas.width}x${canvas.height}`);
+    return this;
+  },
+
+  resizeCanvas() {
+    console.log('[Canvas] Resizing canvas');
+    const width = Math.min(800, window.innerWidth - 40);
+    this.canvas.width = width;
+    this.canvas.height = width * 0.5;
+  },
+
+  handleFullscreenChange() {
+    const isFullscreen = !!document.fullscreenElement;
+    console.log(`[Canvas] Fullscreen change: ${isFullscreen}`);
+    
+    if (isFullscreen) {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    } else {
+      this.resizeCanvas();
     }
+  },
 
-    function handleFullscreenChange() {
-        const isFullscreen = !!document.fullscreenElement;
-        console.log(`[Canvas] Fullscreen change: ${isFullscreen}`);
-        
-        visualizer.settings.isFullscreen = isFullscreen;
-        if (isFullscreen) {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        } else {
-            resizeCanvas();
-        }
+  toggleFullscreen() {
+    console.log('[Canvas] Toggling fullscreen');
+    if (!document.fullscreenElement) {
+      this.canvas.requestFullscreen().catch(console.error);
+    } else {
+      document.exitFullscreen();
     }
+  }
+};
 
-    // Initial setup
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-    console.log('[Canvas] Setup complete');
-
-    return {
-        toggleFullscreen() {
-            console.log('[Canvas] Toggling fullscreen');
-            if (!document.fullscreenElement) {
-                console.log('[Canvas] Entering fullscreen');
-                canvas.requestFullscreen().catch(err => {
-                    console.error('[Canvas] Fullscreen error:', err);
-                });
-            } else {
-                console.log('[Canvas] Exiting fullscreen');
-                document.exitFullscreen();
-            }
-        },
-        
-        getCanvas() {
-            return canvas;
-        }
-    };
-}
+export default canvasApi;
