@@ -58,6 +58,3 @@ export function stop(visualizer) {
   visualizer.isRunning = false;
 }
 
-export async function getAudioDevices() {
-  return getAudioDevices();
-}
