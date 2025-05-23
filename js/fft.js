@@ -19,7 +19,7 @@ class FFTVisualizer {
     };
     
     this.isRunning = false;
-    this.canvas = null;
+    this.canvasContext = initCanvas(this);
     this.fftCalc = {
       analyser: null,
       getProcessedData: () => {
