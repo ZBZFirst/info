@@ -1,3 +1,5 @@
+console.log("[SoundInput] Loading sound-input module");
+
 let audioContext;
 let analyser;
 let audioSource;
@@ -12,10 +14,12 @@ async function getAudioDevices() {
 }
 
 async function setupAudio(deviceId) {
+  console.log("[SoundInput] Setting up audio context");
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioContext.createAnalyser();
   analyser.fftSize = 2048;
   
+  console.log("[SoundInput] Requesting microphone access");
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: {
       deviceId: deviceId ? { exact: deviceId } : undefined,
@@ -23,6 +27,7 @@ async function setupAudio(deviceId) {
     }
   });
   
+  console.log("[SoundInput] Creating audio source");
   audioSource = audioContext.createMediaStreamSource(stream);
   audioSource.connect(analyser);
   
@@ -30,11 +35,14 @@ async function setupAudio(deviceId) {
 }
 
 export async function start(deviceId, visualizer) {
+  console.log(`[SoundInput] Starting with device ${deviceId || 'default'}`);
   try {
     const analyser = await setupAudio(deviceId);
+    console.log("[SoundInput] Audio setup complete");
     visualizer.fftCalc.setAnalyser(analyser);
     visualizer.isRunning = true;
   } catch (error) {
+    console.error("[SoundInput] Start error:", error);
     visualizer.ui.showError('Could not access audio device');
   }
 }
