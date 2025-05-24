@@ -14,6 +14,82 @@ title: Ventilatory Ratio Calculator
     <p class="clinical-note"><strong>Clinical Note:</strong> In ARDS patients, VR >2 is associated with higher mortality and may indicate significant dead space ventilation.</p>
   </div>
 
+  <div class="visualization-wrapper">
+    <!-- Control Panel -->
+    <div class="control-panel">
+      <h3>Visualization Controls</h3>
+      
+      <div class="control-group">
+        <label for="coord-system">Coordinate System:</label>
+        <select id="coord-system" class="form-control">
+          <option value="cartesian">Cartesian</option>
+          <option value="polar">Polar</option>
+          <option value="spherical">Spherical</option>
+        </select>
+      </div>
+
+      <div class="control-group axis-controls">
+        <label for="x-col">X/Radius:</label>
+        <select id="x-col" class="form-control axis-select">
+          <option value="minute_ventilation">Minute Ventilation</option>
+          <option value="paco2">PaCO₂</option>
+          <option value="vr">Ventilatory Ratio</option>
+        </select>
+        
+        <label for="y-col">Y/Theta:</label>
+        <select id="y-col" class="form-control axis-select">
+          <option value="paco2">PaCO₂</option>
+          <option value="minute_ventilation">Minute Ventilation</option>
+          <option value="vr">Ventilatory Ratio</option>
+        </select>
+        
+        <label for="z-col">Z/Phi:</label>
+        <select id="z-col" class="form-control axis-select">
+          <option value="vr">Ventilatory Ratio</option>
+          <option value="minute_ventilation">Minute Ventilation</option>
+          <option value="paco2">PaCO₂</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="color-by">Color By:</label>
+        <select id="color-by" class="form-control">
+          <option value="none">None</option>
+          <option value="vr">Ventilatory Ratio</option>
+          <option value="paco2">PaCO₂</option>
+          <option value="minute_ventilation">Minute Ventilation</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="cmap">Colormap:</label>
+        <select id="cmap" class="form-control">
+          <option value="viridis">Viridis</option>
+          <option value="plasma">Plasma</option>
+          <option value="inferno">Inferno</option>
+          <option value="magma">Magma</option>
+          <option value="cividis">Cividis</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="alpha">Opacity:</label>
+        <input type="range" id="alpha" min="0.1" max="1" step="0.1" value="0.7" class="form-control">
+      </div>
+
+      <div class="control-group">
+        <label for="label-style">Label Style:</label>
+        <select id="label-style" class="form-control">
+          <option value="simple">Simple</option>
+          <option value="clinical">Clinical</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Visualization Area -->
+    <div id="vr-3d-plot" class="graph-3d"></div>
+  </div>
+
   <div class="section">
     <h2>Required Parameters</h2>
     
@@ -36,28 +112,6 @@ title: Ventilatory Ratio Calculator
       <input type="number" id="pbw" min="30" max="120" value="70">
     </div>
   </div>
-
-  <!-- Visualization Section -->
-  <div class="section">
-    <h2>Ventilatory Ratio Visualization</h2>
-    <div class="card">
-      <div id="vr-plot" class="plot-container"></div>
-      <div class="plot-controls">
-        <label for="plot-type">Plot Type:</label>
-        <select id="plot-type">
-          <option value="contour">Contour Plot</option>
-          <option value="surface">3D Surface</option>
-        </select>
-        
-        <label for="color-scale">Color Scale:</label>
-        <select id="color-scale">
-          <option value="Viridis">Viridis</option>
-          <option value="Plasma">Plasma</option>
-          <option value="Inferno">Inferno</option>
-        </select>
-      </div>
-    </div>
-  </div>
  
   <div class="section">
     <h2>Ventilatory Ratio Calculation</h2>
@@ -76,7 +130,6 @@ title: Ventilatory Ratio Calculator
       <div id="vr-interpretation">
         <p>Results will appear here</p>
       </div>
-      <div id="vr-plot-point" class="plot-point-info"></div>
     </div>
   </div>
 </div>
