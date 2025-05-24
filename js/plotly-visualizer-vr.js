@@ -44,6 +44,22 @@ document.addEventListener('DOMContentLoaded', function() {
     paco2Value.textContent = paco2Slider.value;
   }
 
+// Add this function before the event listener
+function calculateVR(ve, paco2, pbw) {
+    // VR formula: (Minute Ventilation × PaCO₂) / (PBW × 100 × 37.5)
+    return (ve * paco2) / (pbw * 100 * 37.5);
+}
+
+// Also add this helper function that's used in updatePlot()
+function generateRange(min, max, steps) {
+    const range = [];
+    const stepSize = (max - min) / steps;
+    for (let i = 0; i <= steps; i++) {
+        range.push(min + (i * stepSize));
+    }
+    return range;
+}
+  
 function initializePlot() {
     const layout = {
         title: 'Ventilatory Ratio 3D Visualization',
