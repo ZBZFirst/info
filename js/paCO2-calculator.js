@@ -108,29 +108,53 @@ document.addEventListener('DOMContentLoaded', function() {
     const propNewRR = currentRR * sqrtAdjustment;
     const propNewVT = currentVT * sqrtAdjustment;
     
-    document.getElementById('adjustment-factor-steps').innerHTML = `
-      <div class="equation-container">
-        ${createEquation(`\\text{Adjustment Factor} = \\frac{VE_{new}}{VE_{current}}`)}
-        ${createEquation(`\\text{Adjustment Factor} = \\frac{${newVE.toFixed(1)}}{${currentVE.toFixed(1)}}`)}
-        ${createEquation(`\\text{Adjustment Factor} = ${adjustmentFactor.toFixed(3)}`, true)}
-      </div>
-    `;
-    
     document.getElementById('proportional-adjustment-steps').innerHTML = `
-      <div class="equation-container">
-        ${createEquation(`\\sqrt{\\text{Adjustment Factor}} = \\sqrt{${adjustmentFactor.toFixed(3)}}`)}
-        ${createEquation(`= ${sqrtAdjustment.toFixed(3)}`)}
-        ${createEquation(`RR_{new} = RR_{current} \\times \\sqrt{\\text{Adjustment Factor}}`)}
-        ${createEquation(`RR_{new} = ${currentRR} \\times ${sqrtAdjustment.toFixed(3)}`)}
-        ${createEquation(`= ${propNewRR.toFixed(1)} \\, \\text{breaths/min}`, true)}
-        ${createEquation(`VT_{new} = VT_{current} \\times \\sqrt{\\text{Adjustment Factor}}`)}
-        ${createEquation(`VT_{new} = ${currentVT} \\times ${sqrtAdjustment.toFixed(3)}`)}
-        ${createEquation(`= ${propNewVT.toFixed(1)} \\, \\text{ml}`, true)}
-        ${createEquation(`VE_{new} = VT_{new} \\times RR_{new}`)}
-        ${createEquation(`VE_{new} = ${propNewVT.toFixed(1)} \\times ${propNewRR.toFixed(1)}`)}
-        ${createEquation(`= ${(propNewVT * propNewRR).toFixed(1)} \\, \\text{ml/min}`)}
-      </div>
-    `;
+  <div class="section-title">Option 3: Proportional Adjustment of Both Parameters</div>
+  <div class="method-description">
+    This method adjusts both VT and RR by the same proportion to:
+    <ul>
+      <li>Maintain the original VT/RR ratio</li>
+      <li>Prevent extreme changes to either parameter</li>
+      <li>Provide more balanced ventilation adjustment</li>
+    </ul>
+  </div>
+
+  <div class="calculation-step">
+    <div class="step-title">Step 1: Calculate Adjustment Factor</div>
+    ${createEquation(`\\text{Adjustment Factor} = \\frac{VE_{new}}{VE_{current}}`)}
+    ${createEquation(`\\text{Adjustment Factor} = \\frac{${newVE.toFixed(1)}}{${currentVE.toFixed(1)}}`)}
+    ${createEquation(`\\text{Adjustment Factor} = ${adjustmentFactor.toFixed(3)}`, true)}
+  </div>
+
+  <div class="calculation-step">
+    <div class="step-title">Step 2: Calculate Square Root of Adjustment Factor</div>
+    <div class="step-description">This determines the proportional change needed for both parameters</div>
+    ${createEquation(`\\sqrt{\\text{Adjustment Factor}} = \\sqrt{${adjustmentFactor.toFixed(3)}}`)}
+    ${createEquation(`= ${sqrtAdjustment.toFixed(3)}`, true)}
+  </div>
+
+  <div class="calculation-step">
+    <div class="step-title">Step 3: Apply to Both Parameters</div>
+    ${createEquation(`RR_{new} = RR_{current} \\times \\sqrt{\\text{Adjustment Factor}}`)}
+    ${createEquation(`RR_{new} = ${currentRR} \\times ${sqrtAdjustment.toFixed(3)}`)}
+    ${createEquation(`= ${propNewRR.toFixed(1)} \\, \\text{breaths/min}`, true)}
+    
+    ${createEquation(`VT_{new} = VT_{current} \\times \\sqrt{\\text{Adjustment Factor}}`)}
+    ${createEquation(`VT_{new} = ${currentVT} \\times ${sqrtAdjustment.toFixed(3)}`)}
+    ${createEquation(`= ${propNewVT.toFixed(1)} \\, \\text{ml}`, true)}
+    
+    ${createEquation(`VE_{new} = VT_{new} \\times RR_{new}`)}
+    ${createEquation(`VE_{new} = ${propNewVT.toFixed(1)} \\times ${propNewRR.toFixed(1)}`)}
+    ${createEquation(`= ${(propNewVT * propNewRR).toFixed(1)} \\, \\text{ml/min}`, true)}
+  </div>
+
+  <div class="example-box">
+    <div class="example-title">Example:</div>
+    <p>If you need to increase VE by 44% (Adjustment Factor = 1.44):</p>
+    ${createEquation(`\\sqrt{1.44} = 1.2 \\quad \\text{(Increase both VT and RR by 20%)}`)}
+    ${createEquation(`\\text{This achieves the 44% VE increase} \\quad (1.2 \\times 1.2 = 1.44) \\quad \\text{while maintaining balance}`)}
+  </div>
+`;
     
     // Render MathJax after updating the content
     renderMathJax();
