@@ -93,42 +93,6 @@ title: PaCO2 Adjustment Calculator
         </div>
       </div>
     </div>
-
-    <div class="card">
-      <h3>Option 3: Proportional Adjustment of Both Parameters</h3>
-      <div class="formula-box">
-        <p class="method-explanation">This method adjusts both VT and RR by the same proportion to:</p>
-        <ul class="method-benefits">
-          <li>Maintain the original VT/RR ratio</li>
-          <li>Prevent extreme changes to either parameter</li>
-          <li>Provide more balanced ventilation adjustment</li>
-        </ul>
-        
-        <div class="calculation-steps">
-          <p><strong>Step 1: Calculate Adjustment Factor</strong></p>
-          <p>Adjustment Factor = New VE / Current VE</p>
-          <div id="adjustment-factor-steps">
-            <p>Waiting for calculation...</p>
-          </div>
-          
-          <p><strong>Step 2: Calculate Square Root of Adjustment Factor</strong></p>
-          <p>This determines the proportional change needed for both parameters</p>
-          
-          <p><strong>Step 3: Apply to Both Parameters</strong></p>
-          <p>New RR = Current RR × √Adjustment Factor</p>
-          <p>New VT = Current VT × √Adjustment Factor</p>
-          <div id="proportional-adjustment-steps">
-            <p>Waiting for calculation...</p>
-          </div>
-        </div>
-        
-        <div class="clinical-example">
-          <p><strong>Example:</strong> If you need to increase VE by 44% (Adjustment Factor = 1.44):</p>
-          <p>√1.44 = 1.2 → Increase both VT and RR by 20%</p>
-          <p>This achieves the 44% VE increase (1.2 × 1.2 = 1.44) while maintaining balance</p>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
