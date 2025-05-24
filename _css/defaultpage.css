@@ -297,6 +297,23 @@ figcaption {
   }
 }
 
+/* Add this to your CSS file */
+.MathJax {
+  font-size: 1.1em !important;
+}
+
+.formula-box .MathJax {
+  margin: 0.5em 0;
+}
+
+.equation {
+  display: block;
+  margin: 0.5em 0;
+  padding: 0.5em;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
 /* ===================== */
 /* === Intro Section === */
 /* ===================== */
