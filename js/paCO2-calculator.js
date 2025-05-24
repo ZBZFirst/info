@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
+  // Function to create a properly spaced equation container
+  function createEquation(equation, isResult = false) {
+    const className = isResult ? 'equation result' : 'equation';
+    return `<div class="${className}">${equation}</div>`;
+  }
+  
   // Main calculation function
   function updateCalculations() {
     // Get current values
@@ -51,35 +57,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calculate current minute ventilation
     const currentVE = currentVT * currentRR;
     document.getElementById('current-ve-steps').innerHTML = `
-      <p>\\( VE_{current} = VT_{current} \\times RR_{current} \\)</p>
-      <p>\\( VE_{current} = ${currentVT} \\text{ ml} \\times ${currentRR} \\text{ breaths/min} \\)</p>
-      <p><strong>\\( VE_{current} = ${currentVE.toFixed(1)} \\text{ ml/min} \\ (${(currentVE/1000).toFixed(2)} \\text{ L/min}) \\)</strong></p>
+      <div class="equation-container">
+        ${createEquation(`\\( VE_{current} = VT_{current} \\times RR_{current} \\)`)}
+        ${createEquation(`\\( VE_{current} = ${currentVT} \\, \\text{ml} \\times ${currentRR} \\, \\text{breaths/min} \\)`)}
+        ${createEquation(`\\( VE_{current} = ${currentVE.toFixed(1)} \\, \\text{ml/min} \\)`, true)}
+        ${createEquation(`\\( \\quad (${(currentVE/1000).toFixed(2)} \\, \\text{L/min}) \\)`)}
+      </div>
     `;
     
     // Calculate new required minute ventilation
     const newVE = (currentPaCO2 * currentVE) / desiredPaCO2;
     document.getElementById('new-ve-steps').innerHTML = `
-      <p>\\( VE_{new} = \\frac{PaCO_{2\\ current} \\times VE_{current}}{PaCO_{2\\ desired}} \\)</p>
-      <p>\\( VE_{new} = \\frac{${currentPaCO2} \\times ${currentVE.toFixed(1)}}{${desiredPaCO2}} \\)</p>
-      <p><strong>\\( VE_{new} = ${newVE.toFixed(1)} \\text{ ml/min} \\ (${(newVE/1000).toFixed(2)} \\text{ L/min}) \\)</strong></p>
+      <div class="equation-container">
+        ${createEquation(`\\( VE_{new} = \\frac{PaCO_{2\\,current} \\times VE_{current}}{PaCO_{2\\,desired}} \\)`)}
+        ${createEquation(`\\( VE_{new} = \\frac{${currentPaCO2} \\times ${currentVE.toFixed(1)}}{${desiredPaCO2}} \\)`)}
+        ${createEquation(`\\( VE_{new} = ${newVE.toFixed(1)} \\, \\text{ml/min} \\)`, true)}
+        ${createEquation(`\\( \\quad (${(newVE/1000).toFixed(2)} \\, \\text{L/min}) \\)`)}
+      </div>
     `;
     
     // Calculate option 1: adjust RR only (keep VT constant)
     const newRR = (currentPaCO2 * currentRR) / desiredPaCO2;
     document.getElementById('new-rr-steps').innerHTML = `
-      <p>\\( RR_{new} = \\frac{PaCO_{2\\ current} \\times RR_{current}}{PaCO_{2\\ desired}} \\)</p>
-      <p>\\( RR_{new} = \\frac{${currentPaCO2} \\times ${currentRR}}{${desiredPaCO2}} \\)</p>
-      <p><strong>\\( RR_{new} = ${newRR.toFixed(1)} \\text{ breaths/min} \\)</strong></p>
-      <p>\\( VE_{new\\ with\\ RR} = VT_{current} \\times RR_{new} = ${currentVT} \\times ${newRR.toFixed(1)} = ${(currentVT * newRR).toFixed(1)} \\text{ ml/min} \\)</p>
+      <div class="equation-container">
+        ${createEquation(`\\( RR_{new} = \\frac{PaCO_{2\\,current} \\times RR_{current}}{PaCO_{2\\,desired}} \\)`)}
+        ${createEquation(`\\( RR_{new} = \\frac{${currentPaCO2} \\times ${currentRR}}{${desiredPaCO2}} \\)`)}
+        ${createEquation(`\\( RR_{new} = ${newRR.toFixed(1)} \\, \\text{breaths/min} \\)`, true)}
+        ${createEquation(`\\( VE_{new\\,RR} = VT_{current} \\times RR_{new} \\)`)}
+        ${createEquation(`\\( VE_{new\\,RR} = ${currentVT} \\times ${newRR.toFixed(1)} \\)`)}
+        ${createEquation(`\\( VE_{new\\,RR} = ${(currentVT * newRR).toFixed(1)} \\, \\text{ml/min} \\)`)}
+      </div>
     `;
     
     // Calculate option 2: adjust VT only (keep RR constant)
     const newVT = (currentPaCO2 * currentVT) / desiredPaCO2;
     document.getElementById('new-vt-steps').innerHTML = `
-      <p>\\( VT_{new} = \\frac{PaCO_{2\\ current} \\times VT_{current}}{PaCO_{2\\ desired}} \\)</p>
-      <p>\\( VT_{new} = \\frac{${currentPaCO2} \\times ${currentVT}}{${desiredPaCO2}} \\)</p>
-      <p><strong>\\( VT_{new} = ${newVT.toFixed(1)} \\text{ ml} \\)</strong></p>
-      <p>\\( VE_{new\\ with\\ VT} = VT_{new} \\times RR_{current} = ${newVT.toFixed(1)} \\times ${currentRR} = ${(newVT * currentRR).toFixed(1)} \\text{ ml/min} \\)</p>
+      <div class="equation-container">
+        ${createEquation(`\\( VT_{new} = \\frac{PaCO_{2\\,current} \\times VT_{current}}{PaCO_{2\\,desired}} \\)`)}
+        ${createEquation(`\\( VT_{new} = \\frac{${currentPaCO2} \\times ${currentVT}}{${desiredPaCO2}} \\)`)}
+        ${createEquation(`\\( VT_{new} = ${newVT.toFixed(1)} \\, \\text{ml} \\)`, true)}
+        ${createEquation(`\\( VE_{new\\,VT} = VT_{new} \\times RR_{current} \\)`)}
+        ${createEquation(`\\( VE_{new\\,VT} = ${newVT.toFixed(1)} \\times ${currentRR} \\)`)}
+        ${createEquation(`\\( VE_{new\\,VT} = ${(newVT * currentRR).toFixed(1)} \\, \\text{ml/min} \\)`)}
+      </div>
     `;
     
     // Calculate option 3: proportional adjustment
@@ -89,18 +109,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const propNewVT = currentVT * sqrtAdjustment;
     
     document.getElementById('adjustment-factor-steps').innerHTML = `
-      <p>\\( \\text{Adjustment Factor} = \\frac{VE_{new}}{VE_{current}} \\)</p>
-      <p>\\( \\text{Adjustment Factor} = \\frac{${newVE.toFixed(1)}}{${currentVE.toFixed(1)}} \\)</p>
-      <p><strong>\\( \\text{Adjustment Factor} = ${adjustmentFactor.toFixed(3)} \\)</strong></p>
+      <div class="equation-container">
+        ${createEquation(`\\text{Adjustment Factor} = \\frac{VE_{new}}{VE_{current}}`)}
+        ${createEquation(`\\text{Adjustment Factor} = \\frac{${newVE.toFixed(1)}}{${currentVE.toFixed(1)}}`)}
+        ${createEquation(`\\text{Adjustment Factor} = ${adjustmentFactor.toFixed(3)}`, true)}
+      </div>
     `;
     
     document.getElementById('proportional-adjustment-steps').innerHTML = `
-      <p>\\( \\sqrt{\\text{Adjustment Factor}} = \\sqrt{${adjustmentFactor.toFixed(3)}} = ${sqrtAdjustment.toFixed(3)} \\)</p>
-      <p>\\( RR_{new} = RR_{current} \\times \\sqrt{\\text{Adjustment Factor}} \\)</p>
-      <p>\\( RR_{new} = ${currentRR} \\times ${sqrtAdjustment.toFixed(3)} = \\mathbf{${propNewRR.toFixed(1)} \\text{ breaths/min}} \\)</p>
-      <p>\\( VT_{new} = VT_{current} \\times \\sqrt{\\text{Adjustment Factor}} \\)</p>
-      <p>\\( VT_{new} = ${currentVT} \\times ${sqrtAdjustment.toFixed(3)} = \\mathbf{${propNewVT.toFixed(1)} \\text{ ml}} \\)</p>
-      <p>\\( VE_{new} = VT_{new} \\times RR_{new} = ${propNewVT.toFixed(1)} \\times ${propNewRR.toFixed(1)} = ${(propNewVT * propNewRR).toFixed(1)} \\text{ ml/min} \\)</p>
+      <div class="equation-container">
+        ${createEquation(`\\sqrt{\\text{Adjustment Factor}} = \\sqrt{${adjustmentFactor.toFixed(3)}}`)}
+        ${createEquation(`= ${sqrtAdjustment.toFixed(3)}`)}
+        ${createEquation(`RR_{new} = RR_{current} \\times \\sqrt{\\text{Adjustment Factor}}`)}
+        ${createEquation(`RR_{new} = ${currentRR} \\times ${sqrtAdjustment.toFixed(3)}`)}
+        ${createEquation(`= ${propNewRR.toFixed(1)} \\, \\text{breaths/min}`, true)}
+        ${createEquation(`VT_{new} = VT_{current} \\times \\sqrt{\\text{Adjustment Factor}}`)}
+        ${createEquation(`VT_{new} = ${currentVT} \\times ${sqrtAdjustment.toFixed(3)}`)}
+        ${createEquation(`= ${propNewVT.toFixed(1)} \\, \\text{ml}`, true)}
+        ${createEquation(`VE_{new} = VT_{new} \\times RR_{new}`)}
+        ${createEquation(`VE_{new} = ${propNewVT.toFixed(1)} \\times ${propNewRR.toFixed(1)}`)}
+        ${createEquation(`= ${(propNewVT * propNewRR).toFixed(1)} \\, \\text{ml/min}`)}
+      </div>
     `;
     
     // Render MathJax after updating the content
