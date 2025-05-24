@@ -2,7 +2,6 @@
 layout: default
 title: Ventilatory Ratio Calculator
 ---
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <!-- Load Plotly library -->
 <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
