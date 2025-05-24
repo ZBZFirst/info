@@ -3,14 +3,6 @@ let lastVeRange = null;
 let lastPaco2Range = null;
 let lastPbw = null;
 
-document.getElementById('coord-system').addEventListener('change', updatePlot);
-document.getElementById('x-col').addEventListener('change', updatePlot);
-document.getElementById('y-col').addEventListener('change', updatePlot);
-document.getElementById('z-col').addEventListener('change', updatePlot);
-document.getElementById('color-by').addEventListener('change', updatePlot);
-document.getElementById('cmap').addEventListener('change', updatePlot);
-document.getElementById('alpha').addEventListener('input', updatePlot);
-document.getElementById('label-style').addEventListener('change', updatePlot);
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize Plotly visualization container
   const graphDiv = document.createElement('div');
@@ -34,6 +26,15 @@ document.addEventListener('DOMContentLoaded', function() {
   updateCalculations();
   initializePlot();
 
+  document.getElementById('coord-system').addEventListener('change', updatePlot);
+  document.getElementById('x-col').addEventListener('change', updatePlot);
+  document.getElementById('y-col').addEventListener('change', updatePlot);
+  document.getElementById('z-col').addEventListener('change', updatePlot);
+  document.getElementById('color-by').addEventListener('change', updatePlot);
+  document.getElementById('cmap').addEventListener('change', updatePlot);
+  document.getElementById('alpha').addEventListener('input', updatePlot);
+  document.getElementById('label-style').addEventListener('change', updatePlot);
+  
   // Event listeners for real-time updates
   veSlider.addEventListener('input', function() {
     veValue.textContent = this.value;
