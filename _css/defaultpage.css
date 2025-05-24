@@ -297,21 +297,55 @@ figcaption {
   }
 }
 
-/* Add this to your CSS file */
+/* ===================== */
+/* === MathJax Design === */
+/* ===================== *//* MathJax Container Styling */
 .MathJax {
   font-size: 1.1em !important;
+  line-height: 1.5 !important;
 }
 
-.formula-box .MathJax {
-  margin: 0.5em 0;
+/* Equation container styling */
+.equation-container {
+  margin: 1em 0;
+  padding: 1em;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #4285f4;
 }
 
+/* Spacing between equations */
 .equation {
   display: block;
+  margin: 0.8em 0;
+}
+
+/* Card specific adjustments */
+.card .equation-container {
   margin: 0.5em 0;
-  padding: 0.5em;
-  background-color: #f8f9fa;
-  border-radius: 4px;
+  padding: 0.8em;
+}
+
+/* Formula box adjustments */
+.formula-box {
+  line-height: 1.6;
+}
+
+/* Step-by-step calculation spacing */
+.calculation-steps .equation {
+  margin: 0.5em 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .equation-container {
+    padding: 0.8em;
+    overflow-x: auto;
+  }
+  
+  .MathJax {
+    font-size: 1em !important;
+  }
 }
 
 /* ===================== */
