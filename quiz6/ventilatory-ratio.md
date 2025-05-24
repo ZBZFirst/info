@@ -4,6 +4,8 @@ title: Ventilatory Ratio Calculator
 ---
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<!-- Load Plotly library -->
+<script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 
 <div class="container">
   <div class="intro">
@@ -34,6 +36,28 @@ title: Ventilatory Ratio Calculator
       <input type="number" id="pbw" min="30" max="120" value="70">
     </div>
   </div>
+
+  <!-- Visualization Section -->
+  <div class="section">
+    <h2>Ventilatory Ratio Visualization</h2>
+    <div class="card">
+      <div id="vr-plot" class="plot-container"></div>
+      <div class="plot-controls">
+        <label for="plot-type">Plot Type:</label>
+        <select id="plot-type">
+          <option value="contour">Contour Plot</option>
+          <option value="surface">3D Surface</option>
+        </select>
+        
+        <label for="color-scale">Color Scale:</label>
+        <select id="color-scale">
+          <option value="Viridis">Viridis</option>
+          <option value="Plasma">Plasma</option>
+          <option value="Inferno">Inferno</option>
+        </select>
+      </div>
+    </div>
+  </div>
  
   <div class="section">
     <h2>Ventilatory Ratio Calculation</h2>
@@ -52,6 +76,7 @@ title: Ventilatory Ratio Calculator
       <div id="vr-interpretation">
         <p>Results will appear here</p>
       </div>
+      <div id="vr-plot-point" class="plot-point-info"></div>
     </div>
   </div>
 </div>
