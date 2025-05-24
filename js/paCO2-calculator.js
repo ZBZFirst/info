@@ -102,64 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
     
-    // Calculate option 3: proportional adjustment
-    const adjustmentFactor = newVE / currentVE;
-    const sqrtAdjustment = Math.sqrt(adjustmentFactor);
-    const propNewRR = currentRR * sqrtAdjustment;
-    const propNewVT = currentVT * sqrtAdjustment;
-    
-document.getElementById('proportional-adjustment-steps').innerHTML = `
-  <div class="section-title">Option 3: Proportional Adjustment of Both Parameters</div>
-  <div class="method-description">
-    This method adjusts both VT and RR by the same proportion to:
-    <ul>
-      <li>Maintain the original VT/RR ratio</li>
-      <li>Prevent extreme changes to either parameter</li>
-      <li>Provide more balanced ventilation adjustment</li>
-    </ul>
-  </div>
-
-  <div class="calculation-step">
-    <div class="step-title">Step 1: Calculate Adjustment Factor</div>
-    <p>Adjustment Factor = New VE / Current VE</p>
-    <p>\\( \\text{Adjustment Factor} = \\frac{VE_{\\text{new}}}{VE_{\\text{current}}} \\)</p>
-    <p>\\( \\text{Adjustment Factor} = \\frac{${newVE.toFixed(1)}}{${currentVE.toFixed(1)}} \\)</p>
-    <p class="result-equation">\\( \\text{Adjustment Factor} = ${adjustmentFactor.toFixed(3)} \\)</p>
-  </div>
-
-  <div class="calculation-step">
-    <div class="step-title">Step 2: Calculate Square Root of Adjustment Factor</div>
-    <p>This determines the proportional change needed for both parameters</p>
-    <p>\\( \\sqrt{\\text{Adjustment Factor}} = \\sqrt{${adjustmentFactor.toFixed(3)}} \\)</p>
-    <p class="result-equation">\\( = ${sqrtAdjustment.toFixed(3)} \\)</p>
-  </div>
-
-  <div class="calculation-step">
-    <div class="step-title">Step 3: Apply to Both Parameters</div>
-    <p>New RR = Current RR × √Adjustment Factor</p>
-    <p>New VT = Current VT × √Adjustment Factor</p>
-    
-    <p>\\( RR_{\\text{new}} = RR_{\\text{current}} \\times \\sqrt{\\text{Adjustment Factor}} \\)</p>
-    <p>\\( RR_{\\text{new}} = ${currentRR} \\times ${sqrtAdjustment.toFixed(3)} \\)</p>
-    <p class="result-equation">\\( = ${propNewRR.toFixed(1)} \\, \\text{breaths/min} \\)</p>
-    
-    <p>\\( VT_{\\text{new}} = VT_{\\text{current}} \\times \\sqrt{\\text{Adjustment Factor}} \\)</p>
-    <p>\\( VT_{\\text{new}} = ${currentVT} \\times ${sqrtAdjustment.toFixed(3)} \\)</p>
-    <p class="result-equation">\\( = ${propNewVT.toFixed(1)} \\, \\text{ml} \\)</p>
-    
-    <p>\\( VE_{\\text{new}} = VT_{\\text{new}} \\times RR_{\\text{new}} \\)</p>
-    <p>\\( VE_{\\text{new}} = ${propNewVT.toFixed(1)} \\times ${propNewRR.toFixed(1)} \\)</p>
-    <p class="result-equation">\\( = ${(propNewVT * propNewRR).toFixed(1)} \\, \\text{ml/min} \\)</p>
-  </div>
-
-  <div class="example-box">
-    <div class="example-title">Example:</div>
-    <p>If you need to increase VE by 44% (Adjustment Factor = 1.44):</p>
-    <p>\\( \\sqrt{1.44} = 1.2 \\) → Increase both VT and RR by 20%</p>
-    <p>This achieves the 44% VE increase (\\( 1.2 \\times 1.2 = 1.44 \\)) while maintaining balance</p>
-  </div>
-`;
-    
     // Render MathJax after updating the content
     renderMathJax();
   }
