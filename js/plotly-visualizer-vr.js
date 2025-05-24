@@ -1,3 +1,16 @@
+let cachedVRData = null;
+let lastVeRange = null;
+let lastPaco2Range = null;
+let lastPbw = null;
+
+document.getElementById('coord-system').addEventListener('change', updatePlot);
+document.getElementById('x-col').addEventListener('change', updatePlot);
+document.getElementById('y-col').addEventListener('change', updatePlot);
+document.getElementById('z-col').addEventListener('change', updatePlot);
+document.getElementById('color-by').addEventListener('change', updatePlot);
+document.getElementById('cmap').addEventListener('change', updatePlot);
+document.getElementById('alpha').addEventListener('input', updatePlot);
+document.getElementById('label-style').addEventListener('change', updatePlot);
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize Plotly visualization container
   const graphDiv = document.createElement('div');
@@ -78,6 +91,8 @@ function initializePlot() {
     plotInitialized = true;
 }
 
+
+// Then modify your updatePlot function like this:
 function updatePlot() {
     if (!plotInitialized) return;
     
@@ -92,53 +107,40 @@ function updatePlot() {
     const colorMap = document.getElementById('cmap').value;
     const opacity = parseFloat(document.getElementById('alpha').value);
     
-    // Generate data grid
-    const xRange = generateRange(parseInt(veSlider.min), parseInt(veSlider.max), 20);
-    const yRange = generateRange(parseInt(paco2Slider.min), parseInt(paco2Slider.max), 20);
+    // Generate data grid - only if inputs changed
+    const currentVeRange = `${veSlider.min}-${veSlider.max}`;
+    const currentPaco2Range = `${paco2Slider.min}-${paco2Slider.max}`;
     
-    // Prepare data for 3D surface
-    const xData = [];
-    const yData = [];
-    const zData = [];
-    const colorData = [];
-    
-    for (let i = 0; i < yRange.length; i++) {
-        const rowX = [];
-        const rowY = [];
-        const rowZ = [];
-        const rowColor = [];
+    // Only recalculate VR data if inputs changed
+    if (!cachedVRData || 
+        currentVeRange !== lastVeRange || 
+        currentPaco2Range !== lastPaco2Range || 
+        pbw !== lastPbw) {
         
-        for (let j = 0; j < xRange.length; j++) {
-            const veVal = xRange[j];
-            const paco2Val = yRange[i];
-            const vrVal = calculateVR(veVal, paco2Val, pbw);
-            
-            // Map values based on axis selections
-            const xVal = getMappedValue(xCol, veVal, paco2Val, vrVal);
-            const yVal = getMappedValue(yCol, veVal, paco2Val, vrVal);
-            const zVal = getMappedValue(zCol, veVal, paco2Val, vrVal);
-            
-            rowX.push(xVal);
-            rowY.push(yVal);
-            rowZ.push(zVal);
-            rowColor.push(getMappedValue(colorBy, veVal, paco2Val, vrVal));
-        }
+        const xRange = generateRange(parseInt(veSlider.min), parseInt(veSlider.max), 20);
+        const yRange = generateRange(parseInt(paco2Slider.min), parseInt(paco2Slider.max), 20);
         
-        xData.push(rowX);
-        yData.push(rowY);
-        zData.push(rowZ);
-        colorData.push(rowColor);
+        cachedVRData = {
+            xRange: xRange,
+            yRange: yRange,
+            pbw: pbw,
+            data: calculateVRGrid(xRange, yRange, pbw)
+        };
+        
+        lastVeRange = currentVeRange;
+        lastPaco2Range = currentPaco2Range;
+        lastPbw = pbw;
     }
     
-    // Create surface plot
+    // Create surface plot using cached data
     const surface = {
-        x: xData,
-        y: yData,
-        z: zData,
+        x: getMappedData(xCol, cachedVRData.data),
+        y: getMappedData(yCol, cachedVRData.data),
+        z: getMappedData(zCol, cachedVRData.data),
         type: 'surface',
         colorscale: colorMap,
         opacity: opacity,
-        surfacecolor: colorBy !== 'none' ? colorData : undefined,
+        surfacecolor: colorBy !== 'none' ? getMappedData(colorBy, cachedVRData.data) : undefined,
         hoverinfo: 'x+y+z',
         name: 'VR Surface'
     };
@@ -177,6 +179,27 @@ function updatePlot() {
     });
 }
 
+// Add these new helper functions
+function calculateVRGrid(xRange, yRange, pbw) {
+    const grid = [];
+    for (let i = 0; i < yRange.length; i++) {
+        const row = [];
+        for (let j = 0; j < xRange.length; j++) {
+            const veVal = xRange[j];
+            const paco2Val = yRange[i];
+            const vrVal = calculateVR(veVal, paco2Val, pbw);
+            row.push({ ve: veVal, paco2: paco2Val, vr: vrVal });
+        }
+        grid.push(row);
+    }
+    return grid;
+}
+
+function getMappedData(column, gridData) {
+    return gridData.map(row => 
+        row.map(point => getMappedValue(column, point.ve, point.paco2, point.vr))
+}
+  
 // Helper functions
 function getMappedValue(column, ve, paco2, vr) {
     switch(column) {
