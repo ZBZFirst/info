@@ -34,7 +34,7 @@ title: Ventilatory Ratio Calculator
       <input type="number" id="pbw" min="30" max="120" value="70">
     </div>
   </div>
-
+ 
   <div class="section">
     <h2>Ventilatory Ratio Calculation</h2>
     
