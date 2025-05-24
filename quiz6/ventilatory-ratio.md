@@ -56,4 +56,4 @@ title: Ventilatory Ratio Calculator
   </div>
 </div>
 
-<script src="{{ '/info/js/ventilatory-ratio.js' | relative_url }}"></script>
+<script src="{{ '/info/js/plotly-visualizer-vr.js' | relative_url }}"></script>
