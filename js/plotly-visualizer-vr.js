@@ -198,6 +198,7 @@ function calculateVRGrid(xRange, yRange, pbw) {
 function getMappedData(column, gridData) {
     return gridData.map(row => 
         row.map(point => getMappedValue(column, point.ve, point.paco2, point.vr))
+    );
 }
   
 // Helper functions
