@@ -5,6 +5,7 @@ title: Ventilatory Ratio Calculator
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <!-- Load Plotly library -->
 <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+<link rel="stylesheet" href="/info/_css/bigdata.css">
 
 <div class="container">
   <div class="intro">
