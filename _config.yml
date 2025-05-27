@@ -10,7 +10,8 @@ include:
 plugins:
   - jekyll-feed
   - jekyll-data
-
+  - jekyll-sitemap
+  
 data_dir: _data
 
 
