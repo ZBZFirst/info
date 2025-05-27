@@ -4,7 +4,6 @@ title: Respiratory Therapy Reference
 ---
 
 <link rel="stylesheet" href="/info/_css/dashboard.css">
-<meta name="google-site-verification" content="EV7JP4eEEIuIEJYFSZ8HMsXqj98EtCOzoQnf-OVixjA" />
 
 <div class="dashboard-container">
 <header class="dashboard-header">
