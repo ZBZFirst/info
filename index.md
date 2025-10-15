@@ -19,12 +19,11 @@ title: Respiratory Therapy Reference
 <header>
   <h3>Data Collection Overview</h3>
   <p>
-    The data was collected using an Arduino Uno to perform analog readings of voltages from the RS-232 data pins by inserting a DuPont pin into the RS-232 connector. Each reading was recorded to a CSV file, resulting in over 15,000 samples captured over 15 seconds. The parsed dataset shown on this page represents raw ventilator sensor output.
+    The data was collected using an Arduino Uno to perform analog readings of voltages from the RS-232 data pins by inserting a DuPont pin into the RS-232 connector. Each reading was recorded to a CSV file as a row, resulting in over 15,000 samples captured over 15 seconds. The parsed dataset shown on this page represents raw ventilator sensor outputs. There are 4 distinct sensor outputs from the AVEA Carestation in particular. These are the Pressure, Flow, Volume and Phase Waveforms. The sensor readings are converted to a numerical range to be easily exported. Please hit the play button below.
   </p>
 
   <p>
-    Manufacturers typically restrict access to this kind of data, as ventilator systems often cost upwards of $10,000. When raw data is exported and visualized in this way, validating claimed system behaviors and procedures becomes straightforward.
-  </p>
+    Manufacturers typically restrict access to this kind of data, as ventilator systems often cost upwards of $50,000. Additional costs are added on for exporting data in this manner that can be quite expensive. In addition, the amount of people who can interpret these waveforms is limited to the Respiratory Therapy community which does not have a means to receive billing for analysis of these waveforms in a easily defined way.</p>
 
   <p>
     I do not know who originally developed the ventilator software and hardware beyond the publicly available service manuals. If you have information about the creators, please contact me on GitHub so I can add proper citations.
