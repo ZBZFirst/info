@@ -20,8 +20,7 @@ title: Respiratory Therapy Reference
 <h3>By exporting the data this way, you are essentially making a data table for each patient that is hooked up the ventilator for raw values. These raw values can then be processed by each individual facility according to their institutions for counting breaths. Currently, this is handled by the manufacturers but due to the rapid expansion of new ventilator manufacturers, has allowed for independent development of Ventilator Sensor Data Interpretation.</h3>
 <h3>I have no idea who made Mechanical Ventilators. If I could find out who coded all of this beyond the service manual, I would gladly cite them, if you know who made these devices, let them know to contact me on GitHub so I can update this citation.</h3>
 <h3>CareFusion. (n.d.). <cite>AVEA® ventilator system service manual</cite> (Rev. D) [Service manual]. Chapter 11: Appendices, pp. 244–246.</h3>
-<h4>I read that in order to do science, you must start from a base value and then build your argument from there. By collecting waveforms in this manner, we can advance and push for further integration of Aritfiical Intelligence by using Real Time Operating System (RTOS) to parse and classify the data for faster implementation of personalized ventilator settings.</h4>
-<h4>While one might shudder and become afraid that using AI to set a ventilator is inappropriate, it has already been done and reported on in Nature with historical data and implementation on humans is next. When we set ventilator settings, it is a simple mathematical equation and then applying a range to a patient, it is not random and several Clinical Forest Plots have been developed by hosptials to guide clinicinas in setting Mechanical Ventilator settings. Implementing AI to make these changes will require software coding but ultimately appears to be the future of the Respiratory Therapy Profession.</h4>
+
 </header>
 
   <div class="dashboard-controls">
