@@ -1,0 +1,5 @@
+echo "hello" > tracker.txt
+git lfs track "tracker.txt"
+git add .gitattributes tracker.txt
+git commit -m "Add LFS tracker"
+git push
