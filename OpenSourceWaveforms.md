@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Respiratory Therapy Reference
+title: Open Source Ventilator Waveforms
 ---
  
 <link rel="stylesheet" href="/info/_css/dashboard.css">
