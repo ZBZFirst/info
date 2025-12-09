@@ -1,3 +1,5 @@
+// filepath+name   "info/_includes/3d-visualizer.js"
+
 ---
 ---
 // Use window.THREE instead of importing
