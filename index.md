@@ -1,19 +1,19 @@
 ---
 layout: default
 title: Ventilator Data Project
-description: Open-source ventilator waveform analysis and visualization
+description: Open-source Mechanical Ventilation and Oxygenation Information
 ---
 
 <link rel="stylesheet" href="/info/_css/dashboard.css">
 
 <div class="landing-grid-container">
   <header class="grid-header">
-    <h1>Ventilator Data Visualization Project</h1>
-    <p class="subtitle">Open-source solutions for ventilator waveform analysis</p>
+    <h1>Ventilator Data Visualization Projects</h1>
+    <p class="subtitle">A variety of visualization techniques exist for visualizing the respiration of a human. Some processes include the VT, Pressure, or Volume over time curves as well as the PV or Flow-Volume Loops. Additional viusalizations such 3D or 3D over time visualizations can be generated. Examples are below.</p>
   </header>
 
   <div class="grid-intro">
-    <p>This project demonstrates methods for capturing, analyzing, and visualizing ventilator data using accessible hardware and software tools.</p>
+    <p>This webpage demonstrates concepts and ideas related to Mechanical Ventilation, specifically related to Humans, but can also be the starting point for understanding ventilation concepts in other species.</p>
   </div>
 
   <div class="grid-3x3">
