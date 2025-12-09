@@ -18,7 +18,7 @@ description: Open-source ventilator waveform analysis and visualization
 
   <div class="grid-3x3">
     <!-- Grid Item 1 -->
-    <a href="/info/quiz4/paco2-calculator.html" class="grid-item" data-grid-item="1">
+    <a href="/info/ABGpHCalculator.html" class="grid-item" data-grid-item="1">
       <div class="grid-icon">📊</div>
       <h3 class="grid-title">ABG Calculator</h3>
       <p class="grid-desc">Interactive visualization of the pH Equation being plotted</p>
