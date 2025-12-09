@@ -18,19 +18,19 @@ description: Open-source ventilator waveform analysis and visualization
 
   <div class="grid-3x3">
     <!-- Grid Item 1 -->
-    <a href="/dashboard/" class="grid-item" data-grid-item="1">
+    <a href="/info/quiz4/paco2-calculator.html" class="grid-item" data-grid-item="1">
       <div class="grid-icon">📊</div>
-      <h3 class="grid-title">Live Dashboard</h3>
-      <p class="grid-desc">Interactive visualization of ventilator waveforms in real-time</p>
-      <span class="grid-url">/dashboard/</span>
+      <h3 class="grid-title">ABG Calculator</h3>
+      <p class="grid-desc">Interactive visualization of the pH Equation being plotted</p>
+      <span class="grid-url">/ABG-Calculator/</span>
     </a>
 
     <!-- Grid Item 2 -->
-    <a href="/hardware-setup/" class="grid-item" data-grid-item="2">
+    <a href="/info/quiz1/MinuteVentilationExplained.html" class="grid-item" data-grid-item="2">
       <div class="grid-icon">⚙️</div>
-      <h3 class="grid-title">Hardware Setup</h3>
-      <p class="grid-desc">Arduino wiring, pin configurations, and connections</p>
-      <span class="grid-url">/hardware-setup/</span>
+      <h3 class="grid-title">Minute Ventilation Module</h3>
+      <p class="grid-desc">What is the Minute Ventilation Equation?</p>
+      <span class="grid-url">/Minute-Ventilation/</span>
     </a>
 
     <!-- Grid Item 3 -->
@@ -42,27 +42,27 @@ description: Open-source ventilator waveform analysis and visualization
     </a>
 
     <!-- Grid Item 4 -->
-    <a href="/data-analysis/" class="grid-item" data-grid-item="4">
+    <a href="/HyperCube/" class="grid-item" data-grid-item="4">
       <div class="grid-icon">📈</div>
-      <h3 class="grid-title">Data Analysis</h3>
-      <p class="grid-desc">Waveform interpretation and clinical applications</p>
-      <span class="grid-url">/data-analysis/</span>
+      <h3 class="grid-title">The HyperCube Research Experiment</h3>
+      <p class="grid-desc">Literature Reviews in 3D, Requires API Key</p>
+      <span class="grid-url">/Download-PubMed/</span>
     </a>
 
     <!-- Grid Item 5 -->
-    <a href="/code-repository/" class="grid-item" data-grid-item="5">
+    <a href="/info/quiz3/VTCalculator.html" class="grid-item" data-grid-item="5">
       <div class="grid-icon">💻</div>
-      <h3 class="grid-title">Code Repository</h3>
-      <p class="grid-desc">Arduino code and visualization scripts</p>
-      <span class="grid-url">/code-repository/</span>
+      <h3 class="grid-title">Determining Initial Tidal Volume</h3>
+      <p class="grid-desc">How to apply the 6-8 mL/kg Equation</p>
+      <span class="grid-url">/VTbyKG/</span>
     </a>
 
     <!-- Grid Item 6 -->
-    <a href="/waveform-library/" class="grid-item" data-grid-item="6">
+    <a href="/info/quiz4/paco2-calculator.html" class="grid-item" data-grid-item="6">
       <div class="grid-icon">🌀</div>
-      <h3 class="grid-title">Waveform Library</h3>
-      <p class="grid-desc">Collection of ventilator waveform patterns</p>
-      <span class="grid-url">/waveform-library/</span>
+      <h3 class="grid-title">Changing the Tidal Volume based on PaCO2</h3>
+      <p class="grid-desc">Aww, babies first calculus...</p>
+      <span class="grid-url">/Predicting-PaCO2/</span>
     </a>
 
     <!-- Grid Item 7 -->
