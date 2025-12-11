@@ -79,19 +79,19 @@ title: Ventilation Simulation
         <div class="formula-grid">
             <div class="formula-item">
                 <strong>Weight Conversion</strong>
-                <code>kg = lbs ÷ 2.2</code>
+                <code>1 kg = 1 lbs ÷ 2.2</code>
             </div>
             <div class="formula-item">
                 <strong>Male IBW</strong>
-                <code>50 + 2.3 × (height - 60)</code>
+                <code>IBW = 50 kg + (2.3 kg × (height - 60))</code>
             </div>
             <div class="formula-item">
                 <strong>Female IBW</strong>
-                <code>45.5 + 2.3 × (height - 60)</code>
+                <code>IBW = 45.5 + (2.3 × (height - 60))</code>
             </div>
             <div class="formula-item">
                 <strong>Tidal Volume Range</strong>
-                <code>6–8 mL/kg IBW</code>
+                <code>Initial Vt = 6–8 mL/kg * IBW</code>
             </div>
         </div>
     </div>
