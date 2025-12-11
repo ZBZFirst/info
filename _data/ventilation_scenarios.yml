@@ -1,0 +1,32 @@
+# _data/ventilation_scenarios.yml
+scenarios:
+  - id: scenario_1
+    title: "Initial Ventilator Settings Practice"
+    description: "Calculate initial settings for:"
+    patient_profile:
+      gender: "male"
+      height_in: 70
+      weight_lbs: 180
+      condition: "Post-operative"
+    learning_objectives:
+      - "Calculate Ideal Body Weight (IBW)"
+      - "Determine appropriate tidal volume range (6-8 ml/kg IBW)"
+      - "Understand NBRC guidelines for lung-protective ventilation"
+    
+  - id: scenario_2
+    title: "ARDS Patient Scenario"
+    description: "Calculate lung-protective settings for:"
+    patient_profile:
+      gender: "female"
+      height_in: 64
+      weight_lbs: 220
+      condition: "Acute Respiratory Distress Syndrome (ARDS)"
+    
+  - id: scenario_3
+    title: "Obese Patient Consideration"
+    description: "Apply IBW calculation for:"
+    patient_profile:
+      gender: "male"
+      height_in: 72
+      weight_lbs: 350
+      condition: "Morbid obesity with pneumonia"
