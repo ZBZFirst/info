@@ -84,7 +84,7 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
     <!-- Grid Item 9 -->
     <a href="/simulation/" class="grid-item" data-grid-item="10">
       <div class="grid-icon">🧪</div>
-      <h3 class="grid-title">NBRC Ventilation Simulation</h3>
+      <h3 class="grid-title">A Research Based Initial Ventilation Setting Simulation</h3>
       <p class="grid-desc">Test your skills with randomized patient scenarios</p>
       <span class="grid-url">/simulation/</span>
     </a>
