@@ -245,7 +245,7 @@ function generateQuestions() {
     
     container.innerHTML = `
         <div class="question-card">
-            <h3>Step 1: Convert Weight to Kilograms</h3>
+            <h3>Step 1: Convert Weight to Kilograms (Round Your Answer)</h3>
             <p class="question-text">
                 Convert the patient's weight to kilograms using the formula:
                 <code>kg = lbs ÷ 2.2</code>
@@ -259,7 +259,7 @@ function generateQuestions() {
         </div>
         
         <div class="question-card">
-            <h3>Step 2: Calculate Ideal Body Weight (IBW)</h3>
+            <h3>Step 2: Calculate Ideal Body Weight (IBW) (Round Your Answer)</h3>
             <p class="question-text">
                 Use the ${currentScenario.gender} formula: 
                 <code>${answers.formula}</code>
@@ -273,7 +273,7 @@ function generateQuestions() {
         </div>
         
         <div class="question-card">
-            <h3>Step 3: Determine Tidal Volume Range</h3>
+            <h3>Step 3: Determine Tidal Volume Range (Round to Whole Number from Decimal)</h3>
             <p class="question-text">
                 Apply guideline: <code>6–8 mL/kg IBW</code>
             </p>
