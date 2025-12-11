@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ page.title }} - Ventilation Simulation</title>
+    <style>
+        .simulation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .patient-card {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .formula-step {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .answer-input {
+            width: 100px;
+            padding: 5px;
+            margin: 0 10px;
+            border: 2px solid #ddd;
+            border-radius: 3px;
+        }
+        .answer-input.correct {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+        .answer-input.incorrect {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+        }
+        .feedback {
+            display: none;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 3px;
+        }
+        .feedback.correct-feedback {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.incorrect-feedback {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .progress-tracker {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="simulation-container">
+        <h1>{{ page.title }}</h1>
+        <p class="subtitle">According to NBRC guidelines for lung-protective ventilation</p>
+        
+        <!-- Progress Tracker -->
+        <div class="progress-tracker">
+            <strong>Session Progress:</strong>
+            <span id="score">0</span> correct / 
+            <span id="attempts">0</span> attempted |
+            <button onclick="clearProgress()" style="margin-left:20px;">Reset Progress</button>
+        </div>
+        
+        <!-- Patient Scenario -->
+        <div class="patient-card">
+            <h3>Patient Scenario</h3>
+            <div id="patient-details">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+        
+        <!-- Calculation Steps -->
+        <div id="calculation-steps">
+            <!-- Steps will be dynamically generated -->
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="margin-top: 30px;">
+            <button onclick="generateNewScenario()" class="btn btn-primary">
+                Generate New Practice Scenario
+            </button>
+            <button onclick="checkAllAnswers()" class="btn btn-success">
+                Check All Answers
+            </button>
+            <button onclick="showAllSolutions()" class="btn btn-info">
+                Show Solutions
+            </button>
+        </div>
+        
+        <!-- Link to Calculator -->
+        <div style="margin-top: 40px; padding: 15px; background: #e7f3ff; border-radius: 5px;">
+            <h4>Need Help Calculating?</h4>
+            <p>Use the interactive calculator to verify your work:</p>
+            <a href="/info/quiz3/VTCalculator.html" class="btn btn-outline" target="_blank">
+                Open Tidal Volume Calculator
+            </a>
+        </div>
+        
+        <!-- Session History (Collapsible) -->
+        <details style="margin-top: 40px;">
+            <summary>View Session History</summary>
+            <div id="session-history" style="margin-top: 10px; padding: 10px; background: white; border: 1px solid #ddd;">
+                <!-- History will be populated here -->
+            </div>
+        </details>
+    </div>
+    
+    <script>
+        // Initialize from your existing calculator logic
+        const IBW_FORMULAS = {
+            male: (height) => 50 + 2.3 * (height - 60),
+            female: (height) => 45.5 + 2.3 * (height - 60)
+        };
+        
+        let currentScenario = {};
+        let sessionHistory = JSON.parse(localStorage.getItem('ventilation_sim_history')) || [];
+        
+        function generateRandomPatient() {
+            const genders = ['male', 'female'];
+            const conditions = [
+                'Post-operative', 'ARDS', 'Pneumonia', 
+                'COPD exacerbation', 'Trauma', 'Sepsis'
+            ];
+            
+            return {
+                gender: genders[Math.floor(Math.random() * genders.length)],
+                height_in: Math.floor(Math.random() * (78 - 60 + 1)) + 60, // 60-78 inches
+                weight_lbs: Math.floor(Math.random() * (300 - 100 + 1)) + 100,
+                condition: conditions[Math.floor(Math.random() * conditions.length)]
+            };
+        }
+        
+        function generateNewScenario() {
+            currentScenario = generateRandomPatient();
+            displayScenario();
+            generateCalculationSteps();
+            updateHistory('new_scenario', currentScenario);
+        }
+        
+        function displayScenario() {
+            const details = document.getElementById('patient-details');
+            details.innerHTML = `
+                <p><strong>Gender:</strong> ${currentScenario.gender.charAt(0).toUpperCase() + currentScenario.gender.slice(1)}</p>
+                <p><strong>Height:</strong> ${currentScenario.height_in} inches</p>
+                <p><strong>Actual Weight:</strong> ${currentScenario.weight_lbs} lbs</p>
+                <p><strong>Clinical Condition:</strong> ${currentScenario.condition}</p>
+                <p><em>Task: Calculate initial ventilator settings according to NBRC guidelines</em></p>
+            `;
+        }
+        
+        function generateCalculationSteps() {
+            const container = document.getElementById('calculation-steps');
+            
+            // Step 1: Convert weight to kg
+            const weight_kg = (currentScenario.weight_lbs / 2.2).toFixed(1);
+            
+            // Step 2: Calculate IBW
+            const ibw = IBW_FORMULAS[currentScenario.gender](currentScenario.height_in).toFixed(1);
+            
+            // Step 3: Calculate Tidal Volume range
+            const vt_low = (ibw * 6).toFixed(0);
+            const vt_high = (ibw * 8).toFixed(0);
+            
+            container.innerHTML = `
+                <div class="formula-step">
+                    <h4>Step 1: Convert Actual Weight to Kilograms</h4>
+                    <p>Formula: Weight (kg) = Weight (lbs) ÷ 2.2</p>
+                    <p>Your calculation: 
+                        <input type="number" id="calc1" class="answer-input" placeholder="kg">
+                        = ${currentScenario.weight_lbs} ÷ 2.2
+                    </p>
+                    <div id="feedback1" class="feedback"></div>
+                </div>
+                
+                <div class="formula-step">
+                    <h4>Step 2: Calculate Ideal Body Weight (IBW)</h4>
+                    <p>Formula for ${currentScenario.gender}: 
+                        ${currentScenario.gender === 'male' ? '50 + 2.3 × (height - 60)' : '45.5 + 2.3 × (height - 60)'}
+                    </p>
+                    <p>Your calculation:
+                        <input type="number" id="calc2" class="answer-input" placeholder="kg">
+                        = ${currentScenario.gender === 'male' ? '50' : '45.5'} + 2.3 × (${currentScenario.height_in} - 60)
+                    </p>
+                    <div id="feedback2" class="feedback"></div>
+                </div>
+                
+                <div class="formula-step">
+                    <h4>Step 3: Determine Tidal Volume Range (NBRC Guideline: 6-8 mL/kg IBW)</h4>
+                    <p>Lower range (6 mL/kg): 
+                        <input type="number" id="calc3_low" class="answer-input" placeholder="mL">
+                        = 6 × <span id="ibw-placeholder">[IBW]</span>
+                    </p>
+                    <p>Upper range (8 mL/kg):
+                        <input type="number" id="calc3_high" class="answer-input" placeholder="mL">
+                        = 8 × <span id="ibw-placeholder2">[IBW]</span>
+                    </p>
+                    <div id="feedback3" class="feedback"></div>
+                </div>
+                
+                <div class="formula-step">
+                    <h4>Step 4: Clinical Application</h4>
+                    <p>Based on the patient's condition (${currentScenario.condition}), would you:</p>
+                    <select id="clinical_decision" class="answer-input" style="width:300px;">
+                        <option value="">Select your clinical decision</option>
+                        <option value="start_low">Start at lower end of range (6 mL/kg)</option>
+                        <option value="start_mid">Start in middle of range (7 mL/kg)</option>
+                        <option value="start_high">Start at higher end of range (8 mL/kg)</option>
+                        <option value="consider_lower">Consider <6 mL/kg if plateau pressure >30 cmH₂O</option>
+                    </select>
+                    <div id="feedback4" class="feedback"></div>
+                </div>
+            `;
+            
+            // Store correct answers for validation
+            currentScenario.correctAnswers = {
+                weight_kg: parseFloat(weight_kg),
+                ibw: parseFloat(ibw),
+                vt_low: parseInt(vt_low),
+                vt_high: parseInt(vt_high),
+                clinical_decision: 'consider_lower' // Default correct for ARDS
+            };
+        }
+        
+        function checkAllAnswers() {
+            let score = 0;
+            let total = 4;
+            
+            // Check each answer
+            const answers = currentScenario.correctAnswers;
+            
+            // Check weight conversion
+            const userWeight = parseFloat(document.getElementById('calc1').value);
+            if (!isNaN(userWeight) && Math.abs(userWeight - answers.weight_kg) < 0.5) {
+                score++;
+                document.getElementById('calc1').classList.add('correct');
+                document.getElementById('feedback1').innerHTML = `<div class="correct-feedback">✓ Correct! ${currentScenario.weight_lbs} ÷ 2.2 = ${answers.weight_kg} kg</div>`;
+            } else {
+                document.getElementById('calc1').classList.add('incorrect');
+                document.getElementById('feedback1').innerHTML = `<div class="incorrect-feedback">Try again. The correct calculation is ${currentScenario.weight_lbs} ÷ 2.2 = ${answers.weight_kg} kg</div>`;
+            }
+            
+            // Check IBW calculation
+            const userIBW = parseFloat(document.getElementById('calc2').value);
+            if (!isNaN(userIBW) && Math.abs(userIBW - answers.ibw) < 0.5) {
+                score++;
+                document.getElementById('calc2').classList.add('correct');
+                document.getElementById('feedback2').innerHTML = `<div class="correct-feedback">✓ Correct! IBW = ${answers.ibw} kg</div>`;
+            } else {
+                document.getElementById('calc2').classList.add('incorrect');
+                document.getElementById('feedback2').innerHTML = `<div class="incorrect-feedback">Review the formula. Correct IBW = ${answers.ibw} kg</div>`;
+            }
+            
+            // Show all feedback
+            document.querySelectorAll('.feedback').forEach(fb => fb.style.display = 'block');
+            
+            // Update session progress
+            updateHistory('quiz_attempt', {score, total, scenario: currentScenario});
+            updateProgressDisplay(score, total);
+        }
+        
+        function showAllSolutions() {
+            const answers = currentScenario.correctAnswers;
+            
+            document.getElementById('calc1').value = answers.weight_kg.toFixed(1);
+            document.getElementById('calc2').value = answers.ibw.toFixed(1);
+            document.getElementById('calc3_low').value = answers.vt_low;
+            document.getElementById('calc3_high').value = answers.vt_high;
+            document.getElementById('clinical_decision').value = 'consider_lower';
+            
+            // Show all feedback
+            document.querySelectorAll('.feedback').forEach((fb, index) => {
+                fb.style.display = 'block';
+                const messages = [
+                    `✓ ${currentScenario.weight_lbs} ÷ 2.2 = ${answers.weight_kg} kg`,
+                    `✓ IBW = ${answers.ibw} kg (using ${currentScenario.gender} formula)`,
+                    `✓ Tidal Volume Range: ${answers.vt_low} - ${answers.vt_high} mL`,
+                    `✓ For ${currentScenario.condition}, consider lower tidal volumes if plateau pressure exceeds 30 cmH₂O per NBRC guidelines.`
+                ];
+                fb.innerHTML = `<div class="correct-feedback">${messages[index]}</div>`;
+            });
+        }
+        
+        function updateProgressDisplay(correct, total) {
+            document.getElementById('score').textContent = 
+                (parseInt(document.getElementById('score').textContent) || 0) + correct;
+            document.getElementById('attempts').textContent = 
+                (parseInt(document.getElementById('attempts').textContent) || 0) + total;
+        }
+        
+        function updateHistory(action, data) {
+            const entry = {
+                timestamp: new Date().toISOString(),
+                action: action,
+                data: data
+            };
+            
+            sessionHistory.push(entry);
+            
+            // Keep only last 50 entries
+            if (sessionHistory.length > 50) {
+                sessionHistory = sessionHistory.slice(-50);
+            }
+            
+            localStorage.setItem('ventilation_sim_history', JSON.stringify(sessionHistory));
+            displayHistory();
+        }
+        
+        function displayHistory() {
+            const container = document.getElementById('session-history');
+            if (!container) return;
+            
+            container.innerHTML = '<h5>Recent Activity:</h5>';
+            
+            sessionHistory.slice().reverse().slice(0, 10).forEach(entry => {
+                const date = new Date(entry.timestamp).toLocaleTimeString();
+                let html = '';
+                
+                if (entry.action === 'new_scenario') {
+                    html = `<div style="padding:5px; border-bottom:1px solid #eee;">
+                        ${date}: New scenario - ${entry.data.gender}, ${entry.data.height_in}in, ${entry.data.weight_lbs}lbs
+                    </div>`;
+                } else if (entry.action === 'quiz_attempt') {
+                    html = `<div style="padding:5px; border-bottom:1px solid #eee;">
+                        ${date}: Quiz - ${entry.data.score}/${entry.data.total} correct
+                    </div>`;
+                }
+                
+                container.innerHTML += html;
+            });
+        }
+        
+        function clearProgress() {
+            if (confirm('Clear all progress and history?')) {
+                localStorage.removeItem('ventilation_sim_history');
+                sessionHistory = [];
+                document.getElementById('score').textContent = '0';
+                document.getElementById('attempts').textContent = '0';
+                displayHistory();
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            generateNewScenario();
+            displayHistory();
+            
+            // Load previous score if exists
+            const savedScore = localStorage.getItem('ventilation_sim_score');
+            if (savedScore) {
+                document.getElementById('score').textContent = savedScore;
+            }
+        });
+    </script>
+</body>
+</html>
