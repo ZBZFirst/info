@@ -1,5 +1,5 @@
 ---
-layout: defaultpage
+layout: default
 title: Ventilation Simulation
 ---
 
