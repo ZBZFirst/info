@@ -295,14 +295,14 @@ function generateQuestions() {
         <div class="question-card">
             <h3>Step 4: Clinical Decision Making</h3>
             <p class="question-text">
-                For a patient with <strong>${currentScenario.condition}</strong>, 
+                As a Generality, For a patient with <strong>${currentScenario.condition}</strong>, 
                 what would be your initial approach?
             </p>
             <select id="q4-decision" class="decision-select">
                 <option value="">Select your approach...</option>
-                <option value="start_low">Start at 6 mL/kg (lung protective)</option>
+                <option value="start_low">Start at 6 mL/kg (Lower End Lung Protective)</option>
                 <option value="start_mid">Start at 7 mL/kg (mid-range)</option>
-                <option value="start_high">Start at 8 mL/kg (traditional)</option>
+                <option value="start_high">Start at 8 mL/kg (Upper End Lung Expansive)</option>
                 <option value="custom">Custom approach (explain below)</option>
             </select>
             <textarea id="q4-explanation" class="explanation-input" 
