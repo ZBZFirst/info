@@ -1,7 +1,6 @@
 ---
 layout: page
-title: NBRC Ventilation Simulation
-permalink: /simulation/
+title: Ventilation Simulation
 ---
 
 <link rel="stylesheet" href="/info/_css/defaultpage.css">
@@ -10,8 +9,8 @@ permalink: /simulation/
 <div class="simulation-container">
     <!-- Header -->
     <div class="simulation-header">
-        <h1>🧪 NBRC Ventilation Simulation</h1>
-        <p class="subtitle">Practice calculating initial ventilator settings according to NBRC guidelines</p>
+        <h1>🧪 Ventilation Simulation</h1>
+        <p class="subtitle">Practice calculating initial ventilator settings according to research based guidelines</p>
         
         <div class="back-link">
             <a href="/" class="btn btn-outline">
@@ -70,13 +69,13 @@ permalink: /simulation/
             </div>
         </div>
         <div class="patient-instruction">
-            <em>Calculate initial ventilator settings according to NBRC lung-protective ventilation guidelines.</em>
+            <em>Calculate initial ventilator settings according to lung-protective ventilation guidelines.</em>
         </div>
     </div>
 
     <!-- Calculator Reference -->
     <div class="reference-card">
-        <h3>📊 NBRC Formulas Reference</h3>
+        <h3>📊 Formulas Reference</h3>
         <div class="formula-grid">
             <div class="formula-item">
                 <strong>Weight Conversion</strong>
@@ -277,7 +276,7 @@ function generateQuestions() {
         <div class="question-card">
             <h3>Step 3: Determine Tidal Volume Range</h3>
             <p class="question-text">
-                Apply NBRC guideline: <code>6–8 mL/kg IBW</code>
+                Apply guideline: <code>6–8 mL/kg IBW</code>
             </p>
             <div class="range-inputs">
                 <div class="range-item">
@@ -447,7 +446,7 @@ function showAllSolutions() {
     showFeedback('f1', `Solution: ${currentScenario.weight} ÷ 2.2 = ${answers.weightKg} kg`, true);
     showFeedback('f2', `Solution: IBW = ${answers.ibw} kg`, true);
     showFeedback('f3', `Solution: Tidal Volume Range = ${answers.vtLow}–${answers.vtHigh} mL`, true);
-    showFeedback('f4', 'Clinical note: Start at lower end (6 mL/kg) for lung protection per NBRC guidelines', true);
+    showFeedback('f4', 'Clinical note: Start at lower end (6 mL/kg) for lung protection per guideline', true);
 }
 
 // Helper function to show feedback
