@@ -145,7 +145,7 @@ title: Ventilation Simulation
 // Configuration
 const CONFIG = {
     minHeight: 60,    // inches
-    maxHeight: 84,    // inches
+    maxHeight: 75,    // inches
     minWeight: 100,   // lbs
     maxWeight: 300,   // lbs
     conditions: [
