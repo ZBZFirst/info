@@ -200,25 +200,24 @@ function generateRandomPatient() {
 
 // Calculate correct answers for a scenario
 function calculateCorrectAnswers(scenario) {
-    // Convert weight to kg
-    const weightKg = (scenario.weight / 2.2).toFixed(1);
+    // Convert weight to kg and ROUND immediately
+    const weightKg = Math.round(scenario.weight / 2.2);
     
-    // Calculate IBW
+    // Calculate IBW and ROUND immediately
     let ibw;
     if (scenario.gender === 'Male') {
-        ibw = 50 + 2.3 * (scenario.height - 60);
+        ibw = Math.round(50 + 2.3 * (scenario.height - 60));
     } else {
-        ibw = 45.5 + 2.3 * (scenario.height - 60);
+        ibw = Math.round(45.5 + 2.3 * (scenario.height - 60));
     }
-    ibw = ibw.toFixed(1);
     
-    // Calculate tidal volume range
+    // Calculate tidal volume range (already whole numbers)
     const vtLow = Math.round(ibw * 6);
     const vtHigh = Math.round(ibw * 8);
     
     return {
-        weightKg: parseFloat(weightKg),
-        ibw: parseFloat(ibw),
+        weightKg: weightKg,
+        ibw: ibw,
         vtLow: vtLow,
         vtHigh: vtHigh,
         formula: scenario.gender === 'Male' 
@@ -253,7 +252,7 @@ function generateQuestions() {
             </p>
             <div class="input-group">
                 <label>${currentScenario.weight} lbs ÷ 2.2 =</label>
-                <input type="number" id="q1-weight" class="answer-input" step="0.1" placeholder="0.0">
+                <input type="number" id="q1-weight" class="answer-input" step="1" placeholder="0">
                 <label>kg</label>
             </div>
             <div id="f1" class="feedback"></div>
@@ -267,7 +266,7 @@ function generateQuestions() {
             </p>
             <div class="input-group">
                 <label>IBW =</label>
-                <input type="number" id="q2-ibw" class="answer-input" step="0.1" placeholder="0.0">
+                <input type="number" id="q2-ibw" class="answer-input" step="1" placeholder="0">
                 <label>kg</label>
             </div>
             <div id="f2" class="feedback"></div>
