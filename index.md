@@ -82,11 +82,11 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
     </a>
 
     <!-- Grid Item 9 -->
-    <a href="/simulation/" class="grid-item" data-grid-item="10">
+    <a href="/info/simluation.html" class="grid-item" data-grid-item="10">
       <div class="grid-icon">🧪</div>
       <h3 class="grid-title">A Research Based Initial Ventilation Setting Simulation</h3>
       <p class="grid-desc">Test your skills with randomized patient scenarios</p>
-      <span class="grid-url">/simulation/</span>
+      <span class="grid-url">/info/simluation.html</span>
     </a>
   </div>
 
