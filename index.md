@@ -22,7 +22,7 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
       <div class="grid-icon">📊</div>
       <h3 class="grid-title">ABG Calculator</h3>
       <p class="grid-desc">Interactive visualization of the pH Equation being plotted</p>
-      <span class="grid-url">/ABG-Calculator/</span>
+      <span class="grid-url">/info/ABGpHCalculator.html</span>
     </a>
 
     <!-- Grid Item 2 -->
@@ -30,7 +30,7 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
       <div class="grid-icon">⚙️</div>
       <h3 class="grid-title">Minute Ventilation Module</h3>
       <p class="grid-desc">What is the Minute Ventilation Equation?</p>
-      <span class="grid-url">/Minute-Ventilation/</span>
+      <span class="grid-url">/info/quiz1/MinuteVentilationExplained.html</span>
     </a>
 
     <!-- Grid Item 3 -->
@@ -46,7 +46,7 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
       <div class="grid-icon">📈</div>
       <h3 class="grid-title">The HyperCube Research Experiment</h3>
       <p class="grid-desc">Literature Reviews in 3D, Requires API Key</p>
-      <span class="grid-url">/Download-PubMed/</span>
+      <span class="grid-url">/HyperCube/</span>
     </a>
 
     <!-- Grid Item 5 -->
@@ -54,7 +54,7 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
       <div class="grid-icon">💻</div>
       <h3 class="grid-title">Determining Initial Tidal Volume</h3>
       <p class="grid-desc">How to apply the 6-8 mL/kg Equation</p>
-      <span class="grid-url">/VTbyKG/</span>
+      <span class="grid-url">/info/quiz3/VTCalculator.html/</span>
     </a>
 
     <!-- Grid Item 6 -->
@@ -62,7 +62,7 @@ description: Open-source Mechanical Ventilation and Oxygenation Information
       <div class="grid-icon">🌀</div>
       <h3 class="grid-title">Changing the Tidal Volume based on PaCO2</h3>
       <p class="grid-desc">Aww, babies first calculus...</p>
-      <span class="grid-url">/Predicting-PaCO2/</span>
+      <span class="grid-url">/info/quiz4/paco2-calculator.html</span>
     </a>
 
     <!-- Grid Item 7 -->
