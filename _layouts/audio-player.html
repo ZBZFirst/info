@@ -1,0 +1,360 @@
+<!-- _includes/audio-player.html -->
+<div class="persistent-music-player" id="audio-player-container">
+  <audio id="persistent-audio" crossorigin="anonymous">
+    <source src="{{ site.baseurl }}/music/ambient-study.mp3" type="audio/mpeg">
+    <source src="{{ site.baseurl }}/music/ambient-study.ogg" type="audio/ogg">
+  </audio>
+  
+  <div class="player-ui">
+    <button id="audio-toggle" class="audio-toggle-btn" aria-label="Toggle background music">
+      <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" fill="currentColor"/>
+      </svg>
+      <svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" style="display:none;">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+      </svg>
+    </button>
+    
+    <div class="audio-info">
+      <span class="audio-status">Background Music</span>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <span class="current-time">0:00</span>
+        <span class="duration">/ 0:00</span>
+      </div>
+    </div>
+    
+    <div class="volume-control">
+      <input type="range" id="volume-control" min="0" max="100" value="30" aria-label="Volume">
+    </div>
+  </div>
+</div>
+
+<style>
+.persistent-music-player {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(67, 97, 238, 0.2);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  width: 320px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.persistent-music-player:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.player-ui {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.audio-toggle-btn {
+  background: linear-gradient(135deg, var(--color-primary, #4361ee), var(--color-secondary, #3f37c9));
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.audio-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+}
+
+.audio-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.audio-status {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary-dark, #3a0ca3);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4361ee, #7209b7);
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.current-time, .duration {
+  font-size: 0.75rem;
+  color: var(--text-medium, #586069);
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+}
+
+.volume-control {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+#volume-control {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #e0e0e0;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+#volume-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-primary, #4361ee);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#volume-control::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-primary, #4361ee);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Hide on mobile if needed */
+@media (max-width: 768px) {
+  .persistent-music-player {
+    width: 280px;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .persistent-music-player {
+    width: calc(100% - 20px);
+    right: 10px;
+    left: 10px;
+  }
+}
+</style>
+
+<script>
+// Audio Persistence Class
+class AudioPersistence {
+  static setCookie(name, value, days = 7) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+
+  static getCookie(name) {
+    return document.cookie.split('; ').reduce((r, v) => {
+      const parts = v.split('=');
+      return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+    }, '');
+  }
+
+  static saveAudioState(state) {
+    const data = JSON.stringify(state);
+    this.setCookie('audio_state', data);
+    try {
+      localStorage.setItem('audio_state', data);
+    } catch (e) {}
+  }
+
+  static loadAudioState() {
+    try {
+      const localData = localStorage.getItem('audio_state');
+      if (localData) return JSON.parse(localData);
+      
+      const cookieData = this.getCookie('audio_state');
+      if (cookieData) return JSON.parse(cookieData);
+    } catch (e) {}
+    return null;
+  }
+}
+
+// Audio Player Class
+class PersistentAudioPlayer {
+  constructor() {
+    this.audio = document.getElementById('persistent-audio');
+    this.toggleBtn = document.getElementById('audio-toggle');
+    this.volumeControl = document.getElementById('volume-control');
+    this.progressFill = document.querySelector('.progress-fill');
+    this.progressBar = document.querySelector('.progress-bar');
+    this.currentTimeEl = document.querySelector('.current-time');
+    this.durationEl = document.querySelector('.duration');
+    this.audioStatus = document.querySelector('.audio-status');
+    
+    this.isPlaying = false;
+    this.init();
+  }
+
+  init() {
+    const savedState = AudioPersistence.loadAudioState();
+    
+    if (savedState) {
+      this.audio.currentTime = savedState.currentTime || 0;
+      this.volumeControl.value = savedState.volume * 100;
+      this.audio.volume = savedState.volume;
+      
+      if (savedState.isPlaying) {
+        setTimeout(() => this.play(), 300);
+      } else {
+        this.updateUI();
+      }
+    } else {
+      this.audio.volume = this.volumeControl.value / 100;
+    }
+
+    this.setupEventListeners();
+    
+    // Auto-save
+    setInterval(() => this.saveState(), 3000);
+    window.addEventListener('beforeunload', () => this.saveState());
+  }
+
+  setupEventListeners() {
+    this.toggleBtn.addEventListener('click', () => this.togglePlayback());
+    this.volumeControl.addEventListener('input', () => this.updateVolume());
+    
+    this.progressBar.addEventListener('click', (e) => {
+      const rect = this.progressBar.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      this.audio.currentTime = percent * this.audio.duration;
+      this.saveState();
+    });
+
+    this.audio.addEventListener('timeupdate', () => this.updateProgress());
+    this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
+    this.audio.addEventListener('ended', () => {
+      this.audio.currentTime = 0;
+      this.saveState();
+    });
+  }
+
+  togglePlayback() {
+    if (this.audio.paused) {
+      this.play();
+    } else {
+      this.pause();
+    }
+  }
+
+  play() {
+    this.audio.play().then(() => {
+      this.isPlaying = true;
+      this.updateUI();
+      this.saveState();
+    }).catch(() => {
+      this.audioStatus.textContent = 'Click to play';
+    });
+  }
+
+  pause() {
+    this.audio.pause();
+    this.isPlaying = false;
+    this.updateUI();
+    this.saveState();
+  }
+
+  updateVolume() {
+    this.audio.volume = this.volumeControl.value / 100;
+    this.saveState();
+  }
+
+  updateProgress() {
+    if (!this.audio.duration) return;
+    
+    const current = this.audio.currentTime;
+    const duration = this.audio.duration;
+    const percent = (current / duration) * 100;
+    
+    this.progressFill.style.width = `${percent}%`;
+    this.currentTimeEl.textContent = this.formatTime(current);
+  }
+
+  updateDuration() {
+    if (this.audio.duration) {
+      this.durationEl.textContent = this.formatTime(this.audio.duration);
+    }
+  }
+
+  updateUI() {
+    const playIcon = this.toggleBtn.querySelector('.play-icon');
+    const pauseIcon = this.toggleBtn.querySelector('.pause-icon');
+    
+    if (this.isPlaying) {
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'block';
+      this.audioStatus.textContent = 'Now Playing';
+    } else {
+      playIcon.style.display = 'block';
+      pauseIcon.style.display = 'none';
+      this.audioStatus.textContent = 'Paused';
+    }
+  }
+
+  formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  saveState() {
+    const state = {
+      isPlaying: this.isPlaying,
+      currentTime: this.audio.currentTime,
+      volume: this.audio.volume,
+      timestamp: Date.now()
+    };
+    AudioPersistence.saveAudioState(state);
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('persistent-audio')) {
+    window.audioPlayer = new PersistentAudioPlayer();
+  }
+});
+</script>
