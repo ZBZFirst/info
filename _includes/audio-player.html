@@ -1,6 +1,6 @@
 <!-- _includes/audio-player.html -->
 <div class="persistent-music-player" id="audio-player-container">
-  <audio id="persistent-audio" crossorigin="anonymous">
+  <audio id="persistent-audio" crossorigin="anonymous" loop>
     <source src="https://zbzfirst.github.io/info/music/ambient-study.mp3" type="audio/mpeg">
     <source src="https://zbzfirst.github.io/info/music/ambient-study.ogg" type="audio/ogg">
   </audio>
@@ -26,6 +26,12 @@
       </div>
     </div>
     
+    <button id="loop-toggle" class="loop-btn" aria-label="Toggle loop" title="Toggle loop">
+      <svg class="loop-icon" width="20" height="20" viewBox="0 0 24 24">
+        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/>
+      </svg>
+    </button>
+    
     <div class="volume-control">
       <input type="range" id="volume-control" min="0" max="100" value="30" aria-label="Volume">
     </div>
@@ -44,7 +50,7 @@
   border: 1px solid rgba(67, 97, 238, 0.2);
   backdrop-filter: blur(10px);
   z-index: 1000;
-  width: 320px;
+  width: 350px;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -77,6 +83,31 @@
 .audio-toggle-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+}
+
+.loop-btn {
+  background: transparent;
+  color: var(--text-medium, #586069);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.loop-btn:hover {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--color-primary, #4361ee);
+}
+
+.loop-btn.active {
+  background: rgba(67, 97, 238, 0.2);
+  color: var(--color-primary, #4361ee);
 }
 
 .audio-info {
@@ -163,7 +194,7 @@
 /* Hide on mobile if needed */
 @media (max-width: 768px) {
   .persistent-music-player {
-    width: 280px;
+    width: 320px;
     right: 10px;
     bottom: 10px;
   }
@@ -174,6 +205,20 @@
     width: calc(100% - 20px);
     right: 10px;
     left: 10px;
+  }
+  
+  .player-ui {
+    gap: 8px;
+  }
+  
+  .audio-toggle-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .loop-btn {
+    width: 28px;
+    height: 28px;
   }
 }
 </style>
@@ -218,6 +263,7 @@ class PersistentAudioPlayer {
   constructor() {
     this.audio = document.getElementById('persistent-audio');
     this.toggleBtn = document.getElementById('audio-toggle');
+    this.loopBtn = document.getElementById('loop-toggle');
     this.volumeControl = document.getElementById('volume-control');
     this.progressFill = document.querySelector('.progress-fill');
     this.progressBar = document.querySelector('.progress-bar');
@@ -226,6 +272,8 @@ class PersistentAudioPlayer {
     this.audioStatus = document.querySelector('.audio-status');
     
     this.isPlaying = false;
+    this.isLooping = true; // Default to looping on
+    
     this.init();
   }
 
@@ -236,25 +284,40 @@ class PersistentAudioPlayer {
       this.audio.currentTime = savedState.currentTime || 0;
       this.volumeControl.value = savedState.volume * 100;
       this.audio.volume = savedState.volume;
+      this.isLooping = savedState.isLooping !== undefined ? savedState.isLooping : true;
+      this.audio.loop = this.isLooping;
       
-      if (savedState.isPlaying) {
-        setTimeout(() => this.play(), 300);
-      } else {
-        this.updateUI();
+      // CRITICAL FIX: Don't auto-play on page load
+      // Only update UI based on saved state, but don't play automatically
+      this.isPlaying = savedState.isPlaying || false;
+      this.updateUI();
+      
+      // If music was playing, show the play button but don't auto-play
+      // User must click to start playing
+      if (this.isPlaying) {
+        this.audioStatus.textContent = 'Click to resume';
       }
+      
     } else {
       this.audio.volume = this.volumeControl.value / 100;
+      this.audio.loop = true;
+      this.isLooping = true;
+      this.updateUI();
     }
 
+    // Update loop button UI
+    this.updateLoopButton();
+    
     this.setupEventListeners();
     
-    // Auto-save
-    setInterval(() => this.saveState(), 3000);
+    // Auto-save every 5 seconds
+    setInterval(() => this.saveState(), 5000);
     window.addEventListener('beforeunload', () => this.saveState());
   }
 
   setupEventListeners() {
     this.toggleBtn.addEventListener('click', () => this.togglePlayback());
+    this.loopBtn.addEventListener('click', () => this.toggleLoop());
     this.volumeControl.addEventListener('input', () => this.updateVolume());
     
     this.progressBar.addEventListener('click', (e) => {
@@ -267,7 +330,10 @@ class PersistentAudioPlayer {
     this.audio.addEventListener('timeupdate', () => this.updateProgress());
     this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
     this.audio.addEventListener('ended', () => {
-      this.audio.currentTime = 0;
+      if (!this.audio.loop) {
+        this.isPlaying = false;
+        this.updateUI();
+      }
       this.saveState();
     });
   }
@@ -285,8 +351,11 @@ class PersistentAudioPlayer {
       this.isPlaying = true;
       this.updateUI();
       this.saveState();
-    }).catch(() => {
+    }).catch((error) => {
+      console.log('Play failed:', error);
       this.audioStatus.textContent = 'Click to play';
+      this.isPlaying = false;
+      this.updateUI();
     });
   }
 
@@ -295,6 +364,23 @@ class PersistentAudioPlayer {
     this.isPlaying = false;
     this.updateUI();
     this.saveState();
+  }
+
+  toggleLoop() {
+    this.isLooping = !this.isLooping;
+    this.audio.loop = this.isLooping;
+    this.updateLoopButton();
+    this.saveState();
+  }
+
+  updateLoopButton() {
+    if (this.isLooping) {
+      this.loopBtn.classList.add('active');
+      this.loopBtn.setAttribute('title', 'Loop enabled');
+    } else {
+      this.loopBtn.classList.remove('active');
+      this.loopBtn.setAttribute('title', 'Loop disabled');
+    }
   }
 
   updateVolume() {
@@ -330,7 +416,7 @@ class PersistentAudioPlayer {
     } else {
       playIcon.style.display = 'block';
       pauseIcon.style.display = 'none';
-      this.audioStatus.textContent = 'Paused';
+      this.audioStatus.textContent = this.audio.currentTime > 0 ? 'Paused' : 'Stopped';
     }
   }
 
@@ -343,6 +429,7 @@ class PersistentAudioPlayer {
   saveState() {
     const state = {
       isPlaying: this.isPlaying,
+      isLooping: this.isLooping,
       currentTime: this.audio.currentTime,
       volume: this.audio.volume,
       timestamp: Date.now()
@@ -355,6 +442,26 @@ class PersistentAudioPlayer {
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('persistent-audio')) {
     window.audioPlayer = new PersistentAudioPlayer();
+    
+    // Optional: Add a keyboard shortcut (Space for play/pause)
+    document.addEventListener('keydown', function(e) {
+      // Don't trigger if user is typing in an input field
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      // Space key for play/pause
+      if (e.code === 'Space') {
+        e.preventDefault();
+        window.audioPlayer.togglePlayback();
+      }
+      
+      // L key for loop toggle
+      if (e.code === 'KeyL' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        window.audioPlayer.toggleLoop();
+      }
+    });
   }
 });
 </script>
