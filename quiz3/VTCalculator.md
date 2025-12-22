@@ -70,7 +70,7 @@ title: Respiratory Calculator
 
     <div class="card">
       <h3>Experimental Minute Ventilation</h3>
-      <p>Respiratory Rate for Adults can be defined as normal when between 12 to 20 breaths per minute. If this constraint is used, then applying the low normal respiratory rate to the lower range of tidal volume can give an absolute normal range based on normal parameters.</p>
+      <p>By establishing a respiratory rate constraint of 12 to 20 breaths per minute for adults, the absolute lower and          upper bounds for normal minute ventilation can be derived. This is calculated by applying the low-normal respiratory        rate to the low-normal tidal volume for the lower absolute, and the high-normal respiratory rate to the high-normal         tidal volume for the upper absolute.</p>
       <p><strong>An exmaple is provided...</strong></p>
 
       <div class="formula-box">
