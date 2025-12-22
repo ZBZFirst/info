@@ -14,4 +14,8 @@ plugins:
   
 data_dir: _data
 
-
+audio:
+  enabled: true
+  files:
+    mp3: "/music/ambient-study.mp3"
+    ogg: "/music/ambient-study.ogg"
