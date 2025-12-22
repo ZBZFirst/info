@@ -13,5 +13,9 @@
     {{ content }}
     
     {% include footer.html %}
+
+    {% if site.audio.enabled %}
+        {% include audio-player.html %}
+    {% endif %}
 </body>
 </html>
