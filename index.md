@@ -2,6 +2,7 @@
 layout: default
 title: Ventilator Data Project
 description: Open-source Mechanical Ventilation and Oxygenation Information
+audio_player: true
 ---
 
 <link rel="stylesheet" href="/info/_css/dashboard.css">
