@@ -35,11 +35,11 @@ audio_player: true
     </a>
 
     <!-- Grid Item 3 -->
-    <a href="/documentation/" class="grid-item" data-grid-item="3">
+    <a href="info//OpenSourceWaveforms.html/" class="grid-item" data-grid-item="3">
       <div class="grid-icon">📖</div>
-      <h3 class="grid-title">Documentation</h3>
+      <h3 class="grid-title">Open Source Waveforms</h3>
       <p class="grid-desc">Technical specifications and reference materials</p>
-      <span class="grid-url">/documentation/</span>
+      <span class="grid-url">/info/OpenSourceWaveforms.html/</span>
     </a>
 
     <!-- Grid Item 4 -->
