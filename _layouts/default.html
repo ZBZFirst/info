@@ -6,6 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.title | default: site.title }}</title>
     <link rel="stylesheet" href="/info/_css/defaultpage.css">
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://ZBZFirst.github.io/#paul-casillas",
+      "name": "Paul Casillas",
+      "url": "https://ZBZFirst.github.io/",
+      "sameAs": [
+        "https://orcid.org/0000-XXXX-XXXX-XXXX",
+        "https://github.com/ZBZFirst",
+        "https://www.youtube.com/@PaulWasH3r3",
+        "https://www.twitch.tv/AnalyzeWaveforms"
+      ],
+      "knowsAbout": [
+        "Mechanical ventilation",
+        "Respiratory physiology",
+        "Medical data visualization",
+        "Signal processing",
+        "Clinical education"
+      ]
+    },
+    {
+      "@type": "EducationalOrganization",
+      "url": "https://ZBZFirst.github.io/info/",
+      "founder": {
+        "@id": "https://ZBZFirst.github.io/#paul-casillas"
+      }
+    }
+  ]
+}
+</script>
+
 </head>
 <body bgcolor="#f0f0f0">
     {% include header.html %}
