@@ -179,7 +179,7 @@
   border-radius: var(--border-radius-lg, 0.75rem); /* Uses your existing variable */
   
   /* Background image from your Raspberry Pi */
-  background-image: url('https://zbzfirst.duckdns.org/rat.png');  background-repeat: no-repeat;
+  background-image: url('https://zbzfirst.duckdns.org:8443/rat.png');  background-repeat: no-repeat;
   background-position: center;
   background-size: contain; /* Shows whole image without cropping */
   
